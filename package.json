@@ -1,0 +1,24 @@
+{
+    "name": "awtar-frontend",
+    "private": true,
+    "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build",
+        "lint": "turbo run lint",
+        "format": "biome format --write .",
+        "format:fix": "biome check --write --max-diagnostics=1000 .",
+        "check": "biome check . || true",
+        "check:types": "turbo run check-types"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.4.6",
+        "@commitlint/cli": "^20.4.4",
+        "@commitlint/config-conventional": "^20.4.4",
+        "lefthook": "^2.1.4",
+        "turbo": "^2.3.0"
+    },
+    "packageManager": "pnpm@9.14.2",
+    "engines": {
+        "node": ">=20"
+    }
+}
