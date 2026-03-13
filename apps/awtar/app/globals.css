@@ -3,24 +3,68 @@
 :root {
     --background: #ffffff;
     --foreground: #171717;
+
+    --awtar-navy: #0a1628;
+    --awtar-navy-light: #111d33;
+    --awtar-blue: #2563eb;
+    --awtar-blue-light: #3b82f6;
+    --awtar-cyan: #06b6d4;
+    --awtar-slate: #94a3b8;
+    --awtar-white: #f8fafc;
 }
 
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
+    --color-awtar-navy: var(--awtar-navy);
+    --color-awtar-navy-light: var(--awtar-navy-light);
+    --color-awtar-blue: var(--awtar-blue);
+    --color-awtar-blue-light: var(--awtar-blue-light);
+    --color-awtar-cyan: var(--awtar-cyan);
+    --color-awtar-slate: var(--awtar-slate);
+    --color-awtar-white: var(--awtar-white);
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
+        --background: #0a1628;
+        --foreground: #f8fafc;
     }
 }
 
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes fade-in-up {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse-glow {
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 1;
+    }
 }
