@@ -19,4 +19,4 @@ pre-push:
     check:
       run: pnpm exec biome check .
     types:
-      run: pnpm run check-types
+      run: pnpm run check:types
