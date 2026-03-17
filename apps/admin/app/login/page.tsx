@@ -11,13 +11,17 @@ export default function AdminLoginPage() {
 
                 <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.02] p-6">
                     <div className="grid gap-3">
-                        <label htmlFor="email" className="text-sm text-awtar-slate">Email</label>
+                        <label htmlFor="email" className="text-sm text-awtar-slate">
+                            Email
+                        </label>
                         <input
                             id="email"
                             className="h-11 rounded-xl border border-white/10 bg-white/5 px-4 text-white outline-none focus:border-red-500/40"
                             placeholder="admin@awtar.ai"
                         />
-                        <label htmlFor="password" className="mt-3 text-sm text-awtar-slate">Password</label>
+                        <label htmlFor="password" className="mt-3 text-sm text-awtar-slate">
+                            Password
+                        </label>
                         <input
                             type="password"
                             id="password"
