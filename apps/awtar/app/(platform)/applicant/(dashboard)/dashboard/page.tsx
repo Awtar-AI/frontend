@@ -1,3 +1,4 @@
+"use client";
 import { DashboardHero } from "./_components/DashboardHero";
 import { JobRecommendations } from "./_components/JobRecommendations";
 import { ProfileCompletionWidget } from "./_components/ProfileCompletionWidget";
