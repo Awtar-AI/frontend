@@ -13,15 +13,15 @@
  */
 
 function getEnvVar(key: string, required = true): string {
-	const value = process.env[key];
-	if (required && (value === undefined || value === "")) {
-		throw new Error(
-			`Missing required environment variable: ${key}. Copy .env.example to .env.local and set it`,
-		);
-	}
-	return value ?? "";
+    const value = process.env[key];
+    if (required && (value === undefined || value === "")) {
+        throw new Error(
+            `Missing required environment variable: ${key}. Copy .env.example to .env.local and set it`,
+        );
+    }
+    return value ?? "";
 }
 
-
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ||
-	(process.env.NODE_ENV === 'development' ? 'http:localhost:5432': '')
+export const API_URL =
+    process.env.NEXT_PUBLIC_API_URL ||
+    (process.env.NODE_ENV === "development" ? "http:localhost:5432" : "");
