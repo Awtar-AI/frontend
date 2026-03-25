@@ -31,6 +31,8 @@ export const loginService = {
             parsed.access_token,
         );
 
+        console.log("Auth Store User", useAuthStore.getState().user)
+
         return parsed;
     },
 };

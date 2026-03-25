@@ -2,9 +2,10 @@ import { API_URL } from "./env";
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
-export interface RequestConfig extends Omit<RequestInit, "method"> {
+export interface RequestConfig extends Omit<RequestInit, "method" | "body"> {
     method?: HttpMethod;
     params?: Record<string, string>;
+    body?: BodyInit | Record<string, unknown> | null;
 }
 
 function buildUrl(path: string, params?: Record<string, string>): string {
