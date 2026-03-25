@@ -1,18 +1,54 @@
 "use client";
 
-import { Briefcase, Lock, Mail, User } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ApiError } from "@/lib/http";
+import { toastService } from "@/lib/services/toast.service";
 import { AuthSplitLayout } from "../../_components/AuthSplitLayout";
+import { useLogin } from "./hooks/use-login";
+import { LoginValidationError } from "./services/login.service";
+import { validateLoginForm, type LoginFormData } from "./schemas/login.schema";
 
 export default function LoginPage() {
-    const [role, setRole] = useState<"Applicant" | "Recruiter">("Applicant");
     const router = useRouter();
+    const loginMutation = useLogin();
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [formData, setFormData] = useState<LoginFormData>({
+        email: "",
+        password: "",
+    });
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        router.push("/applicant/dashboard");
+        const validation = validateLoginForm(formData);
+        if (!validation.success) {
+            setFieldErrors(validation.errors);
+            toastService.error("Please fix the highlighted fields.");
+            return;
+        }
+
+        setFieldErrors({});
+        try {
+            await loginMutation.mutateAsync(validation.data);
+            toastService.success("Logged in successfully.");
+            router.push("/applicant/dashboard");
+        } catch (error) {
+            if (error instanceof LoginValidationError) {
+                setFieldErrors(error.fieldErrors);
+                toastService.error("Please check your login details.");
+                return;
+            }
+            if (error instanceof ApiError) {
+                const message = error.message || "Failed to log in.";
+                toastService.error(message);
+                setFieldErrors({ _form: message });
+                return;
+            }
+            toastService.error("Something went wrong. Please try again.");
+        }
     };
 
     return (
@@ -33,11 +69,18 @@ export default function LoginPage() {
                             <input
                                 id="email"
                                 type="email"
+                                value={formData.email}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, email: e.target.value })
+                                }
                                 placeholder="example@gmail.com"
                                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                 required
                             />
                         </div>
+                        {fieldErrors.email && (
+                            <p className="text-xs text-red-600">{fieldErrors.email}</p>
+                        )}
                     </div>
 
                     <div className="space-y-1.5">
@@ -48,12 +91,31 @@ export default function LoginPage() {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 id="password"
-                                type="password"
+                                type={showPassword ? "text" : "password"}
+                                value={formData.password}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, password: e.target.value })
+                                }
                                 placeholder="••••••••"
-                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                className="w-full pl-10 pr-11 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                 required
                             />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((prev) => !prev)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? (
+                                    <EyeOff className="w-5 h-5" />
+                                ) : (
+                                    <Eye className="w-5 h-5" />
+                                )}
+                            </button>
                         </div>
+                        {fieldErrors.password && (
+                            <p className="text-xs text-red-600">{fieldErrors.password}</p>
+                        )}
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -78,43 +140,18 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+                        disabled={loginMutation.isPending}
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] disabled:opacity-70"
                     >
-                        Sign In
+                        {loginMutation.isPending ? "Signing in..." : "Sign In"}
                     </button>
+                    {/* {fieldErrors._form && (
+						<p className="text-xs text-red-600">{fieldErrors._form}</p>
+					)} */}
                 </form>
 
-                <div className="mt-8 flex items-center gap-4 before:flex-1 before:border-t before:border-gray-200 after:flex-1 after:border-t after:border-gray-200">
-                    <span className="text-xs text-gray-400 font-medium">I am a...</span>
-                </div>
-
-                <div className="mt-8 grid grid-cols-2 gap-4">
-                    <button
-                        type="button"
-                        onClick={() => setRole("Applicant")}
-                        className={`py-2.5 px-4 rounded-lg border flex items-center justify-center gap-2 text-sm font-semibold transition-all ${
-                            role === "Applicant"
-                                ? "border-blue-600 text-blue-600 bg-blue-50"
-                                : "border-gray-200 text-gray-400 hover:bg-gray-50 bg-white"
-                        }`}
-                    >
-                        <User className="w-4 h-4" /> Job Seeker
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setRole("Recruiter")}
-                        className={`py-2.5 px-4 rounded-lg border flex items-center justify-center gap-2 text-sm font-semibold transition-all ${
-                            role === "Recruiter"
-                                ? "border-blue-600 text-blue-600 bg-blue-50"
-                                : "border-gray-200 text-gray-400 hover:bg-gray-50 bg-white"
-                        }`}
-                    >
-                        <Briefcase className="w-4 h-4" /> Recruiter
-                    </button>
-                </div>
-
                 <p className="mt-10 text-center text-sm text-gray-600">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
                         href="/applicant/register"
                         className="font-bold text-blue-600 hover:underline"
