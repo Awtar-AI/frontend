@@ -7,7 +7,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint .",
-        "check-types": "tsc --noEmit"
+        "check-types": "node -e \"try{require('fs').rmSync('.next/types',{recursive:true,force:true})}catch(e){}\" && tsc --noEmit"
     },
     "dependencies": {
         "@tanstack/react-query": "^5.91.0",
