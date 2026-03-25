@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/lib/store/auth";
 import { loginApi } from "../api/login.api";
-import { parseLoginResponse, type LoginPayload, validateLoginForm } from "../schemas/login.schema";
+import { type LoginPayload, parseLoginResponse, validateLoginForm } from "../schemas/login.schema";
 
 export class LoginValidationError extends Error {
     constructor(public fieldErrors: Record<string, string>) {

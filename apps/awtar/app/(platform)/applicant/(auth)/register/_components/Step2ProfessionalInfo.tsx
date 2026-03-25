@@ -1,22 +1,24 @@
-import { Activity, Briefcase, X } from "lucide-react";
+import { Activity, Briefcase, Minus, Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
-import type { RegisterFormData } from "../page";
+import type { RegisterFormData } from "../schemas/register.schema";
 
 export function Step2ProfessionalInfo({
     formData,
     setFormData,
     onNext,
     onBack,
+    errors,
 }: {
     formData: RegisterFormData;
     setFormData: (data: RegisterFormData) => void;
     onNext: () => void;
     onBack: () => void;
+    errors?: Record<string, string>;
 }) {
     const [newSkill, setNewSkill] = useState("");
 
     const handleAddSkill = (e: React.KeyboardEvent) => {
-        if (e.key === "Enter" && newSkill.trim()) {
+        if (e.key === "Enter" || (e.key === "," && newSkill.trim())) {
             e.preventDefault();
             setFormData({ ...formData, skills: [...formData.skills, newSkill.trim()] });
             setNewSkill("");
@@ -31,10 +33,13 @@ export function Step2ProfessionalInfo({
     };
 
     const educationOptions = [
-        { id: "Bachelor's Degree", label: "Bachelor's Degree" },
-        { id: "Master's Degree", label: "Master's Degree" },
-        { id: "PhD / Doctorate", label: "PhD / Doctorate" },
-        { id: "Self-Taught / Bootcamp", label: "Self-Taught / Bootcamp" },
+        { id: "bachelor", label: "Bachelor's Degree" },
+        { id: "master", label: "Master's Degree" },
+        { id: "phd", label: "PhD / Doctorate" },
+        { id: "self_taught", label: "Self-Taught / Bootcamp" },
+        { id: "associate", label: "Associate Degree" },
+        { id: "high_school", label: "High School" },
+        { id: "other", label: "Other" },
     ];
 
     return (
@@ -64,6 +69,7 @@ export function Step2ProfessionalInfo({
                         required
                     />
                 </div>
+                {errors?.jobTitle && <p className="text-xs text-red-600">{errors.jobTitle}</p>}
             </div>
 
             <div className="space-y-1.5">
@@ -73,38 +79,50 @@ export function Step2ProfessionalInfo({
                 >
                     Years of Experience
                 </label>
-                <div className="relative">
-                    <Activity className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <select
-                        id="experience"
-                        value={formData.experience}
-                        onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all appearance-none bg-white font-medium text-gray-700"
-                        required
+                <div className="flex items-center rounded-xl border border-gray-200 bg-white px-2 py-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all">
+                    <Activity className="ml-1 mr-2 h-5 w-5 text-gray-400" />
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setFormData({
+                                ...formData,
+                                experience: Math.max(0, formData.experience - 1),
+                            })
+                        }
+                        className="rounded-md p-2 text-gray-500 hover:bg-gray-100"
+                        aria-label="Decrease years of experience"
                     >
-                        <option value="">Select experience level</option>
-                        <option value="0-2">0-2 years</option>
-                        <option value="3-5">3-5 years</option>
-                        <option value="5-10">5-10 years</option>
-                        <option value="10+">10+ years</option>
-                    </select>
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <svg
-                            className="w-4 h-4 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 9l-7 7-7-7"
-                            ></path>
-                        </svg>
-                    </div>
+                        <Minus className="h-4 w-4" />
+                    </button>
+                    <input
+                        id="experience"
+                        type="number"
+                        min={0}
+                        value={formData.experience}
+                        onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                experience: Math.max(0, Number(e.target.value || 0)),
+                            })
+                        }
+                        className="w-full bg-transparent px-2 py-1 text-center font-bold text-gray-700 outline-none"
+                        required
+                    />
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setFormData({
+                                ...formData,
+                                experience: formData.experience + 1,
+                            })
+                        }
+                        className="rounded-md p-2 text-gray-500 hover:bg-gray-100"
+                        aria-label="Increase years of experience"
+                    >
+                        <Plus className="h-4 w-4" />
+                    </button>
                 </div>
+                {errors?.experience && <p className="text-xs text-red-600">{errors.experience}</p>}
             </div>
 
             <div className="space-y-3">
@@ -159,6 +177,7 @@ export function Step2ProfessionalInfo({
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                     />
                 </div>
+                {errors?.skills && <p className="text-xs text-red-600">{errors.skills}</p>}
             </div>
 
             <fieldset className="space-y-3">
@@ -189,7 +208,59 @@ export function Step2ProfessionalInfo({
                         </button>
                     ))}
                 </div>
+                {errors?.education && <p className="text-xs text-red-600">{errors.education}</p>}
             </fieldset>
+
+            <div className="space-y-2">
+                <label htmlFor="resume" className="text-sm font-bold text-gray-800 tracking-tight">
+                    Resume (PDF/DOC)
+                </label>
+                <label
+                    htmlFor="resume"
+                    className={`flex cursor-pointer items-center justify-between rounded-xl border border-dashed px-4 py-3 ${
+                        formData.resume
+                            ? "border-emerald-400 bg-emerald-50/50"
+                            : "border-gray-300 hover:border-blue-400"
+                    }`}
+                >
+                    <span
+                        className={`text-sm ${
+                            formData.resume ? "font-semibold text-emerald-700" : "text-gray-600"
+                        }`}
+                    >
+                        {formData.resume ? formData.resume.name : "Upload your resume"}
+                    </span>
+                    <span
+                        className={`inline-flex items-center gap-1 text-sm font-semibold ${
+                            formData.resume ? "text-emerald-700" : "text-blue-600"
+                        }`}
+                    >
+                        <Upload className="h-4 w-4" />
+                        Browse
+                    </span>
+                </label>
+                <input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="hidden"
+                    onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            resume: e.target.files?.[0] ?? null,
+                        })
+                    }
+                />
+                {formData.resume && (
+                    <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, resume: null })}
+                        className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                    >
+                        Remove selected file
+                    </button>
+                )}
+            </div>
 
             <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                 <button
@@ -206,6 +277,7 @@ export function Step2ProfessionalInfo({
                     Next Step &rarr;
                 </button>
             </div>
+            {errors?._form && <p className="text-xs text-red-600">{errors._form}</p>}
         </form>
     );
 }

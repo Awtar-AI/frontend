@@ -10,13 +10,13 @@ import { Step1AccountDetails } from "./_components/Step1AccountDetails";
 import { Step2ProfessionalInfo } from "./_components/Step2ProfessionalInfo";
 import { Step3Interests } from "./_components/Step3Interests";
 import { useRegister } from "./hooks/use-register";
-import { RegisterValidationError } from "./services/register.service";
 import {
     parseSalaryInput,
-    validateRegisterStep,
     type RegisterApplicantPayload,
     type RegisterFormData,
+    validateRegisterStep,
 } from "./schemas/register.schema";
+import { RegisterValidationError } from "./services/register.service";
 
 export default function RegisterPage() {
     const [step, setStep] = useState<1 | 2 | 3>(1);

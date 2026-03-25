@@ -8,8 +8,8 @@ import { ApiError } from "@/lib/http";
 import { toastService } from "@/lib/services/toast.service";
 import { AuthSplitLayout } from "../../_components/AuthSplitLayout";
 import { useLogin } from "./hooks/use-login";
+import { type LoginFormData, validateLoginForm } from "./schemas/login.schema";
 import { LoginValidationError } from "./services/login.service";
-import { validateLoginForm, type LoginFormData } from "./schemas/login.schema";
 
 export default function LoginPage() {
     const router = useRouter();
