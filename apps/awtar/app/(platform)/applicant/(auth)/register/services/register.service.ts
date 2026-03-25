@@ -1,5 +1,5 @@
-import { registerApi } from "../api/register.api";
 import { useAuthStore } from "@/lib/store/auth";
+import { registerApi } from "../api/register.api";
 import {
     parseRegisterApplicantResponse,
     type RegisterApplicantParams,

@@ -1,4 +1,4 @@
-import { useAuthStore, type AppUser } from "../store/auth";
+import { type AppUser, useAuthStore } from "../store/auth";
 
 export const authService = {
     setUser(user: AppUser) {
