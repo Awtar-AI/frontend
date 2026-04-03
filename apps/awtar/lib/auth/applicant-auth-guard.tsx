@@ -1,0 +1,15 @@
+"use client";
+
+import { AuthGuard } from "./auth-guard";
+import { isApplicantPublicRoute } from "./applicant-public-routes";
+
+const APPLICANT_LOGIN_PATH = "/applicant/login";
+
+/** Wraps all `app/(platform)/applicant/**` UI. Public: login + register only. */
+export function ApplicantAuthGuard({ children }: { children: React.ReactNode }) {
+    return (
+        <AuthGuard loginPath={APPLICANT_LOGIN_PATH} isPublicPath={isApplicantPublicRoute}>
+            {children}
+        </AuthGuard>
+    );
+}

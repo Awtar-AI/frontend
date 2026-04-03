@@ -1,14 +1,8 @@
 import { create } from "zustand";
+import type { AppUser } from "@/applicant/user-me/models/app-user";
 import { setAuthToken } from "../http";
 
-export type AppUser = {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-    role: "candidate" | "hr" | "admin";
-    is_active?: boolean;
-};
+export type { AppUser, CandidateProfile } from "@/applicant/user-me/models/app-user";
 
 interface AuthState {
     user: AppUser | null;

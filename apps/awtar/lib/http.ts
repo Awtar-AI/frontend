@@ -28,23 +28,50 @@ export function setAuthToken(token: string | null): void {
     authToken = token;
 }
 
+function serializeRequestBody(body: RequestConfig["body"]): BodyInit | undefined {
+    if (body === undefined || body === null) return undefined;
+    if (typeof body === "string") return body;
+    if (
+        body instanceof FormData ||
+        body instanceof Blob ||
+        body instanceof ArrayBuffer ||
+        body instanceof URLSearchParams
+    ) {
+        return body;
+    }
+    return JSON.stringify(body);
+}
+
+function shouldUseJsonContentType(body: RequestConfig["body"]): boolean {
+    if (body === undefined || body === null) return false;
+    if (typeof body === "string") return true;
+    if (
+        body instanceof FormData ||
+        body instanceof Blob ||
+        body instanceof ArrayBuffer ||
+        body instanceof URLSearchParams
+    ) {
+        return false;
+    }
+    return typeof body === "object";
+}
+
 export async function request<T>(
     path: string,
     { method = "GET", params, headers = {}, body, ...rest }: RequestConfig,
 ) {
     const url = buildUrl(path, params);
+    const serializedBody = serializeRequestBody(body);
 
     const res = await fetch(url, {
         method,
         ...rest,
         headers: {
-            "Content-Type": "application/json",
+            ...(shouldUseJsonContentType(body) ? { "Content-Type": "application/json" } : {}),
             ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
             ...headers,
         },
-        ...(body !== undefined
-            ? { body: typeof body === "string" ? body : JSON.stringify(body) }
-            : {}),
+        ...(serializedBody !== undefined ? { body: serializedBody } : {}),
     });
 
     if (!res.ok) {
@@ -61,8 +88,10 @@ export async function request<T>(
     const contentType = res.headers.get("content-type");
 
     if (contentType?.includes("application/json")) {
-        return res.text() as Promise<T>;
+        return (await res.json()) as T;
     }
+
+    return (await res.text()) as T;
 }
 
 export class ApiError extends Error {
