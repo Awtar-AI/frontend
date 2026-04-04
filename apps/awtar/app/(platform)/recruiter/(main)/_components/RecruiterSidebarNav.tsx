@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, FilePlus, FileText, Home, Users, User, MessageSquare, Compass } from "lucide-react";
+import { Compass, FilePlus, FileText, Home, MessageSquare, User, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,7 +20,7 @@ export function RecruiterSidebarNav() {
     return (
         <nav className="flex flex-col gap-2">
             {tabs.map((tab) => {
-                const isActive = pathname === tab.href || pathname?.startsWith(tab.href + "/");
+                const isActive = pathname === tab.href || pathname?.startsWith(`${tab.href}/`);
                 const Icon = tab.icon;
 
                 return (

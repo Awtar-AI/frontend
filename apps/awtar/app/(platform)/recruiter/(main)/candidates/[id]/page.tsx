@@ -3,9 +3,7 @@
 import {
     AlertTriangle,
     Briefcase,
-    Calendar,
     CheckCircle2,
-    ChevronLeft,
     Code2,
     Download,
     Lightbulb,
@@ -14,7 +12,6 @@ import {
     Phone,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 
 const TRUST_DATA = [
@@ -53,7 +50,8 @@ export default function CandidateDetailsPage() {
                                 Shortlist
                             </button>
                             <button className="py-2.5 px-1 border-2 border-blue-600 text-blue-600 font-bold text-[10px] md:text-xs rounded-lg hover:bg-blue-50 transition-colors shadow-sm text-center leading-tight flex items-center justify-center">
-                                Schedule<br className="hidden lg:block xl:hidden"/> Interview
+                                Schedule
+                                <br className="hidden lg:block xl:hidden" /> Interview
                             </button>
                             <button className="py-2.5 px-1 border-2 border-red-500 text-red-500 font-bold text-[10px] md:text-xs rounded-lg hover:bg-red-50 transition-colors shadow-sm text-center flex items-center justify-center">
                                 Reject
@@ -233,9 +231,9 @@ export default function CandidateDetailsPage() {
                                 </span>{" "}
                                 and proven leadership experience. His tenure at TechStream shows
                                 stability and growth, specifically managing teams of 10+, which
-                                aligns perfectly with your &quot;Senior Engineering Manager&quot; trajectory.
-                                His contribution to infrastructure cost reduction (35%) indicates a
-                                high level of business acumen beyond just coding.
+                                aligns perfectly with your &quot;Senior Engineering Manager&quot;
+                                trajectory. His contribution to infrastructure cost reduction (35%)
+                                indicates a high level of business acumen beyond just coding.
                             </p>
                         </div>
 
@@ -258,7 +256,7 @@ export default function CandidateDetailsPage() {
                                             endAngle={-270}
                                             dataKey="value"
                                         >
-                                            {TRUST_DATA.map((entry, index) => (
+                                            {TRUST_DATA.map((_entry, index) => (
                                                 <Cell
                                                     key={`cell-${index}`}
                                                     fill={COLORS[index % COLORS.length]}

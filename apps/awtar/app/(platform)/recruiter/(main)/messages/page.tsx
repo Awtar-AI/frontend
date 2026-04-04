@@ -1,17 +1,17 @@
 "use client";
 
 import {
-    Search,
-    Phone,
+    ChevronLeft,
+    Mic,
     MoreVertical,
     Paperclip,
-    Mic,
-    Smile,
+    Phone,
+    Search,
     Send,
-    ChevronLeft,
+    Smile,
 } from "lucide-react";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Message = {
     id: number;
@@ -41,9 +41,24 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
         unread: true,
         tag: "New",
         messages: [
-            { id: 1, from: "me", text: "Hi Alex, thank you for applying to the UI/UX Designer for Mobile App position. We've reviewed your portfolio, and we're impressed!\nWould you be available for a quick Zoom interview this Thursday at 2:00 PM?", time: "6:34 pm" },
-            { id: 2, from: "them", text: "Hi! Thanks for the opportunity. Yes, Thursday at 2:00 PM works perfectly. Please send over the meeting link. Looking forward to it!", time: "6:35 pm" },
-            { id: 3, from: "me", text: "Great! Here's the Zoom link for the call:\nLet us know if anything changes. See you Thursday!", time: "6:36 pm" },
+            {
+                id: 1,
+                from: "me",
+                text: "Hi Alex, thank you for applying to the UI/UX Designer for Mobile App position. We've reviewed your portfolio, and we're impressed!\nWould you be available for a quick Zoom interview this Thursday at 2:00 PM?",
+                time: "6:34 pm",
+            },
+            {
+                id: 2,
+                from: "them",
+                text: "Hi! Thanks for the opportunity. Yes, Thursday at 2:00 PM works perfectly. Please send over the meeting link. Looking forward to it!",
+                time: "6:35 pm",
+            },
+            {
+                id: 3,
+                from: "me",
+                text: "Great! Here's the Zoom link for the call:\nLet us know if anything changes. See you Thursday!",
+                time: "6:36 pm",
+            },
         ],
     },
     {
@@ -55,7 +70,12 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
         unread: false,
         messages: [
             { id: 1, from: "them", text: "Meeting at 3 PM. Are we still on?", time: "6:24 pm" },
-            { id: 2, from: "me", text: "Yes, absolutely. I'll send the calendar invite now.", time: "6:25 pm" },
+            {
+                id: 2,
+                from: "me",
+                text: "Yes, absolutely. I'll send the calendar invite now.",
+                time: "6:25 pm",
+            },
         ],
     },
     {
@@ -65,9 +85,7 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
         preview: "Could you send me the files?",
         time: "20m ago",
         unread: false,
-        messages: [
-            { id: 1, from: "them", text: "Could you send me the files?", time: "6:14 pm" },
-        ],
+        messages: [{ id: 1, from: "them", text: "Could you send me the files?", time: "6:14 pm" }],
     },
     {
         id: 4,
@@ -99,9 +117,7 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
         preview: "Let's catch up later!",
         time: "1h 30m ago",
         unread: false,
-        messages: [
-            { id: 1, from: "them", text: "Let's catch up later!", time: "5:04 pm" },
-        ],
+        messages: [{ id: 1, from: "them", text: "Let's catch up later!", time: "5:04 pm" }],
     },
     {
         id: 7,
@@ -122,9 +138,7 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
         preview: "Can you review my code?",
         time: "3h ago",
         unread: false,
-        messages: [
-            { id: 1, from: "them", text: "Can you review my code?", time: "3:34 pm" },
-        ],
+        messages: [{ id: 1, from: "them", text: "Can you review my code?", time: "3:34 pm" }],
     },
 ];
 
@@ -135,31 +149,44 @@ export default function MessagesPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const activeConversation = conversations.find(c => c.id === activeId)!;
+    const activeConversation = conversations.find((c) => c.id === activeId)!;
 
-    const filteredConversations = conversations.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.preview.toLowerCase().includes(searchQuery.toLowerCase())
+    const filteredConversations = conversations.filter(
+        (c) =>
+            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.preview.toLowerCase().includes(searchQuery.toLowerCase()),
     );
 
     const sendMessage = () => {
         if (!draftText.trim()) return;
-        const now = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }).toLowerCase();
+        const now = new Date()
+            .toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+            .toLowerCase();
         const newMsg: Message = { id: Date.now(), from: "me", text: draftText.trim(), time: now };
-        setConversations(conversations.map(c =>
-            c.id === activeId
-                ? { ...c, messages: [...c.messages, newMsg], preview: draftText.trim(), time: "just now" }
-                : c
-        ));
+        setConversations(
+            conversations.map((c) =>
+                c.id === activeId
+                    ? {
+                          ...c,
+                          messages: [...c.messages, newMsg],
+                          preview: draftText.trim(),
+                          time: "just now",
+                      }
+                    : c,
+            ),
+        );
         setDraftText("");
     };
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [activeConversation?.messages.length]);
+    }, []);
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ height: "calc(100vh - 160px)" }}>
+        <div
+            className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+            style={{ height: "calc(100vh - 160px)" }}
+        >
             <div className="flex h-full">
                 {/* ── SIDEBAR ── */}
                 <div className="w-56 border-r border-gray-100 flex flex-col flex-shrink-0">
@@ -171,7 +198,7 @@ export default function MessagesPage() {
                                 type="text"
                                 placeholder="Search"
                                 value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-transparent text-xs text-gray-700 placeholder:text-gray-400 focus:outline-none w-full"
                             />
                         </div>
@@ -179,12 +206,16 @@ export default function MessagesPage() {
 
                     {/* Conversation list */}
                     <div className="flex-1 overflow-y-auto">
-                        {filteredConversations.map(conv => (
+                        {filteredConversations.map((conv) => (
                             <button
                                 key={conv.id}
                                 onClick={() => {
                                     setActiveId(conv.id);
-                                    setConversations(conversations.map(c => c.id === conv.id ? { ...c, unread: false } : c));
+                                    setConversations(
+                                        conversations.map((c) =>
+                                            c.id === conv.id ? { ...c, unread: false } : c,
+                                        ),
+                                    );
                                 }}
                                 className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
                                     conv.id === activeId ? "bg-blue-600" : "hover:bg-gray-50"
@@ -204,14 +235,20 @@ export default function MessagesPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center justify-between">
-                                        <p className={`text-xs font-bold truncate ${conv.id === activeId ? "text-white" : "text-gray-900"}`}>
+                                        <p
+                                            className={`text-xs font-bold truncate ${conv.id === activeId ? "text-white" : "text-gray-900"}`}
+                                        >
                                             {conv.name}
                                         </p>
-                                        <span className={`text-[10px] ml-1 flex-shrink-0 ${conv.id === activeId ? "text-blue-200" : "text-gray-400"}`}>
+                                        <span
+                                            className={`text-[10px] ml-1 flex-shrink-0 ${conv.id === activeId ? "text-blue-200" : "text-gray-400"}`}
+                                        >
                                             {conv.time}
                                         </span>
                                     </div>
-                                    <p className={`text-[11px] truncate mt-0.5 ${conv.id === activeId ? "text-blue-100" : "text-gray-500"}`}>
+                                    <p
+                                        className={`text-[11px] truncate mt-0.5 ${conv.id === activeId ? "text-blue-100" : "text-gray-500"}`}
+                                    >
                                         {conv.preview}
                                     </p>
                                 </div>
@@ -228,7 +265,9 @@ export default function MessagesPage() {
                             <button className="text-gray-400 hover:text-blue-600 transition-colors">
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
-                            <span className="text-sm font-bold text-gray-900">{activeConversation.name}</span>
+                            <span className="text-sm font-bold text-gray-900">
+                                {activeConversation.name}
+                            </span>
                             {activeConversation.tag && (
                                 <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded uppercase tracking-widest">
                                     {activeConversation.tag}
@@ -236,16 +275,25 @@ export default function MessagesPage() {
                             )}
                         </div>
                         <div className="flex items-center gap-4 text-gray-400">
-                            <button className="hover:text-blue-600 transition-colors"><Search className="w-4 h-4" /></button>
-                            <button className="hover:text-blue-600 transition-colors"><Phone className="w-4 h-4" /></button>
-                            <button className="hover:text-gray-600 transition-colors"><MoreVertical className="w-4 h-4" /></button>
+                            <button className="hover:text-blue-600 transition-colors">
+                                <Search className="w-4 h-4" />
+                            </button>
+                            <button className="hover:text-blue-600 transition-colors">
+                                <Phone className="w-4 h-4" />
+                            </button>
+                            <button className="hover:text-gray-600 transition-colors">
+                                <MoreVertical className="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
 
                     {/* Messages */}
                     <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 bg-gray-50/30">
-                        {activeConversation.messages.map(msg => (
-                            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"} items-end gap-2`}>
+                        {activeConversation.messages.map((msg) => (
+                            <div
+                                key={msg.id}
+                                className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"} items-end gap-2`}
+                            >
                                 {msg.from === "them" && (
                                     <Image
                                         src={activeConversation.avatar}
@@ -256,15 +304,21 @@ export default function MessagesPage() {
                                     />
                                 )}
                                 <div className={`max-w-[65%] group`}>
-                                    <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
-                                        msg.from === "me"
-                                            ? "bg-blue-600 text-white rounded-br-sm"
-                                            : "bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-sm"
-                                    }`}>
+                                    <div
+                                        className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
+                                            msg.from === "me"
+                                                ? "bg-blue-600 text-white rounded-br-sm"
+                                                : "bg-white text-gray-800 border border-gray-100 shadow-sm rounded-bl-sm"
+                                        }`}
+                                    >
                                         {msg.text}
                                     </div>
-                                    <div className={`flex items-center gap-1 mt-1 ${msg.from === "me" ? "justify-end" : "justify-start"}`}>
-                                        <span className="text-[10px] text-gray-400">{msg.time}</span>
+                                    <div
+                                        className={`flex items-center gap-1 mt-1 ${msg.from === "me" ? "justify-end" : "justify-start"}`}
+                                    >
+                                        <span className="text-[10px] text-gray-400">
+                                            {msg.time}
+                                        </span>
                                         <button className="text-gray-300 hover:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <MoreVertical className="w-3 h-3" />
                                         </button>
@@ -285,8 +339,13 @@ export default function MessagesPage() {
                                 type="text"
                                 placeholder="Type a message..."
                                 value={draftText}
-                                onChange={e => setDraftText(e.target.value)}
-                                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+                                onChange={(e) => setDraftText(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        sendMessage();
+                                    }
+                                }}
                                 className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                             <button className="text-gray-400 hover:text-blue-600 transition-colors flex-shrink-0">

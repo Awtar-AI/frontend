@@ -1,6 +1,7 @@
 "use client";
 
 import {
+    ArrowUpDown,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -8,11 +9,10 @@ import {
     ExternalLink,
     MoreVertical,
     Trash2,
-    ArrowUpDown,
     X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState } from "react";
 
 // Mock Data
 const INITIAL_JOBS = [
@@ -105,14 +105,14 @@ type SortConfig = {
     direction: "asc" | "desc";
 } | null;
 
-type Job = typeof INITIAL_JOBS[0];
+type Job = (typeof INITIAL_JOBS)[0];
 
 export default function JobListingsPage() {
     const [jobs, setJobs] = useState<Job[]>(INITIAL_JOBS);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [sortConfig, setSortConfig] = useState<SortConfig>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    
+
     // Modal state
     const [editingJob, setEditingJob] = useState<Job | null>(null);
 
@@ -130,15 +130,15 @@ export default function JobListingsPage() {
         if (selectedRows.length === currentJobs.length && currentJobs.length > 0) {
             setSelectedRows([]);
         } else {
-            setSelectedRows(currentJobs.map(j => j.id));
+            setSelectedRows(currentJobs.map((j) => j.id));
         }
     };
 
     // Delete single job
     const deleteJob = (id: number) => {
-        setJobs(jobs.filter(j => j.id !== id));
-        setSelectedRows(selectedRows.filter(rowId => rowId !== id));
-        
+        setJobs(jobs.filter((j) => j.id !== id));
+        setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
+
         // Reset page if we deleted the last item on the current page
         const newTotal = jobs.length - 1;
         if (currentPage > Math.ceil(newTotal / ITEMS_PER_PAGE)) {
@@ -149,7 +149,7 @@ export default function JobListingsPage() {
     const handleSaveEdit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingJob) return;
-        setJobs(jobs.map(j => j.id === editingJob.id ? editingJob : j));
+        setJobs(jobs.map((j) => (j.id === editingJob.id ? editingJob : j)));
         setEditingJob(null);
     };
 
@@ -229,42 +229,59 @@ export default function JobListingsPage() {
 
     return (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative">
-            
             {/* EDIT MODAL */}
             {editingJob && (
                 <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white border border-gray-200 rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                             <h2 className="text-lg font-bold text-gray-900">Edit Job Listing</h2>
-                            <button onClick={() => setEditingJob(null)} className="text-gray-400 hover:text-gray-600">
+                            <button
+                                onClick={() => setEditingJob(null)}
+                                className="text-gray-400 hover:text-gray-600"
+                            >
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSaveEdit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">Job Title</label>
-                                <input 
-                                    type="text" 
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">
+                                    Job Title
+                                </label>
+                                <input
+                                    type="text"
                                     value={editingJob.title}
-                                    onChange={(e) => setEditingJob({...editingJob, title: e.target.value})}
+                                    onChange={(e) =>
+                                        setEditingJob({ ...editingJob, title: e.target.value })
+                                    }
                                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">Location</label>
-                                    <input 
-                                        type="text" 
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">
+                                        Location
+                                    </label>
+                                    <input
+                                        type="text"
                                         value={editingJob.location}
-                                        onChange={(e) => setEditingJob({...editingJob, location: e.target.value})}
+                                        onChange={(e) =>
+                                            setEditingJob({
+                                                ...editingJob,
+                                                location: e.target.value,
+                                            })
+                                        }
                                         className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">Status</label>
-                                    <select 
+                                    <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-widest">
+                                        Status
+                                    </label>
+                                    <select
                                         value={editingJob.status}
-                                        onChange={(e) => setEditingJob({...editingJob, status: e.target.value})}
+                                        onChange={(e) =>
+                                            setEditingJob({ ...editingJob, status: e.target.value })
+                                        }
                                         className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm font-semibold text-gray-900 focus:ring-2 focus:ring-blue-600 focus:outline-none"
                                     >
                                         <option value="Active">Active</option>
@@ -275,10 +292,17 @@ export default function JobListingsPage() {
                                 </div>
                             </div>
                             <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => setEditingJob(null)} className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 font-bold text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingJob(null)}
+                                    className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 font-bold text-sm rounded-lg hover:bg-gray-50 transition-colors"
+                                >
                                     Cancel
                                 </button>
-                                <button type="submit" className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition-colors">
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                >
                                     Save Changes
                                 </button>
                             </div>
@@ -296,9 +320,9 @@ export default function JobListingsPage() {
                 </div>
 
                 {selectedRows.length > 0 && (
-                    <button 
+                    <button
                         onClick={() => {
-                            setJobs(jobs.filter(j => !selectedRows.includes(j.id)));
+                            setJobs(jobs.filter((j) => !selectedRows.includes(j.id)));
                             setSelectedRows([]);
                         }}
                         className="text-xs font-bold bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 flex items-center gap-1"
@@ -332,52 +356,62 @@ export default function JobListingsPage() {
                             <th className="px-6 py-4 font-semibold w-12 align-middle">
                                 <input
                                     type="checkbox"
-                                    checked={selectedRows.length === currentJobs.length && currentJobs.length > 0}
+                                    checked={
+                                        selectedRows.length === currentJobs.length &&
+                                        currentJobs.length > 0
+                                    }
                                     onChange={toggleAll}
                                     className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                 />
                             </th>
-                            <th 
+                            <th
                                 className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                onClick={() => handleSort('title')}
+                                onClick={() => handleSort("title")}
                             >
                                 <div className="flex items-center gap-1 uppercase">
-                                    Job Title <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                    Job Title{" "}
+                                    <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                 </div>
                             </th>
-                            <th 
+                            <th
                                 className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                onClick={() => handleSort('location')}
+                                onClick={() => handleSort("location")}
                             >
                                 <div className="flex items-center gap-1 uppercase">
-                                    Location <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                    Location{" "}
+                                    <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                 </div>
                             </th>
-                            <th 
+                            <th
                                 className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
-                                onClick={() => handleSort('applicants')}
+                                onClick={() => handleSort("applicants")}
                             >
                                 <div className="flex items-center justify-center gap-1 uppercase">
-                                    Applicants <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                    Applicants{" "}
+                                    <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                 </div>
                             </th>
-                            <th 
+                            <th
                                 className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
-                                onClick={() => handleSort('status')}
+                                onClick={() => handleSort("status")}
                             >
                                 <div className="flex items-center justify-center gap-1 uppercase">
-                                    Status <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                    Status{" "}
+                                    <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                 </div>
                             </th>
-                            <th 
+                            <th
                                 className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                onClick={() => handleSort('postedOn')}
+                                onClick={() => handleSort("postedOn")}
                             >
                                 <div className="flex items-center gap-1 uppercase">
-                                    Posted On <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                    Posted On{" "}
+                                    <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                 </div>
                             </th>
-                            <th className="px-6 py-4 font-semibold text-right uppercase">Actions</th>
+                            <th className="px-6 py-4 font-semibold text-right uppercase">
+                                Actions
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -393,7 +427,10 @@ export default function JobListingsPage() {
                                         />
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900">
-                                        <Link href="/recruiter/job-listings/1/applicants" className="hover:text-blue-600 transition-colors">
+                                        <Link
+                                            href="/recruiter/job-listings/1/applicants"
+                                            className="hover:text-blue-600 transition-colors"
+                                        >
                                             {job.title}
                                         </Link>
                                     </td>
@@ -411,16 +448,31 @@ export default function JobListingsPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3 text-blue-500">
-                                            <button onClick={() => setEditingJob(job)} className="hover:text-blue-700 transition-colors" title="Edit">
+                                            <button
+                                                onClick={() => setEditingJob(job)}
+                                                className="hover:text-blue-700 transition-colors"
+                                                title="Edit"
+                                            >
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => deleteJob(job.id)} className="hover:text-red-600 transition-colors text-red-500" title="Delete">
+                                            <button
+                                                onClick={() => deleteJob(job.id)}
+                                                className="hover:text-red-600 transition-colors text-red-500"
+                                                title="Delete"
+                                            >
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
-                                            <Link href="/recruiter/job-listings/1/applicants" className="text-gray-400 hover:text-gray-600 transition-colors" title="View Applicants">
+                                            <Link
+                                                href="/recruiter/job-listings/1/applicants"
+                                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                                title="View Applicants"
+                                            >
                                                 <ExternalLink className="w-4 h-4" />
                                             </Link>
-                                            <button className="text-gray-400 hover:text-gray-600 transition-colors ml-1" title="More Properties">
+                                            <button
+                                                className="text-gray-400 hover:text-gray-600 transition-colors ml-1"
+                                                title="More Properties"
+                                            >
                                                 <MoreVertical className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -442,7 +494,7 @@ export default function JobListingsPage() {
             {totalPages > 0 && (
                 <div className="flex flex-col items-center justify-center p-6 border-t border-gray-100">
                     <div className="flex items-center gap-1">
-                        <button 
+                        <button
                             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
@@ -464,7 +516,7 @@ export default function JobListingsPage() {
                             </button>
                         ))}
 
-                        <button 
+                        <button
                             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"

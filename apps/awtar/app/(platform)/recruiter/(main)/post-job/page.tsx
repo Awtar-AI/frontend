@@ -1,7 +1,6 @@
 "use client";
 
 import { Bold, Italic, Link2, List, Redo, Undo } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 import { AIGenerateModal } from "../../_components/modals/AIGenerateModal";
 import { DeadlineWarningModal } from "../../_components/modals/DeadlineWarningModal";

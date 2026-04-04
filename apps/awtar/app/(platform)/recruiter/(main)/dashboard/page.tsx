@@ -14,17 +14,7 @@ import {
     UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import {
-    Bar,
-    BarChart,
-    CartesianGrid,
-    Line,
-    LineChart,
-    ResponsiveContainer,
-    Tooltip,
-    XAxis,
-    YAxis,
-} from "recharts";
+import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 
 // Data for LineChart
 const TREND_DATA = [
@@ -318,7 +308,10 @@ export default function RecruiterDashboard() {
                                 {ACTIVE_JOBS.map((job, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <Link href={`/recruiter/job-listings/1/applicants`} className="font-bold text-gray-900 text-sm hover:text-blue-600 transition-colors">
+                                            <Link
+                                                href={`/recruiter/job-listings/1/applicants`}
+                                                className="font-bold text-gray-900 text-sm hover:text-blue-600 transition-colors"
+                                            >
                                                 {job.title}
                                             </Link>
                                             <p className="text-xs text-gray-500 mt-0.5">

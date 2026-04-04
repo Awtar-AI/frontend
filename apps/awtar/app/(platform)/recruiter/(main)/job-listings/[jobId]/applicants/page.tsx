@@ -1,18 +1,17 @@
 "use client";
 
 import {
+    ArrowUpDown,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
-    Edit2,
     ExternalLink,
     MoreVertical,
     Trash2,
-    ArrowUpDown,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useMemo, useState } from "react";
 
 // Mock Data
 const INITIAL_APPLICANTS = [
@@ -134,13 +133,13 @@ export default function JobApplicantsList() {
         if (selectedRows.length === currentApplicants.length && currentApplicants.length > 0) {
             setSelectedRows([]);
         } else {
-            setSelectedRows(currentApplicants.map(a => a.id));
+            setSelectedRows(currentApplicants.map((a) => a.id));
         }
     };
 
     const deleteApplicant = (id: string) => {
-        setApplicants(applicants.filter(a => a.id !== id));
-        setSelectedRows(selectedRows.filter(rowId => rowId !== id));
+        setApplicants(applicants.filter((a) => a.id !== id));
+        setSelectedRows(selectedRows.filter((rowId) => rowId !== id));
 
         // Reset page if deleted last item on current page
         const newTotal = applicants.length - 1;
@@ -165,10 +164,13 @@ export default function JobApplicantsList() {
     };
 
     // Derived states
-    const statusCounts = applicants.reduce((acc, app) => {
-        acc[app.status] = (acc[app.status] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+    const statusCounts = applicants.reduce(
+        (acc, app) => {
+            acc[app.status] = (acc[app.status] || 0) + 1;
+            return acc;
+        },
+        {} as Record<string, number>,
+    );
 
     const filteredApplicants = activeTab
         ? applicants.filter((app) => app.status === activeTab)
@@ -237,12 +239,15 @@ export default function JobApplicantsList() {
                     {selectedRows.length > 0 && (
                         <button
                             onClick={() => {
-                                setApplicants(applicants.filter(a => !selectedRows.includes(a.id)));
+                                setApplicants(
+                                    applicants.filter((a) => !selectedRows.includes(a.id)),
+                                );
                                 setSelectedRows([]);
                             }}
                             className="text-xs font-bold bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 flex items-center gap-1"
                         >
-                            <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedRows.length})
+                            <Trash2 className="w-3.5 h-3.5" /> Delete Selected (
+                            {selectedRows.length})
                         </button>
                     )}
                 </div>
@@ -260,7 +265,9 @@ export default function JobApplicantsList() {
                                 </button>
                             ))}
                         </div>
-                        <div className="text-xs font-semibold text-gray-500">{filteredApplicants.length} Applicants</div>
+                        <div className="text-xs font-semibold text-gray-500">
+                            {filteredApplicants.length} Applicants
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-4 text-xs mt-6">
@@ -284,7 +291,7 @@ export default function JobApplicantsList() {
                                     : " hover:opacity-80 pb-1")
                             }
                         >
-                            New ({statusCounts["New"] || 0})
+                            New ({statusCounts.New || 0})
                         </button>
                         <span className="text-gray-300 mb-1">•</span>
                         <button
@@ -296,7 +303,7 @@ export default function JobApplicantsList() {
                                     : " hover:opacity-80 pb-1")
                             }
                         >
-                            Shortlisted ({statusCounts["Shortlisted"] || 0})
+                            Shortlisted ({statusCounts.Shortlisted || 0})
                         </button>
                         <span className="text-gray-300 mb-1">•</span>
                         <button
@@ -308,7 +315,7 @@ export default function JobApplicantsList() {
                                     : " hover:opacity-80 pb-1")
                             }
                         >
-                            Interviewed ({statusCounts["Interviewed"] || 0})
+                            Interviewed ({statusCounts.Interviewed || 0})
                         </button>
                         <span className="text-gray-300 mb-1">•</span>
                         <button
@@ -320,7 +327,7 @@ export default function JobApplicantsList() {
                                     : " hover:opacity-80 pb-1")
                             }
                         >
-                            Rejected ({statusCounts["Rejected"] || 0})
+                            Rejected ({statusCounts.Rejected || 0})
                         </button>
                     </div>
                 </div>
@@ -333,49 +340,57 @@ export default function JobApplicantsList() {
                                 <th className="px-6 py-4 font-bold text-xs text-gray-400 w-12 align-middle">
                                     <input
                                         type="checkbox"
-                                        checked={selectedRows.length === currentApplicants.length && currentApplicants.length > 0}
+                                        checked={
+                                            selectedRows.length === currentApplicants.length &&
+                                            currentApplicants.length > 0
+                                        }
                                         onChange={toggleAll}
                                         className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                     />
                                 </th>
                                 <th
                                     className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort('name')}
+                                    onClick={() => handleSort("name")}
                                 >
                                     <div className="flex items-center gap-1">
-                                        CANDIDATE <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        CANDIDATE{" "}
+                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                     </div>
                                 </th>
                                 <th
                                     className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase text-center cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort('experience')}
+                                    onClick={() => handleSort("experience")}
                                 >
                                     <div className="flex items-center justify-center gap-1">
-                                        EXPERIENCE <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        EXPERIENCE{" "}
+                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                     </div>
                                 </th>
                                 <th
                                     className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase text-center cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort('location')}
+                                    onClick={() => handleSort("location")}
                                 >
                                     <div className="flex items-center justify-center gap-1">
-                                        LOCATION <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        LOCATION{" "}
+                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                     </div>
                                 </th>
                                 <th
                                     className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase text-center cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort('submitted')}
+                                    onClick={() => handleSort("submitted")}
                                 >
                                     <div className="flex items-center justify-center gap-1">
-                                        SUBMITTED <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        SUBMITTED{" "}
+                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                     </div>
                                 </th>
                                 <th
                                     className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase text-center cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort('status')}
+                                    onClick={() => handleSort("status")}
                                 >
                                     <div className="flex items-center justify-center gap-1">
-                                        STATUS <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        STATUS{" "}
+                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
                                     </div>
                                 </th>
                                 <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase text-right">
@@ -386,7 +401,10 @@ export default function JobApplicantsList() {
                         <tbody className="divide-y divide-gray-100 bg-white">
                             {currentApplicants.length > 0 ? (
                                 currentApplicants.map((app) => (
-                                    <tr key={app.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr
+                                        key={app.id}
+                                        className="hover:bg-gray-50/50 transition-colors"
+                                    >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <input
                                                 type="checkbox"
@@ -431,10 +449,18 @@ export default function JobApplicantsList() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3 text-gray-400">
-                                                <Link href={`/recruiter/candidates/${app.id}`} className="hover:text-blue-600 transition-colors" title="View Profile">
+                                                <Link
+                                                    href={`/recruiter/candidates/${app.id}`}
+                                                    className="hover:text-blue-600 transition-colors"
+                                                    title="View Profile"
+                                                >
                                                     <ExternalLink className="w-4 h-4" />
                                                 </Link>
-                                                <button onClick={() => deleteApplicant(app.id)} className="hover:text-red-500 transition-colors text-red-400" title="Delete">
+                                                <button
+                                                    onClick={() => deleteApplicant(app.id)}
+                                                    className="hover:text-red-500 transition-colors text-red-400"
+                                                    title="Delete"
+                                                >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                                 <button className="hover:text-gray-900 transition-colors">
@@ -446,7 +472,10 @@ export default function JobApplicantsList() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                                    <td
+                                        colSpan={7}
+                                        className="px-6 py-12 text-center text-gray-500"
+                                    >
                                         No applicants match this category.
                                     </td>
                                 </tr>
@@ -467,21 +496,26 @@ export default function JobApplicantsList() {
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
 
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                                <button
-                                    key={pageNumber}
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${pageNumber === currentPage
-                                            ? "text-white bg-blue-600 shadow-sm"
-                                            : "text-gray-600 hover:bg-gray-100"
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                                (pageNumber) => (
+                                    <button
+                                        key={pageNumber}
+                                        onClick={() => setCurrentPage(pageNumber)}
+                                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                                            pageNumber === currentPage
+                                                ? "text-white bg-blue-600 shadow-sm"
+                                                : "text-gray-600 hover:bg-gray-100"
                                         }`}
-                                >
-                                    {pageNumber}
-                                </button>
-                            ))}
+                                    >
+                                        {pageNumber}
+                                    </button>
+                                ),
+                            )}
 
                             <button
-                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                onClick={() =>
+                                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                                }
                                 disabled={currentPage === totalPages}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
                             >

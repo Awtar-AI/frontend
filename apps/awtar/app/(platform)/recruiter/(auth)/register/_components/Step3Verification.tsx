@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, CloudUpload, Info, Link2 } from "lucide-react";
-import Link from "next/link";
 import type { RecruiterRegisterFormData } from "../page";
 
 interface Props {

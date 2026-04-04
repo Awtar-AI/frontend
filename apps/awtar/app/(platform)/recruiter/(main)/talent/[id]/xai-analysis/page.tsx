@@ -1,19 +1,15 @@
 "use client";
 
 import {
-    Download,
+    AlertTriangle,
+    ArrowLeft,
     BarChart2,
+    CalendarCheck,
+    CheckCircle2,
+    Download,
     FileText,
     MessageSquare,
     Share2,
-    ArrowLeft,
-    CheckCircle2,
-    AlertTriangle,
-    LayoutGrid,
-    ShieldCheck,
-    Clock,
-    Database,
-    CalendarCheck,
     XCircle,
 } from "lucide-react";
 import Image from "next/image";
@@ -29,11 +25,18 @@ const CANDIDATE = {
     role: "Senior Architect",
     confidenceScore: 84,
     aiJustification:
-        "\"Marcus demonstrates a profound alignment with the Senior Architect role, specifically excelling in the transition from legacy monoliths to high-scale serverless architectures. His decision-making patterns in past projects suggest a high aptitude for our current technical challenges. The AI identifies a rare overlap in Kubernetes orchestration and executive-level stakeholder management.\"",
+        '"Marcus demonstrates a profound alignment with the Senior Architect role, specifically excelling in the transition from legacy monoliths to high-scale serverless architectures. His decision-making patterns in past projects suggest a high aptitude for our current technical challenges. The AI identifies a rare overlap in Kubernetes orchestration and executive-level stakeholder management."',
     tags: ["Culture Fit: Excellent", "Tech Aptitude: Top 5%", "Leadership: Strong"],
-    matchedSkills: ["Cloud Infrastructure", "Microservices", "Node.js / Go", "Kubernetes", "CI/CD Architecture"],
+    matchedSkills: [
+        "Cloud Infrastructure",
+        "Microservices",
+        "Node.js / Go",
+        "Kubernetes",
+        "CI/CD Architecture",
+    ],
     missingSkills: ["Rust Language", "GraphQL Federation"],
-    missingNote: "Note: Marcus has indicated high interest in learning Rust and has basic conceptual knowledge.",
+    missingNote:
+        "Note: Marcus has indicated high interest in learning Rust and has basic conceptual knowledge.",
     experience: [
         {
             role: "Senior Cloud Engineer @ TechNova",
@@ -74,7 +77,10 @@ export default function XAIAnalysisPage() {
 
     return (
         <div className="space-y-4">
-            <Link href={`/recruiter/talent/${id}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors">
+            <Link
+                href={`/recruiter/talent/${id}`}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-blue-600 transition-colors"
+            >
                 <ArrowLeft className="w-4 h-4" /> Back to Talent Profile
             </Link>
 
@@ -91,12 +97,14 @@ export default function XAIAnalysisPage() {
                             className="rounded-full object-cover border-2 border-blue-100 mb-3"
                         />
                         <p className="text-sm font-bold text-gray-900">{CANDIDATE.name}</p>
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">{CANDIDATE.title}</p>
+                        <p className="text-xs text-gray-500 font-medium mt-0.5">
+                            {CANDIDATE.title}
+                        </p>
                     </div>
 
                     {/* Nav */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        {NAV_ITEMS.map(item => (
+                        {NAV_ITEMS.map((item) => (
                             <button
                                 key={item.label}
                                 onClick={() => setActiveNav(item.label)}
@@ -120,10 +128,17 @@ export default function XAIAnalysisPage() {
                         <div className="flex items-start justify-between gap-4 mb-1">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-[10px] text-blue-600 font-black uppercase tracking-widest flex items-center gap-1">✦ EXPLAINABLE AI ACTIVE</span>
+                                    <span className="text-[10px] text-blue-600 font-black uppercase tracking-widest flex items-center gap-1">
+                                        ✦ EXPLAINABLE AI ACTIVE
+                                    </span>
                                 </div>
-                                <h2 className="text-2xl font-black text-gray-900">AI Analysis for {CANDIDATE.name}</h2>
-                                <p className="text-xs text-gray-500 mt-1">Detailed reasoning and data-driven insights for Candidate ID {CANDIDATE.candidateId}</p>
+                                <h2 className="text-2xl font-black text-gray-900">
+                                    AI Analysis for {CANDIDATE.name}
+                                </h2>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Detailed reasoning and data-driven insights for Candidate ID{" "}
+                                    {CANDIDATE.candidateId}
+                                </p>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                                 <button className="flex items-center gap-1.5 border border-gray-200 text-gray-700 text-xs font-bold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -139,15 +154,24 @@ export default function XAIAnalysisPage() {
                     {/* Why this match */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">✦ Why this match?</h3>
-                            <span className="text-xs font-semibold text-gray-500">Confidence Score: {CANDIDATE.confidenceScore}%</span>
+                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                ✦ Why this match?
+                            </h3>
+                            <span className="text-xs font-semibold text-gray-500">
+                                Confidence Score: {CANDIDATE.confidenceScore}%
+                            </span>
                         </div>
                         <blockquote className="border-l-4 border-blue-500 pl-4 bg-blue-50/50 rounded-r-lg p-4 mb-3">
-                            <p className="text-sm text-gray-700 leading-relaxed italic">{CANDIDATE.aiJustification}</p>
+                            <p className="text-sm text-gray-700 leading-relaxed italic">
+                                {CANDIDATE.aiJustification}
+                            </p>
                         </blockquote>
                         <div className="flex flex-wrap gap-2">
-                            {CANDIDATE.tags.map(tag => (
-                                <span key={tag} className="flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 text-[11px] font-semibold rounded-full">
+                            {CANDIDATE.tags.map((tag) => (
+                                <span
+                                    key={tag}
+                                    className="flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-700 text-[11px] font-semibold rounded-full"
+                                >
                                     <CheckCircle2 className="w-3 h-3 text-green-500" /> {tag}
                                 </span>
                             ))}
@@ -161,23 +185,35 @@ export default function XAIAnalysisPage() {
                             <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <BarChart2 className="w-4 h-4 text-blue-500" /> Skill Gap Analysis
                             </h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Matched Skills</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                Matched Skills
+                            </p>
                             <div className="flex flex-wrap gap-1.5 mb-4">
-                                {CANDIDATE.matchedSkills.map(skill => (
-                                    <span key={skill} className="flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-[11px] font-semibold rounded-full border border-green-100">
+                                {CANDIDATE.matchedSkills.map((skill) => (
+                                    <span
+                                        key={skill}
+                                        className="flex items-center gap-1 px-2.5 py-1 bg-green-50 text-green-700 text-[11px] font-semibold rounded-full border border-green-100"
+                                    >
                                         <CheckCircle2 className="w-3 h-3" /> {skill}
                                     </span>
                                 ))}
                             </div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Missing / Low Proficiency</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                Missing / Low Proficiency
+                            </p>
                             <div className="flex flex-wrap gap-1.5 mb-3">
-                                {CANDIDATE.missingSkills.map(skill => (
-                                    <span key={skill} className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-semibold rounded-full border border-amber-100">
+                                {CANDIDATE.missingSkills.map((skill) => (
+                                    <span
+                                        key={skill}
+                                        className="flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-semibold rounded-full border border-amber-100"
+                                    >
                                         <AlertTriangle className="w-3 h-3" /> {skill}
                                     </span>
                                 ))}
                             </div>
-                            <p className="text-[11px] text-gray-400 leading-snug italic">{CANDIDATE.missingNote}</p>
+                            <p className="text-[11px] text-gray-400 leading-snug italic">
+                                {CANDIDATE.missingNote}
+                            </p>
                         </div>
 
                         {/* Experience Relevance */}
@@ -191,18 +227,34 @@ export default function XAIAnalysisPage() {
                                 <div className="space-y-5">
                                     {CANDIDATE.experience.map((exp, i) => (
                                         <div key={i} className="flex gap-4">
-                                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 ${
-                                                i === 0 ? "border-blue-600 bg-blue-600" : i === 1 ? "border-gray-300 bg-white" : "border-gray-200 bg-white"
-                                            }`}>
-                                                {i === 0 && <div className="w-2 h-2 rounded-full bg-white" />}
+                                            <div
+                                                className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 border-2 ${
+                                                    i === 0
+                                                        ? "border-blue-600 bg-blue-600"
+                                                        : i === 1
+                                                          ? "border-gray-300 bg-white"
+                                                          : "border-gray-200 bg-white"
+                                                }`}
+                                            >
+                                                {i === 0 && (
+                                                    <div className="w-2 h-2 rounded-full bg-white" />
+                                                )}
                                             </div>
                                             <div className="flex-1 -mt-0.5">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <p className="text-xs font-bold text-gray-900 leading-tight">{exp.role}</p>
-                                                    <span className="text-[10px] text-gray-400 font-semibold whitespace-nowrap">{exp.period}</span>
+                                                    <p className="text-xs font-bold text-gray-900 leading-tight">
+                                                        {exp.role}
+                                                    </p>
+                                                    <span className="text-[10px] text-gray-400 font-semibold whitespace-nowrap">
+                                                        {exp.period}
+                                                    </span>
                                                 </div>
-                                                <p className="text-xs font-semibold text-blue-600 mt-0.5">{exp.relevance}% Relevance</p>
-                                                <p className="text-[11px] text-gray-500 leading-snug mt-1">{exp.detail}</p>
+                                                <p className="text-xs font-semibold text-blue-600 mt-0.5">
+                                                    {exp.relevance}% Relevance
+                                                </p>
+                                                <p className="text-[11px] text-gray-500 leading-snug mt-1">
+                                                    {exp.detail}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
@@ -217,10 +269,16 @@ export default function XAIAnalysisPage() {
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <BarChart2 className="w-4 h-4 opacity-70" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-70">AI Final Verdict</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                                        AI Final Verdict
+                                    </span>
                                 </div>
-                                <h3 className="text-2xl font-black mb-2">{CANDIDATE.verdict.label}</h3>
-                                <p className="text-sm opacity-80 leading-relaxed max-w-xl">{CANDIDATE.verdict.detail}</p>
+                                <h3 className="text-2xl font-black mb-2">
+                                    {CANDIDATE.verdict.label}
+                                </h3>
+                                <p className="text-sm opacity-80 leading-relaxed max-w-xl">
+                                    {CANDIDATE.verdict.detail}
+                                </p>
                             </div>
                             <div className="flex flex-col gap-2 flex-shrink-0">
                                 <button className="flex items-center gap-2 bg-white text-blue-700 text-xs font-black px-5 py-2.5 rounded-lg hover:bg-blue-50 transition-colors uppercase tracking-wider whitespace-nowrap">

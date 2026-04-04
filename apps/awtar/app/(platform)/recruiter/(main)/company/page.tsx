@@ -1,12 +1,12 @@
 "use client";
 
-import { Edit2, MapPin, Globe, Users, Calendar, Linkedin, Twitter, Facebook } from "lucide-react";
+import { Calendar, Edit2, Globe, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
 export default function CompanyDetailsPage() {
     const [aboutText, setAboutText] = useState(
-        "TechNest Innovations is a cutting-edge technology company delivering high-quality web and mobile solutions to clients worldwide. Our team of expert developers, designers, and strategists collaborate closely with businesses to build scalable, user-focused products. We value creativity, agility, and transparency."
+        "TechNest Innovations is a cutting-edge technology company delivering high-quality web and mobile solutions to clients worldwide. Our team of expert developers, designers, and strategists collaborate closely with businesses to build scalable, user-focused products. We value creativity, agility, and transparency.",
     );
     const [editingAbout, setEditingAbout] = useState(false);
     const [aboutDraft, setAboutDraft] = useState(aboutText);
@@ -37,8 +37,12 @@ export default function CompanyDetailsPage() {
                         </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-xl font-bold text-gray-900">TechNest Innovations Inc.</h1>
-                        <p className="text-sm text-gray-500 font-medium mt-0.5">Information Technology & Services</p>
+                        <h1 className="text-xl font-bold text-gray-900">
+                            TechNest Innovations Inc.
+                        </h1>
+                        <p className="text-sm text-gray-500 font-medium mt-0.5">
+                            Information Technology & Services
+                        </p>
                         <div className="flex items-center gap-1.5 mt-1.5 text-xs text-gray-400 font-medium">
                             <MapPin className="w-3.5 h-3.5" />
                             New York, USA
@@ -68,7 +72,7 @@ export default function CompanyDetailsPage() {
                     <div className="space-y-3">
                         <textarea
                             value={aboutDraft}
-                            onChange={e => setAboutDraft(e.target.value)}
+                            onChange={(e) => setAboutDraft(e.target.value)}
                             rows={4}
                             className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-700 leading-relaxed focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
                         />
@@ -113,20 +117,28 @@ export default function CompanyDetailsPage() {
                 {editingOverview ? (
                     <div className="space-y-4">
                         <div>
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Website</label>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">
+                                Website
+                            </label>
                             <input
                                 type="text"
                                 value={overviewDraft.website}
-                                onChange={e => setOverviewDraft({ ...overviewDraft, website: e.target.value })}
+                                onChange={(e) =>
+                                    setOverviewDraft({ ...overviewDraft, website: e.target.value })
+                                }
                                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Company Size</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">
+                                    Company Size
+                                </label>
                                 <select
                                     value={overviewDraft.size}
-                                    onChange={e => setOverviewDraft({ ...overviewDraft, size: e.target.value })}
+                                    onChange={(e) =>
+                                        setOverviewDraft({ ...overviewDraft, size: e.target.value })
+                                    }
                                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 >
                                     <option>1–10 employees</option>
@@ -137,11 +149,18 @@ export default function CompanyDetailsPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">Founded</label>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 block">
+                                    Founded
+                                </label>
                                 <input
                                     type="text"
                                     value={overviewDraft.founded}
-                                    onChange={e => setOverviewDraft({ ...overviewDraft, founded: e.target.value })}
+                                    onChange={(e) =>
+                                        setOverviewDraft({
+                                            ...overviewDraft,
+                                            founded: e.target.value,
+                                        })
+                                    }
                                     className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                                 />
                             </div>
@@ -169,14 +188,21 @@ export default function CompanyDetailsPage() {
                         <div className="flex items-center gap-2">
                             <Globe className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <span className="font-semibold text-gray-600 w-28">Website</span>
-                            <a href={`https://${overview.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">
+                            <a
+                                href={`https://${overview.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline font-semibold"
+                            >
                                 {overview.website}
                             </a>
                         </div>
                         <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <span className="font-semibold text-gray-600 w-28">Company Size</span>
-                            <span className="text-gray-800 font-semibold">&quot;{overview.size}&quot;</span>
+                            <span className="text-gray-800 font-semibold">
+                                &quot;{overview.size}&quot;
+                            </span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -187,11 +213,26 @@ export default function CompanyDetailsPage() {
                             <span className="w-4 h-4 flex-shrink-0" />
                             <span className="font-semibold text-gray-600 w-28">Social Links</span>
                             <div className="flex items-center gap-2">
-                                <a href="#" className="text-blue-600 hover:underline font-semibold text-sm">LinkedIn</a>
+                                <a
+                                    href="#"
+                                    className="text-blue-600 hover:underline font-semibold text-sm"
+                                >
+                                    LinkedIn
+                                </a>
                                 <span className="text-gray-300">|</span>
-                                <a href="#" className="text-gray-600 hover:underline font-semibold text-sm">X</a>
+                                <a
+                                    href="#"
+                                    className="text-gray-600 hover:underline font-semibold text-sm"
+                                >
+                                    X
+                                </a>
                                 <span className="text-gray-300">|</span>
-                                <a href="#" className="text-blue-600 hover:underline font-semibold text-sm">Facebook</a>
+                                <a
+                                    href="#"
+                                    className="text-blue-600 hover:underline font-semibold text-sm"
+                                >
+                                    Facebook
+                                </a>
                             </div>
                         </div>
                     </div>
