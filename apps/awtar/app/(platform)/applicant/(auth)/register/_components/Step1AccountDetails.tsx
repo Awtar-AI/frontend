@@ -164,10 +164,7 @@ export function Step1AccountDetails({
 
             <p className="mt-6 text-center text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link
-                    href="/applicant/login"
-                    className="font-bold text-blue-600 hover:underline"
-                >
+                <Link href="/applicant/login" className="font-bold text-blue-600 hover:underline">
                     Login
                 </Link>
             </p>

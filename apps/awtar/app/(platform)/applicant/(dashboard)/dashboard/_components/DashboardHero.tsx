@@ -3,8 +3,8 @@
 import { Briefcase, Calendar } from "lucide-react";
 import Image from "next/image";
 import { useMemo } from "react";
-import { useAuthUser } from "@/lib/hooks/use-auth";
 import { UserAvatar, userAvatarAlt } from "@/applicant/user-me/_components/UserAvatar";
+import { useAuthUser } from "@/lib/hooks/use-auth";
 
 function greetingForNow(): string {
     const h = new Date().getHours();
