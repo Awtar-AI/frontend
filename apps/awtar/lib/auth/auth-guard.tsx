@@ -1,9 +1,18 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useAuthStore } from "@/lib/store/auth";
 import { isAccessTokenExpired } from "./jwt";
+
+function subscribeToNothing() {
+    return () => {};
+}
+
+/** Avoids `useEffect` + `setState` for mount detection (eslint react-hooks/set-state-in-effect). */
+function useIsClient() {
+    return useSyncExternalStore(subscribeToNothing, () => true, () => false);
+}
 
 export type AuthGuardProps = {
     children: React.ReactNode;
@@ -36,11 +45,7 @@ export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps)
     const user = useAuthStore((s) => s.user);
     const clearAuth = useAuthStore((s) => s.clearAuth);
 
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useIsClient();
 
     const isPublic = isPublicPath(pathname);
     const sessionInvalid = !token || !user || (token ? isAccessTokenExpired(token) : true);

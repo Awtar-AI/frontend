@@ -417,7 +417,7 @@ export default function JobsPage() {
                                 </div>
                                 <h3 className="text-xl font-black text-gray-900">No jobs found</h3>
                                 <p className="text-sm text-gray-400 font-medium max-w-xs">
-                                    We couldn't find any jobs matching your current filters. Try
+                                    We couldn&apos;t find any jobs matching your current filters. Try
                                     adjusting your search.
                                 </p>
                                 <button

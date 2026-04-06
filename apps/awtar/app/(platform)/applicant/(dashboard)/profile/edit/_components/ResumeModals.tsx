@@ -1,6 +1,6 @@
 import { AlertCircle, CheckCircle2, FileText, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 type ModalState = "IDLE" | "PROCESSING" | "SUCCESS" | "FAILURE";
 
@@ -25,29 +25,34 @@ export function ResumeModals({
     ];
 
     useEffect(() => {
-        if (state === "PROCESSING") {
-            const interval = setInterval(() => {
-                setProgress((prev) => {
-                    if (prev >= 100) {
-                        clearInterval(interval);
-                        return 100;
-                    }
-                    return prev + 2;
-                });
-            }, 50);
+        if (state !== "PROCESSING") return;
 
-            const stepInterval = setInterval(() => {
-                setCurrentStep((prev) => (prev < 2 ? prev + 1 : 2));
-            }, 1200);
+        const interval = setInterval(() => {
+            setProgress((prev) => {
+                if (prev >= 100) {
+                    clearInterval(interval);
+                    return 100;
+                }
+                return prev + 2;
+            });
+        }, 50);
 
-            return () => {
-                clearInterval(interval);
-                clearInterval(stepInterval);
-            };
-        } else {
+        const stepInterval = setInterval(() => {
+            setCurrentStep((prev) => (prev < 2 ? prev + 1 : 2));
+        }, 1200);
+
+        return () => {
+            clearInterval(interval);
+            clearInterval(stepInterval);
+        };
+    }, [state]);
+
+    useEffect(() => {
+        if (state === "PROCESSING") return;
+        startTransition(() => {
             setProgress(0);
             setCurrentStep(0);
-        }
+        });
     }, [state]);
 
     if (state === "IDLE") return null;
@@ -135,7 +140,7 @@ export function ResumeModals({
                             Resume Parsed Successfully!
                         </h3>
                         <p className="text-sm text-gray-500 font-medium mb-10 leading-relaxed px-4">
-                            We've automatically populated your profile with details from your
+                            We&apos;ve automatically populated your profile with details from your
                             resume. Please review the information below to ensure everything is
                             accurate.
                         </p>
@@ -186,7 +191,7 @@ export function ResumeModals({
                             Resume Parsing Failed
                         </h3>
                         <p className="text-sm text-gray-500 font-medium mb-10 leading-relaxed">
-                            We couldn't automatically extract information from your resume. This
+                            We couldn&apos;t automatically extract information from your resume. This
                             usually happens with complex layouts, scanned images, or protected PDF
                             files.
                         </p>

@@ -7,7 +7,7 @@ import { mockJobs } from "../../lib/mockData";
 import type { JobPost } from "../../types";
 
 export default function SavedJobsPage() {
-    const [savedJobs, _setSavedJobs] = useState<JobPost[]>(mockJobs.slice(0, 2)); // Mock: first 2 are saved
+    const [savedJobs] = useState<JobPost[]>(mockJobs.slice(0, 2)); // Mock: first 2 are saved
     const [activeTab, setActiveTab] = useState("All Saved");
 
     return (
@@ -149,7 +149,8 @@ export default function SavedJobsPage() {
                             Cleaning up your list?
                         </h4>
                         <p className="text-xs font-bold text-gray-400 max-w-md">
-                            Removing jobs you're no longer interested in helps us improve your match
+                            Removing jobs you&apos;re no longer interested in helps us improve your
+                            match
                             recommendations.
                         </p>
                     </div>

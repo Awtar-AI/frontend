@@ -24,7 +24,7 @@ export function TrustScoreWidget() {
             </div>
 
             <p className="text-[11px] text-gray-500 font-bold text-center mb-8 px-4 leading-relaxed uppercase tracking-wider">
-                Candidate's background, identity, and employment history have been officially
+                Candidate&apos;s background, identity, and employment history have been officially
                 verified.
             </p>
 
