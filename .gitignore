@@ -19,6 +19,11 @@ ARCHITECTURE_GUIDE.md
 *.log
 .pnpm-debug.log*
 
+# Tooling scratch (do not commit)
+apps/awtar/biome_errors.json
+apps/awtar/biome_output.txt
+apps/awtar/biome_rec_check.txt
+
 # IDE / OS
 .DS_Store
 .idea
