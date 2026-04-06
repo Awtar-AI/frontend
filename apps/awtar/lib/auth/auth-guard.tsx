@@ -11,7 +11,11 @@ function subscribeToNothing() {
 
 /** Avoids `useEffect` + `setState` for mount detection (eslint react-hooks/set-state-in-effect). */
 function useIsClient() {
-    return useSyncExternalStore(subscribeToNothing, () => true, () => false);
+    return useSyncExternalStore(
+        subscribeToNothing,
+        () => true,
+        () => false,
+    );
 }
 
 export type AuthGuardProps = {

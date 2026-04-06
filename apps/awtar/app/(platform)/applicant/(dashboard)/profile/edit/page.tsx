@@ -103,8 +103,8 @@ export default function EditProfilePage() {
                             <Sparkles className="w-4 h-4" /> AI Insight
                         </h3>
                         <p className="text-[13px] font-medium text-blue-800 leading-relaxed mb-1">
-                            Candidates with complete &quot;Education&quot; details are 4x more likely
-                            to be shortlisted by Awtar&apos;s matching algorithm.
+                            Candidates with complete &quot;Education&quot; details are 4x more
+                            likely to be shortlisted by Awtar&apos;s matching algorithm.
                         </p>
                     </div>
                 </div>

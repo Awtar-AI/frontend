@@ -150,8 +150,7 @@ export default function SavedJobsPage() {
                         </h4>
                         <p className="text-xs font-bold text-gray-400 max-w-md">
                             Removing jobs you&apos;re no longer interested in helps us improve your
-                            match
-                            recommendations.
+                            match recommendations.
                         </p>
                     </div>
                 </div>

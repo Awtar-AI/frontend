@@ -101,10 +101,11 @@ export default function CompanyProfilePage({ params }: { params: { id: string } 
                                 <div className="space-y-4 text-gray-500 leading-relaxed font-medium">
                                     <p>
                                         At {companyName}, we believe in pushing the boundaries of
-                                        what&apos;s possible. Our mission is to democratize access to
-                                        advanced solutions through innovation and design excellence.
-                                        Over the last decade, we have transformed from a small
-                                        startup into a global leader in the {job.tags[0]} sector.
+                                        what&apos;s possible. Our mission is to democratize access
+                                        to advanced solutions through innovation and design
+                                        excellence. Over the last decade, we have transformed from a
+                                        small startup into a global leader in the {job.tags[0]}{" "}
+                                        sector.
                                     </p>
                                     <p>
                                         Our team is composed of visionaries, designers, and

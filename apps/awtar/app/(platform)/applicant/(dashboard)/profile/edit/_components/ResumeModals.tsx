@@ -191,9 +191,9 @@ export function ResumeModals({
                             Resume Parsing Failed
                         </h3>
                         <p className="text-sm text-gray-500 font-medium mb-10 leading-relaxed">
-                            We couldn&apos;t automatically extract information from your resume. This
-                            usually happens with complex layouts, scanned images, or protected PDF
-                            files.
+                            We couldn&apos;t automatically extract information from your resume.
+                            This usually happens with complex layouts, scanned images, or protected
+                            PDF files.
                         </p>
 
                         <div className="flex gap-3 w-full mb-10">
