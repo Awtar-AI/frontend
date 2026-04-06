@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
+import { DashboardUserSync } from "@/applicant/user-me/_components/DashboardUserSync";
 import { Header } from "../_components/Header";
 import { Sidebar } from "../_components/Sidebar";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
         <div className="flex h-screen bg-[#F8F9FA] text-gray-900 font-sans overflow-hidden">
+            <DashboardUserSync />
             <Sidebar />
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                 <Header />

@@ -1,5 +1,4 @@
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { RegisterFormData } from "../schemas/register.schema";
@@ -155,26 +154,6 @@ export function Step1AccountDetails({
                 </div>
             </div>
 
-            <div className="flex items-start gap-3 py-2">
-                <input
-                    id="terms"
-                    type="checkbox"
-                    required
-                    className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 cursor-pointer"
-                />
-                <label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
-                    By creating an account, you agree to our{" "}
-                    <Link href="/terms" className="text-blue-600 hover:underline">
-                        Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link href="/privacy" className="text-blue-600 hover:underline">
-                        Privacy Policy
-                    </Link>
-                    .
-                </label>
-            </div>
-
             <button
                 type="submit"
                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors mt-2 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
@@ -183,36 +162,15 @@ export function Step1AccountDetails({
             </button>
             {errors?._form && <p className="text-xs text-red-600">{errors._form}</p>}
 
-            <div className="mt-8 flex items-center gap-4 before:flex-1 before:border-t before:border-gray-200 after:flex-1 after:border-t after:border-gray-200">
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                    Or sign up with
-                </span>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-4">
-                <button
-                    type="button"
-                    className="py-2.5 px-4 rounded-lg border border-gray-200 flex items-center justify-center gap-2 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+            <p className="mt-6 text-center text-sm text-gray-600">
+                Already have an account?{" "}
+                <Link
+                    href="/applicant/login"
+                    className="font-bold text-blue-600 hover:underline"
                 >
-                    <Image
-                        src="https://www.google.com/favicon.ico"
-                        alt="Google"
-                        width={16}
-                        height={16}
-                        className="w-4 h-4"
-                    />{" "}
-                    Google
-                </button>
-                <button
-                    type="button"
-                    className="py-2.5 px-4 rounded-lg border border-gray-200 flex items-center justify-center gap-2 text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
-                >
-                    <div className="w-4 h-4 bg-[#0A66C2] text-white flex items-center justify-center rounded-[2px] text-[10px] font-bold">
-                        in
-                    </div>{" "}
-                    LinkedIn
-                </button>
-            </div>
+                    Login
+                </Link>
+            </p>
         </form>
     );
 }
