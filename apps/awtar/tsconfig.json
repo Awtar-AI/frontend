@@ -19,7 +19,10 @@
             }
         ],
         "paths": {
-            "@/*": ["./*"]
+            "@/*": ["./*"],
+            "@/applicant/user-me/*": [
+                "./app/(platform)/applicant/(dashboard)/user-me/*"
+            ]
         }
     },
     "include": [
