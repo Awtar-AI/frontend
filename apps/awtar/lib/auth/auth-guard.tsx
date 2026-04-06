@@ -43,8 +43,7 @@ export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps)
     }, []);
 
     const isPublic = isPublicPath(pathname);
-    const sessionInvalid =
-        !token || !user || (token ? isAccessTokenExpired(token) : true);
+    const sessionInvalid = !token || !user || (token ? isAccessTokenExpired(token) : true);
 
     useEffect(() => {
         if (!mounted || isPublic) return;

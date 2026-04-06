@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthGuard } from "./auth-guard";
 import { isApplicantPublicRoute } from "./applicant-public-routes";
+import { AuthGuard } from "./auth-guard";
 
 const APPLICANT_LOGIN_PATH = "/applicant/login";
 

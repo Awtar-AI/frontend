@@ -4,9 +4,9 @@ import { Bell, LogOut, Search, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuthUser } from "@/lib/hooks/use-auth";
 import { UserAvatar, userAvatarAlt } from "@/applicant/user-me/_components/UserAvatar";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
+import { useAuthUser } from "@/lib/hooks/use-auth";
 import { authService } from "@/lib/services/auth.service";
 
 export function Header() {
@@ -125,7 +125,11 @@ export function Header() {
                             </div>
                             <div className="space-y-1">
                                 {[
-                                    { label: "View Profile", icon: User, href: "/applicant/profile/public" },
+                                    {
+                                        label: "View Profile",
+                                        icon: User,
+                                        href: "/applicant/profile/public",
+                                    },
                                     { label: "Account Settings", icon: Settings, href: "#" },
                                     { label: "Privacy", icon: Shield, href: "#" },
                                 ].map((item) => (
