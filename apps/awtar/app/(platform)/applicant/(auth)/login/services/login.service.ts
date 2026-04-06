@@ -29,6 +29,7 @@ export const loginService = {
                 is_active: parsed.is_active,
             },
             parsed.access_token,
+            parsed.refresh_token,
         );
 
         return parsed;

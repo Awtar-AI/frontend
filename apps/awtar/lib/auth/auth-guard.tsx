@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAuthStore } from "@/lib/store/auth";
 import { isAccessTokenExpired } from "./jwt";
 
@@ -9,7 +9,6 @@ function subscribeToNothing() {
     return () => {};
 }
 
-/** Avoids `useEffect` + `setState` for mount detection (eslint react-hooks/set-state-in-effect). */
 function useIsClient() {
     return useSyncExternalStore(
         subscribeToNothing,
@@ -18,11 +17,24 @@ function useIsClient() {
     );
 }
 
+/**
+ * Wait for Zustand persist to finish reading localStorage before we make
+ * any auth decisions. Without this the guard sees `token === null` for one
+ * render and immediately redirects to login.
+ */
+function useHasHydrated() {
+    const [hydrated, setHydrated] = useState(false);
+    useEffect(() => {
+        const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true));
+        if (useAuthStore.persist.hasHydrated()) setHydrated(true);
+        return unsub;
+    }, []);
+    return hydrated;
+}
+
 export type AuthGuardProps = {
     children: React.ReactNode;
-    /** Where to send unauthenticated or expired users (e.g. `/applicant/login`). */
     loginPath: string;
-    /** Return true when the current path must stay public (landing is outside this guard). */
     isPublicPath: (pathname: string) => boolean;
 };
 
@@ -38,10 +50,6 @@ function AuthGateLoading() {
     );
 }
 
-/**
- * Client-side route guard: blocks children until a valid, non-expired access token
- * and user exist. Reuse with a different `loginPath` + `isPublicPath` for HR later.
- */
 export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps) {
     const pathname = usePathname() ?? "";
     const router = useRouter();
@@ -50,30 +58,26 @@ export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps)
     const clearAuth = useAuthStore((s) => s.clearAuth);
 
     const mounted = useIsClient();
+    const hydrated = useHasHydrated();
 
     const isPublic = isPublicPath(pathname);
-    const sessionInvalid = !token || !user || (token ? isAccessTokenExpired(token) : true);
+    const sessionInvalid = !token || !user || isAccessTokenExpired(token);
 
     useEffect(() => {
-        if (!mounted || isPublic) return;
+        if (!mounted || !hydrated || isPublic) return;
         if (sessionInvalid) {
             clearAuth();
             router.replace(loginPath);
         }
-    }, [mounted, isPublic, sessionInvalid, clearAuth, router, loginPath]);
+    }, [mounted, hydrated, isPublic, sessionInvalid, clearAuth, router, loginPath]);
 
-    if (!mounted) {
+    if (!mounted || !hydrated) {
         if (isPublic) return <>{children}</>;
         return <AuthGateLoading />;
     }
 
-    if (isPublic) {
-        return <>{children}</>;
-    }
-
-    if (sessionInvalid) {
-        return <AuthGateLoading />;
-    }
+    if (isPublic) return <>{children}</>;
+    if (sessionInvalid) return <AuthGateLoading />;
 
     return <>{children}</>;
 }
