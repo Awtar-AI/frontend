@@ -1,8 +1,8 @@
 import { request } from "@/lib/http";
-import type { LoginPayload, LoginResponse } from "../schemas/login.schema";
+import type { LoginFormData, LoginResponse } from "../schemas/login.schema";
 
 export const loginApi = {
-    login(payload: LoginPayload) {
+    login(payload: LoginFormData) {
         return request<LoginResponse>("/api/v1/auth/login", {
             method: "POST",
             body: payload,

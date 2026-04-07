@@ -1,55 +1,47 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { ApiError } from "@/lib/http";
 import { toastService } from "@/lib/services/toast.service";
 import { AuthSplitLayout } from "../../_components/AuthSplitLayout";
 import { useLogin } from "./hooks/use-login";
-import { type LoginFormData, validateLoginForm } from "./schemas/login.schema";
-import { LoginValidationError } from "./services/login.service";
+import { type LoginFormData, loginFormSchema } from "./schemas/login.schema";
 
 export default function LoginPage() {
     const router = useRouter();
     const loginMutation = useLogin();
-    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState<LoginFormData>({
-        email: "",
-        password: "",
+
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors },
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginFormSchema),
+        defaultValues: { email: "", password: "" },
     });
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const validation = validateLoginForm(formData);
-        if (!validation.success) {
-            setFieldErrors(validation.errors);
-            toastService.error("Please fix the highlighted fields.");
-            return;
-        }
-
-        setFieldErrors({});
+    const onSubmit = handleSubmit(async (data) => {
         try {
-            await loginMutation.mutateAsync(validation.data);
+            await loginMutation.mutateAsync(data);
             toastService.success("Logged in successfully.");
             router.push("/applicant/dashboard");
         } catch (error) {
-            if (error instanceof LoginValidationError) {
-                setFieldErrors(error.fieldErrors);
-                toastService.error("Please check your login details.");
-                return;
-            }
             if (error instanceof ApiError) {
                 const message = error.message || "Failed to log in.";
                 toastService.error(message);
-                setFieldErrors({ _form: message });
+                setError("root", { message });
                 return;
             }
             toastService.error("Something went wrong. Please try again.");
         }
-    };
+    });
 
     return (
         <AuthSplitLayout>
@@ -59,7 +51,7 @@ export default function LoginPage() {
                     Please enter your details to sign in to your account.
                 </p>
 
-                <form className="space-y-5" onSubmit={handleLogin}>
+                <form className="space-y-5" onSubmit={onSubmit}>
                     <div className="space-y-1.5">
                         <label htmlFor="email" className="text-sm font-semibold text-gray-700">
                             Email Address
@@ -69,17 +61,13 @@ export default function LoginPage() {
                             <input
                                 id="email"
                                 type="email"
-                                value={formData.email}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, email: e.target.value })
-                                }
+                                {...register("email")}
                                 placeholder="example@gmail.com"
                                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                required
                             />
                         </div>
-                        {fieldErrors.email && (
-                            <p className="text-xs text-red-600">{fieldErrors.email}</p>
+                        {errors.email && (
+                            <p className="text-xs text-red-600">{errors.email.message}</p>
                         )}
                     </div>
 
@@ -92,13 +80,9 @@ export default function LoginPage() {
                             <input
                                 id="password"
                                 type={showPassword ? "text" : "password"}
-                                value={formData.password}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, password: e.target.value })
-                                }
+                                {...register("password")}
                                 placeholder="••••••••"
                                 className="w-full pl-10 pr-11 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                required
                             />
                             <button
                                 type="button"
@@ -113,8 +97,8 @@ export default function LoginPage() {
                                 )}
                             </button>
                         </div>
-                        {fieldErrors.password && (
-                            <p className="text-xs text-red-600">{fieldErrors.password}</p>
+                        {errors.password && (
+                            <p className="text-xs text-red-600">{errors.password.message}</p>
                         )}
                     </div>
 
@@ -131,7 +115,7 @@ export default function LoginPage() {
                             <span className="text-sm text-gray-600">Remember me</span>
                         </label>
                         <Link
-                            href="/forgot-password"
+                            href="/applicant/forgot-password"
                             className="text-sm font-semibold text-blue-600 hover:text-blue-700"
                         >
                             Forgot Password?
@@ -145,9 +129,7 @@ export default function LoginPage() {
                     >
                         {loginMutation.isPending ? "Signing in..." : "Sign In"}
                     </button>
-                    {/* {fieldErrors._form && (
-						<p className="text-xs text-red-600">{fieldErrors._form}</p>
-					)} */}
+                    {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
                 </form>
 
                 <p className="mt-10 text-center text-sm text-gray-600">

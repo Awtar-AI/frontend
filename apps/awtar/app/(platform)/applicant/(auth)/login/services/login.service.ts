@@ -1,22 +1,10 @@
 import { useAuthStore } from "@/lib/store/auth";
 import { loginApi } from "../api/login.api";
-import { type LoginPayload, parseLoginResponse, validateLoginForm } from "../schemas/login.schema";
-
-export class LoginValidationError extends Error {
-    constructor(public fieldErrors: Record<string, string>) {
-        super("Login form is invalid");
-        this.name = "LoginValidationError";
-    }
-}
+import { type LoginFormData, parseLoginResponse } from "../schemas/login.schema";
 
 export const loginService = {
-    async login(payload: LoginPayload) {
-        const validated = validateLoginForm(payload);
-        if (!validated.success) {
-            throw new LoginValidationError(validated.errors);
-        }
-
-        const response = await loginApi.login(validated.data);
+    async login(payload: LoginFormData) {
+        const response = await loginApi.login(payload);
         const parsed = parseLoginResponse(response);
 
         useAuthStore.getState().setAuth(

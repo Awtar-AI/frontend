@@ -7,6 +7,6 @@ import { forgotPasswordService } from "../services/forgot-password.service";
 export function useForgotPassword() {
     return useMutation({
         mutationFn: (payload: ForgotPasswordFormData) =>
-            forgotPasswordService.sendResetLink(payload)
+            forgotPasswordService.sendResetLink(payload),
     });
 }
