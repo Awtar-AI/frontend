@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/* ------------------------------------------------------------------ */
+/*  Enum schemas (shared between UI form and API payload)             */
+/* ------------------------------------------------------------------ */
+
 export const educationLevelSchema = z.enum([
     "high_school",
     "associate",
@@ -27,6 +31,10 @@ export const preferredJobTypeSchema = z.enum([
 ]);
 
 export const userRoleSchema = z.enum(["candidate", "hr", "admin"]);
+
+/* ------------------------------------------------------------------ */
+/*  API payload (sent to POST /api/v1/users/create as FormData)       */
+/* ------------------------------------------------------------------ */
 
 export const registerApplicantPayloadSchema = z
     .object({
@@ -60,8 +68,7 @@ export const registerApplicantPayloadSchema = z
         }
     });
 
-export type RegisterApplicantPayloadInput = z.infer<typeof registerApplicantPayloadSchema>;
-export type RegisterApplicantPayload = RegisterApplicantPayloadInput;
+export type RegisterApplicantPayload = z.infer<typeof registerApplicantPayloadSchema>;
 export type UserRole = z.infer<typeof userRoleSchema>;
 
 export const registerApplicantParamsSchema = z.object({
@@ -69,7 +76,10 @@ export const registerApplicantParamsSchema = z.object({
 });
 export type RegisterApplicantParams = z.infer<typeof registerApplicantParamsSchema>;
 
-/** Optional: parse JSON from API at runtime */
+/* ------------------------------------------------------------------ */
+/*  API response (from POST /api/v1/users/create)                     */
+/* ------------------------------------------------------------------ */
+
 export const registerApplicantResponseSchema = z.object({
     id: z.string(),
     email: z.string(),
@@ -94,17 +104,20 @@ export const registerApplicantResponseSchema = z.object({
 });
 export type RegisterApplicantResponse = z.infer<typeof registerApplicantResponseSchema>;
 
-/* -------------------------------------------------------------------------- */
-/* Zod — wizard form (UI). Use per-step or full form for inline errors.       */
-/* -------------------------------------------------------------------------- */
+export function parseRegisterApplicantResponse(data: unknown): RegisterApplicantResponse {
+    return registerApplicantResponseSchema.parse(data);
+}
 
-/** Strip commas / spaces from salary inputs like "60,000" */
+/* ------------------------------------------------------------------ */
+/*  UI wizard form schema (used with react-hook-form + zodResolver)   */
+/* ------------------------------------------------------------------ */
+
 export function parseSalaryInput(value: string): number {
     const n = Number.parseInt(value.replace(/[,\s]/g, ""), 10);
     return Number.isFinite(n) ? n : Number.NaN;
 }
 
-export const registerStep1Schema = z
+export const registerFormSchema = z
     .object({
         fullName: z.string().trim().min(2, "Full name is required"),
         email: z.string().email("Enter a valid email"),
@@ -116,6 +129,16 @@ export const registerStep1Schema = z
                 "Password must contain uppercase, lowercase, number, and special character",
             ),
         confirmPassword: z.string(),
+        jobTitle: z.string().trim().min(1, "Current job title is required"),
+        experience: z.number().int().min(0, "Experience cannot be negative"),
+        skills: z.array(z.string().trim().min(1)).min(1, "Add at least one skill"),
+        education: z.string().trim().min(1, "Select education level"),
+        resume: z.instanceof(File).nullable().optional(),
+        jobTypes: z.array(z.string()).min(1, "Select at least one job type"),
+        minSalary: z.string().trim().min(1, "Enter minimum salary"),
+        maxSalary: z.string().trim().min(1, "Enter maximum salary"),
+        industries: z.array(z.string()).min(1, "Select at least one industry"),
+        smartMatch: z.boolean(),
     })
     .superRefine((data, ctx) => {
         if (data.fullName.trim().split(/\s+/).length < 2) {
@@ -132,25 +155,6 @@ export const registerStep1Schema = z
                 message: "Passwords do not match",
             });
         }
-    });
-
-export const registerStep2Schema = z.object({
-    jobTitle: z.string().trim().min(1, "Current job title is required"),
-    experience: z.number().int().min(0, "Experience cannot be negative"),
-    skills: z.array(z.string().trim().min(1)).min(1, "Add at least one skill"),
-    education: z.string().trim().min(1, "Select education level"),
-    resume: z.instanceof(File).nullable().optional(),
-});
-
-export const registerStep3Schema = z
-    .object({
-        jobTypes: z.array(z.string()).min(1, "Select at least one job type"),
-        minSalary: z.string().trim().min(1, "Enter minimum salary"),
-        maxSalary: z.string().trim().min(1, "Enter maximum salary"),
-        industries: z.array(z.string()).min(1, "Select at least one industry"),
-        smartMatch: z.boolean(),
-    })
-    .superRefine((data, ctx) => {
         const min = parseSalaryInput(data.minSalary);
         const max = parseSalaryInput(data.maxSalary);
         if (Number.isNaN(min)) {
@@ -176,52 +180,10 @@ export const registerStep3Schema = z
         }
     });
 
-/** Full wizard state (single source of truth with page `useState`) */
-export const registerFormDataSchema = registerStep1Schema
-    .and(registerStep2Schema)
-    .and(registerStep3Schema);
+export type RegisterFormData = z.infer<typeof registerFormSchema>;
 
-export type RegisterFormData = z.infer<typeof registerFormDataSchema>;
-
-/** First field error per path (good for simple field-level UI) */
-export function zodFieldErrors(error: z.ZodError): Record<string, string> {
-    const map: Record<string, string> = {};
-    for (const issue of error.issues) {
-        const key = issue.path.length ? issue.path.join(".") : "_form";
-        if (!map[key]) map[key] = issue.message;
-    }
-    return map;
-}
-
-export function validateRegisterStep(
-    step: 1 | 2 | 3,
-    data: unknown,
-): { success: true; data: unknown } | { success: false; errors: Record<string, string> } {
-    const schema =
-        step === 1 ? registerStep1Schema : step === 2 ? registerStep2Schema : registerStep3Schema;
-    const result = schema.safeParse(data);
-    if (result.success) return { success: true, data: result.data };
-    return { success: false, errors: zodFieldErrors(result.error) };
-}
-
-export function validateFullRegisterForm(
-    data: unknown,
-): { success: true; data: RegisterFormData } | { success: false; errors: Record<string, string> } {
-    const result = registerFormDataSchema.safeParse(data);
-    if (result.success) return { success: true, data: result.data };
-    return { success: false, errors: zodFieldErrors(result.error) };
-}
-
-export function validateRegisterApplicantPayload(
-    data: unknown,
-):
-    | { success: true; data: RegisterApplicantPayloadInput }
-    | { success: false; errors: Record<string, string> } {
-    const result = registerApplicantPayloadSchema.safeParse(data);
-    if (result.success) return { success: true, data: result.data };
-    return { success: false, errors: zodFieldErrors(result.error) };
-}
-
-export function parseRegisterApplicantResponse(data: unknown): RegisterApplicantResponse {
-    return registerApplicantResponseSchema.parse(data);
-}
+export const REGISTER_STEP_FIELDS: Record<1 | 2 | 3, readonly (keyof RegisterFormData)[]> = {
+    1: ["fullName", "email", "password", "confirmPassword"],
+    2: ["jobTitle", "experience", "skills", "education"],
+    3: ["jobTypes", "minSalary", "maxSalary", "industries", "smartMatch"],
+};

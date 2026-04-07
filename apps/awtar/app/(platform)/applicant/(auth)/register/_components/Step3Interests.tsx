@@ -1,23 +1,26 @@
 import { Bell, Briefcase, Building2, DollarSign, Lock } from "lucide-react";
+import type { UseFormReturn } from "react-hook-form";
 import type { RegisterFormData } from "../schemas/register.schema";
 
-export function Step3Interests({
-    formData,
-    setFormData,
-    onBack,
-    onSubmit,
-    errors,
-    submitError,
-    isSubmitting,
-}: {
-    formData: RegisterFormData;
-    setFormData: (data: RegisterFormData) => void;
+type Props = {
+    form: UseFormReturn<RegisterFormData>;
     onBack: () => void;
     onSubmit: () => void;
-    errors?: Record<string, string>;
-    submitError?: string;
     isSubmitting?: boolean;
-}) {
+};
+
+export function Step3Interests({ form, onBack, onSubmit, isSubmitting }: Props) {
+    const {
+        register,
+        watch,
+        setValue,
+        formState: { errors },
+    } = form;
+
+    const jobTypes = watch("jobTypes");
+    const industries = watch("industries");
+    const smartMatch = watch("smartMatch");
+
     const jobTypesOptions = [
         { value: "full_time", label: "Full-time" },
         { value: "part_time", label: "Part-time" },
@@ -28,20 +31,14 @@ export function Step3Interests({
     const industriesOptions = ["Tech", "Finance", "Healthcare", "Education", "Other"];
 
     const toggleJobType = (type: string) => {
-        if (formData.jobTypes.includes(type)) {
-            setFormData({ ...formData, jobTypes: formData.jobTypes.filter((t) => t !== type) });
-        } else {
-            setFormData({ ...formData, jobTypes: [...formData.jobTypes, type] });
-        }
+        const next = jobTypes.includes(type)
+            ? jobTypes.filter((t) => t !== type)
+            : [...jobTypes, type];
+        setValue("jobTypes", next, { shouldValidate: true });
     };
 
     const toggleIndustry = (ind: string) => {
-        if (formData.industries.includes(ind)) {
-            setFormData({ ...formData, industries: [] });
-            return;
-        }
-        // Backend expects a single industry_interest value.
-        setFormData({ ...formData, industries: [ind] });
+        setValue("industries", industries.includes(ind) ? [] : [ind], { shouldValidate: true });
     };
 
     return (
@@ -60,7 +57,7 @@ export function Step3Interests({
                     </legend>
                     <div className="grid grid-cols-4 gap-3">
                         {jobTypesOptions.map((type) => {
-                            const selected = formData.jobTypes.includes(type.value);
+                            const selected = jobTypes.includes(type.value);
                             return (
                                 <button
                                     key={type.value}
@@ -74,7 +71,9 @@ export function Step3Interests({
                             );
                         })}
                     </div>
-                    {errors?.jobTypes && <p className="text-xs text-red-600">{errors.jobTypes}</p>}
+                    {errors.jobTypes && (
+                        <p className="text-xs text-red-600">{errors.jobTypes.message}</p>
+                    )}
                 </fieldset>
 
                 <div className="space-y-4">
@@ -90,15 +89,12 @@ export function Step3Interests({
                             >
                                 MINIMUM (ETB)
                             </label>
-                            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl flex items-center gap-2 bg-gray-50/50 hover:border-gray-300 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 bg-white">
+                            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl flex items-center gap-2 hover:border-gray-300 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 bg-white">
                                 <span className="text-gray-400 font-bold">$</span>
                                 <input
                                     id="minSalary"
                                     type="text"
-                                    value={formData.minSalary}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, minSalary: e.target.value })
-                                    }
+                                    {...register("minSalary")}
                                     className="w-full bg-transparent outline-none font-bold text-gray-700"
                                 />
                             </div>
@@ -110,25 +106,22 @@ export function Step3Interests({
                             >
                                 MAXIMUM (ETB)
                             </label>
-                            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl flex items-center gap-2 bg-gray-50/50 hover:border-gray-300 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 bg-white">
+                            <div className="w-full px-4 py-3 border border-gray-200 rounded-xl flex items-center gap-2 hover:border-gray-300 transition-colors focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 bg-white">
                                 <span className="text-gray-400 font-bold">$</span>
                                 <input
                                     id="maxSalary"
                                     type="text"
-                                    value={formData.maxSalary}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, maxSalary: e.target.value })
-                                    }
+                                    {...register("maxSalary")}
                                     className="w-full bg-transparent outline-none font-bold text-gray-700"
                                 />
                             </div>
                         </div>
                     </div>
-                    {errors?.minSalary && (
-                        <p className="text-xs text-red-600">{errors.minSalary}</p>
+                    {errors.minSalary && (
+                        <p className="text-xs text-red-600">{errors.minSalary.message}</p>
                     )}
-                    {errors?.maxSalary && (
-                        <p className="text-xs text-red-600">{errors.maxSalary}</p>
+                    {errors.maxSalary && (
+                        <p className="text-xs text-red-600">{errors.maxSalary.message}</p>
                     )}
                 </div>
 
@@ -139,7 +132,7 @@ export function Step3Interests({
                     </legend>
                     <div className="flex flex-wrap gap-2.5">
                         {industriesOptions.map((ind) => {
-                            const selected = formData.industries.includes(ind);
+                            const selected = industries.includes(ind);
                             return (
                                 <button
                                     key={ind}
@@ -158,8 +151,8 @@ export function Step3Interests({
                             );
                         })}
                     </div>
-                    {errors?.industries && (
-                        <p className="text-xs text-red-600">{errors.industries}</p>
+                    {errors.industries && (
+                        <p className="text-xs text-red-600">{errors.industries.message}</p>
                     )}
                 </fieldset>
 
@@ -179,18 +172,16 @@ export function Step3Interests({
                             id="smart-match-toggle"
                             type="button"
                             role="switch"
-                            aria-checked={formData.smartMatch}
+                            aria-checked={smartMatch}
                             className="inline-flex items-center gap-3 cursor-pointer group"
-                            onClick={() => {
-                                setFormData({ ...formData, smartMatch: !formData.smartMatch });
-                            }}
+                            onClick={() => setValue("smartMatch", !smartMatch)}
                         >
                             <div
-                                className={`relative w-11 h-6 rounded-full shadow-inner transition-colors ${formData.smartMatch ? "bg-blue-600" : "bg-gray-300"}`}
+                                className={`relative w-11 h-6 rounded-full shadow-inner transition-colors ${smartMatch ? "bg-blue-600" : "bg-gray-300"}`}
                             >
                                 <div
-                                    className={`absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full transition transform shadow-sm ${formData.smartMatch ? "translate-x-5" : "translate-x-0"}`}
-                                ></div>
+                                    className={`absolute left-[2px] top-[2px] w-5 h-5 bg-white rounded-full transition transform shadow-sm ${smartMatch ? "translate-x-5" : "translate-x-0"}`}
+                                />
                             </div>
                             <span className="text-sm font-bold text-gray-700">
                                 Enable instant matches
@@ -215,9 +206,7 @@ export function Step3Interests({
                         {isSubmitting ? "Creating account..." : "Complete Registration →"}
                     </button>
                 </div>
-                {(submitError || errors?._form) && (
-                    <p className="text-xs text-red-600">{submitError ?? errors?._form}</p>
-                )}
+                {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
             </form>
 
             <p className="text-xs text-center text-gray-400 font-medium mt-6">

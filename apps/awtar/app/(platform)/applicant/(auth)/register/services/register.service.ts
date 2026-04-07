@@ -4,24 +4,11 @@ import {
     parseRegisterApplicantResponse,
     type RegisterApplicantParams,
     type RegisterApplicantPayload,
-    validateRegisterApplicantPayload,
 } from "../schemas/register.schema";
-
-export class RegisterValidationError extends Error {
-    constructor(public fieldErrors: Record<string, string>) {
-        super("Register form is invalid");
-        this.name = "RegisterValidationError";
-    }
-}
 
 export const registerService = {
     async register(payload: RegisterApplicantPayload, params?: RegisterApplicantParams) {
-        const validated = validateRegisterApplicantPayload(payload);
-        if (!validated.success) {
-            throw new RegisterValidationError(validated.errors);
-        }
-
-        const response = await registerApi.register(validated.data, params);
+        const response = await registerApi.register(payload, params);
         const parsed = parseRegisterApplicantResponse(response);
 
         useAuthStore.getState().setUser({

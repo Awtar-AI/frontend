@@ -1,28 +1,21 @@
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import type { RegisterFormData } from "../schemas/register.schema";
 
-export function Step1AccountDetails({
-    formData,
-    setFormData,
-    onNext,
-    errors,
-}: {
-    formData: RegisterFormData;
-    setFormData: (data: RegisterFormData) => void;
+type Props = {
+    form: UseFormReturn<RegisterFormData>;
     onNext: () => void;
-    errors?: Record<string, string>;
-}) {
+};
+
+export function Step1AccountDetails({ form, onNext }: Props) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-    const liveConfirmPasswordError = useMemo(() => {
-        if (!formData.password || !formData.confirmPassword) {
-            return "";
-        }
-        return formData.password === formData.confirmPassword ? "" : "Passwords do not match";
-    }, [formData.password, formData.confirmPassword]);
+    const {
+        register,
+        formState: { errors },
+    } = form;
 
     return (
         <form
@@ -50,14 +43,14 @@ export function Step1AccountDetails({
                     <input
                         id="fullName"
                         type="text"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        {...register("fullName")}
                         placeholder="John Doe"
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                 </div>
-                {errors?.fullName && <p className="text-xs text-red-600">{errors.fullName}</p>}
+                {errors.fullName && (
+                    <p className="text-xs text-red-600">{errors.fullName.message}</p>
+                )}
             </div>
 
             <div className="space-y-1.5">
@@ -69,14 +62,12 @@ export function Step1AccountDetails({
                     <input
                         id="email"
                         type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        {...register("email")}
                         placeholder="john@example.com"
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                 </div>
-                {errors?.email && <p className="text-xs text-red-600">{errors.email}</p>}
+                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-4">
@@ -89,11 +80,9 @@ export function Step1AccountDetails({
                         <input
                             id="password"
                             type={showPassword ? "text" : "password"}
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            {...register("password")}
                             placeholder="••••••••"
                             className="w-full pl-10 pr-11 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            required
                         />
                         <button
                             type="button"
@@ -108,7 +97,9 @@ export function Step1AccountDetails({
                             )}
                         </button>
                     </div>
-                    {errors?.password && <p className="text-xs text-red-600">{errors.password}</p>}
+                    {errors.password && (
+                        <p className="text-xs text-red-600">{errors.password.message}</p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -123,13 +114,9 @@ export function Step1AccountDetails({
                         <input
                             id="confirmPassword"
                             type={showConfirmPassword ? "text" : "password"}
-                            value={formData.confirmPassword}
-                            onChange={(e) =>
-                                setFormData({ ...formData, confirmPassword: e.target.value })
-                            }
+                            {...register("confirmPassword")}
                             placeholder="••••••••"
                             className="w-full pl-10 pr-11 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            required
                         />
                         <button
                             type="button"
@@ -144,12 +131,8 @@ export function Step1AccountDetails({
                             )}
                         </button>
                     </div>
-                    {errors?.confirmPassword ? (
-                        <p className="text-xs text-red-600">{errors.confirmPassword}</p>
-                    ) : (
-                        liveConfirmPasswordError && (
-                            <p className="text-xs text-red-600">{liveConfirmPasswordError}</p>
-                        )
+                    {errors.confirmPassword && (
+                        <p className="text-xs text-red-600">{errors.confirmPassword.message}</p>
                     )}
                 </div>
             </div>
@@ -160,7 +143,7 @@ export function Step1AccountDetails({
             >
                 Continue to Next Step &rarr;
             </button>
-            {errors?._form && <p className="text-xs text-red-600">{errors._form}</p>}
+            {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
 
             <p className="mt-6 text-center text-sm text-gray-600">
                 Already have an account?{" "}

@@ -1,35 +1,42 @@
 import { Activity, Briefcase, Minus, Plus, Upload, X } from "lucide-react";
 import { useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
 import type { RegisterFormData } from "../schemas/register.schema";
 
-export function Step2ProfessionalInfo({
-    formData,
-    setFormData,
-    onNext,
-    onBack,
-    errors,
-}: {
-    formData: RegisterFormData;
-    setFormData: (data: RegisterFormData) => void;
+type Props = {
+    form: UseFormReturn<RegisterFormData>;
     onNext: () => void;
     onBack: () => void;
-    errors?: Record<string, string>;
-}) {
+};
+
+export function Step2ProfessionalInfo({ form, onNext, onBack }: Props) {
     const [newSkill, setNewSkill] = useState("");
+    const {
+        register,
+        watch,
+        setValue,
+        formState: { errors },
+    } = form;
+
+    const experience = watch("experience");
+    const skills = watch("skills");
+    const education = watch("education");
+    const resume = watch("resume");
 
     const handleAddSkill = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" || (e.key === "," && newSkill.trim())) {
             e.preventDefault();
-            setFormData({ ...formData, skills: [...formData.skills, newSkill.trim()] });
+            setValue("skills", [...skills, newSkill.trim()], { shouldValidate: true });
             setNewSkill("");
         }
     };
 
     const removeSkill = (index: number) => {
-        setFormData({
-            ...formData,
-            skills: formData.skills.filter((_, i) => i !== index),
-        });
+        setValue(
+            "skills",
+            skills.filter((_, i) => i !== index),
+            { shouldValidate: true },
+        );
     };
 
     const educationOptions = [
@@ -62,14 +69,14 @@ export function Step2ProfessionalInfo({
                     <input
                         id="jobTitle"
                         type="text"
-                        value={formData.jobTitle}
-                        onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                        {...register("jobTitle")}
                         placeholder="e.g. Senior Product Designer"
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
-                        required
                     />
                 </div>
-                {errors?.jobTitle && <p className="text-xs text-red-600">{errors.jobTitle}</p>}
+                {errors.jobTitle && (
+                    <p className="text-xs text-red-600">{errors.jobTitle.message}</p>
+                )}
             </div>
 
             <div className="space-y-1.5">
@@ -83,12 +90,7 @@ export function Step2ProfessionalInfo({
                     <Activity className="ml-1 mr-2 h-5 w-5 text-gray-400" />
                     <button
                         type="button"
-                        onClick={() =>
-                            setFormData({
-                                ...formData,
-                                experience: Math.max(0, formData.experience - 1),
-                            })
-                        }
+                        onClick={() => setValue("experience", Math.max(0, experience - 1))}
                         className="rounded-md p-2 text-gray-500 hover:bg-gray-100"
                         aria-label="Decrease years of experience"
                     >
@@ -98,31 +100,24 @@ export function Step2ProfessionalInfo({
                         id="experience"
                         type="number"
                         min={0}
-                        value={formData.experience}
+                        value={experience}
                         onChange={(e) =>
-                            setFormData({
-                                ...formData,
-                                experience: Math.max(0, Number(e.target.value || 0)),
-                            })
+                            setValue("experience", Math.max(0, Number(e.target.value || 0)))
                         }
                         className="w-full bg-transparent px-2 py-1 text-center font-bold text-gray-700 outline-none"
-                        required
                     />
                     <button
                         type="button"
-                        onClick={() =>
-                            setFormData({
-                                ...formData,
-                                experience: formData.experience + 1,
-                            })
-                        }
+                        onClick={() => setValue("experience", experience + 1)}
                         className="rounded-md p-2 text-gray-500 hover:bg-gray-100"
                         aria-label="Increase years of experience"
                     >
                         <Plus className="h-4 w-4" />
                     </button>
                 </div>
-                {errors?.experience && <p className="text-xs text-red-600">{errors.experience}</p>}
+                {errors.experience && (
+                    <p className="text-xs text-red-600">{errors.experience.message}</p>
+                )}
             </div>
 
             <div className="space-y-3">
@@ -133,7 +128,7 @@ export function Step2ProfessionalInfo({
                     Primary Skills
                 </label>
                 <div className="flex flex-wrap gap-2 mb-2">
-                    {formData.skills.map((skill, index) => (
+                    {skills.map((skill, index) => (
                         <span
                             key={skill}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold"
@@ -177,7 +172,7 @@ export function Step2ProfessionalInfo({
                         className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400 font-medium"
                     />
                 </div>
-                {errors?.skills && <p className="text-xs text-red-600">{errors.skills}</p>}
+                {errors.skills && <p className="text-xs text-red-600">{errors.skills.message}</p>}
             </div>
 
             <fieldset className="space-y-3">
@@ -189,26 +184,28 @@ export function Step2ProfessionalInfo({
                         <button
                             key={edu.id}
                             type="button"
-                            aria-pressed={formData.education === edu.id}
-                            className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all text-left ${formData.education === edu.id ? "border-blue-600 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-blue-300"}`}
-                            onClick={() => setFormData({ ...formData, education: edu.id })}
+                            aria-pressed={education === edu.id}
+                            className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer transition-all text-left ${education === edu.id ? "border-blue-600 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-blue-300"}`}
+                            onClick={() => setValue("education", edu.id, { shouldValidate: true })}
                         >
                             <div
-                                className={`w-4 h-4 rounded-full border-[2px] flex items-center justify-center shrink-0 transition-colors ${formData.education === edu.id ? "border-blue-600" : "border-gray-300"}`}
+                                className={`w-4 h-4 rounded-full border-[2px] flex items-center justify-center shrink-0 transition-colors ${education === edu.id ? "border-blue-600" : "border-gray-300"}`}
                             >
-                                {formData.education === edu.id && (
+                                {education === edu.id && (
                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-600" />
                                 )}
                             </div>
                             <span
-                                className={`text-sm font-bold ${formData.education === edu.id ? "text-blue-700" : "text-gray-600"}`}
+                                className={`text-sm font-bold ${education === edu.id ? "text-blue-700" : "text-gray-600"}`}
                             >
                                 {edu.label}
                             </span>
                         </button>
                     ))}
                 </div>
-                {errors?.education && <p className="text-xs text-red-600">{errors.education}</p>}
+                {errors.education && (
+                    <p className="text-xs text-red-600">{errors.education.message}</p>
+                )}
             </fieldset>
 
             <div className="space-y-2">
@@ -218,21 +215,21 @@ export function Step2ProfessionalInfo({
                 <label
                     htmlFor="resume"
                     className={`flex cursor-pointer items-center justify-between rounded-xl border border-dashed px-4 py-3 ${
-                        formData.resume
+                        resume
                             ? "border-emerald-400 bg-emerald-50/50"
                             : "border-gray-300 hover:border-blue-400"
                     }`}
                 >
                     <span
                         className={`text-sm ${
-                            formData.resume ? "font-semibold text-emerald-700" : "text-gray-600"
+                            resume ? "font-semibold text-emerald-700" : "text-gray-600"
                         }`}
                     >
-                        {formData.resume ? formData.resume.name : "Upload your resume"}
+                        {resume ? resume.name : "Upload your resume"}
                     </span>
                     <span
                         className={`inline-flex items-center gap-1 text-sm font-semibold ${
-                            formData.resume ? "text-emerald-700" : "text-blue-600"
+                            resume ? "text-emerald-700" : "text-blue-600"
                         }`}
                     >
                         <Upload className="h-4 w-4" />
@@ -244,17 +241,12 @@ export function Step2ProfessionalInfo({
                     type="file"
                     accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     className="hidden"
-                    onChange={(e) =>
-                        setFormData({
-                            ...formData,
-                            resume: e.target.files?.[0] ?? null,
-                        })
-                    }
+                    onChange={(e) => setValue("resume", e.target.files?.[0] ?? null)}
                 />
-                {formData.resume && (
+                {resume && (
                     <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, resume: null })}
+                        onClick={() => setValue("resume", null)}
                         className="text-xs font-medium text-gray-500 hover:text-gray-700"
                     >
                         Remove selected file
@@ -277,7 +269,7 @@ export function Step2ProfessionalInfo({
                     Next Step &rarr;
                 </button>
             </div>
-            {errors?._form && <p className="text-xs text-red-600">{errors._form}</p>}
+            {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
         </form>
     );
 }
