@@ -187,3 +187,30 @@ export const REGISTER_STEP_FIELDS: Record<1 | 2 | 3, readonly (keyof RegisterFor
     2: ["jobTitle", "experience", "skills", "education"],
     3: ["jobTypes", "minSalary", "maxSalary", "industries", "smartMatch"],
 };
+
+export function toApplicantPayload(data: RegisterFormData): RegisterApplicantPayload {
+    const parts = data.fullName.trim().split(/\s+/);
+    const firstName = parts[0] ?? "";
+    const lastName = parts.slice(1).join(" ") || "";
+    const minSalary = parseSalaryInput(data.minSalary);
+    const maxSalary = parseSalaryInput(data.maxSalary);
+
+    return {
+        email: data.email.trim(),
+        first_name: firstName,
+        last_name: lastName,
+        password: data.password,
+        role: "candidate",
+        current_job_title: data.jobTitle.trim(),
+        years_of_experience: data.experience,
+        primary_skills: data.skills.join(","),
+        education_level: data.education as RegisterApplicantPayload["education_level"],
+        preferred_job_types: data.jobTypes as RegisterApplicantPayload["preferred_job_types"],
+        desired_annual_salary_min: Number.isNaN(minSalary) ? undefined : minSalary,
+        desired_annual_salary_max: Number.isNaN(maxSalary) ? undefined : maxSalary,
+        industry_interest:
+            (data.industries[0] as RegisterApplicantPayload["industry_interest"]) ?? undefined,
+        match_smart_notification: data.smartMatch,
+        resume: data.resume ?? undefined,
+    };
+}

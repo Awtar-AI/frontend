@@ -1,11 +1,10 @@
-import { request } from "@/lib/http";
+import http from "@/lib/http";
 import type {
     RegisterApplicantParams,
     RegisterApplicantPayload,
     RegisterApplicantResponse,
 } from "../schemas/register.schema";
 
-/** Resume upload requires multipart/form-data; use FormData for all fields. */
 function toFormData(payload: RegisterApplicantPayload): FormData {
     const fd = new FormData();
     for (const [key, value] of Object.entries(payload)) {
@@ -22,13 +21,12 @@ function toFormData(payload: RegisterApplicantPayload): FormData {
 }
 
 export const registerApi = {
-    register(payload: RegisterApplicantPayload, params?: RegisterApplicantParams) {
-        const queryParams = params?.token ? { token: params.token } : undefined;
-
-        return request<RegisterApplicantResponse>("/api/v1/users/create", {
-            method: "POST",
-            body: toFormData(payload),
-            params: queryParams,
-        });
+    async register(payload: RegisterApplicantPayload, params?: RegisterApplicantParams) {
+        const { data } = await http.post<RegisterApplicantResponse>(
+            "/api/v1/users/create",
+            toFormData(payload),
+            { params: params?.token ? { token: params.token } : undefined },
+        );
+        return data;
     },
 };
