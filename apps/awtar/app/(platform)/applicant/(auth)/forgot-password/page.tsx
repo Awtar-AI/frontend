@@ -3,10 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Mail, MailCheck } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { ApiError } from "@/lib/http";
-import { toastService } from "@/lib/services/toast.service";
 import { AuthSplitLayout } from "../../_components/AuthSplitLayout";
 import { useForgotPassword } from "./hooks/use-forgot-password";
 import {
@@ -16,12 +13,10 @@ import {
 
 export default function ForgotPasswordPage() {
     const mutation = useForgotPassword();
-    const [emailSent, setEmailSent] = useState(false);
 
     const {
         register,
         handleSubmit,
-        setError,
         getValues,
         formState: { errors },
     } = useForm<ForgotPasswordFormData>({
@@ -29,22 +24,9 @@ export default function ForgotPasswordPage() {
         defaultValues: { email: "" },
     });
 
-    const onSubmit = handleSubmit(async (data) => {
-        try {
-            await mutation.mutateAsync(data);
-            setEmailSent(true);
-        } catch (error) {
-            if (error instanceof ApiError) {
-                const message = error.message || "Failed to send reset link.";
-                toastService.error(message);
-                setError("root", { message });
-                return;
-            }
-            toastService.error("Something went wrong. Please try again.");
-        }
-    });
+    const onSubmit = handleSubmit((data) => mutation.mutate(data));
 
-    if (emailSent) {
+    if (mutation.isSuccess) {
         return (
             <AuthSplitLayout>
                 <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto text-center">
@@ -61,7 +43,7 @@ export default function ForgotPasswordPage() {
                         Didn&apos;t receive the email? Check your spam folder or{" "}
                         <button
                             type="button"
-                            onClick={() => setEmailSent(false)}
+                            onClick={() => mutation.reset()}
                             className="font-semibold text-blue-600 hover:underline"
                         >
                             try again
@@ -121,7 +103,6 @@ export default function ForgotPasswordPage() {
                     >
                         {mutation.isPending ? "Sending..." : "Send Reset Link"}
                     </button>
-                    {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
                 </form>
 
                 <Link
