@@ -1,16 +1,18 @@
 "use client";
 
 import { useAuthStore } from "../store/auth";
+import { useCurrentUser } from "./use-current-user";
 
+/** Full user profile from /me (React Query). Returns null while loading. */
 export function useAuthUser() {
-    return useAuthStore((state) => state.user);
+    const { data } = useCurrentUser();
+    return data ?? null;
 }
 
 export function useAuthToken() {
-    return useAuthStore((state) => state.token);
+    return useAuthStore((s) => s.accessToken);
 }
 
 export function useIsAuthenticated() {
-    const token = useAuthStore((state) => state.token);
-    return Boolean(token);
+    return Boolean(useAuthStore((s) => s.accessToken));
 }

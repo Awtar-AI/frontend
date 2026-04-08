@@ -17,11 +17,6 @@ function useIsClient() {
     );
 }
 
-/**
- * Wait for Zustand persist to finish reading localStorage before we make
- * any auth decisions. Without this the guard sees `token === null` for one
- * render and immediately redirects to login.
- */
 function useHasHydrated() {
     const [hydrated, setHydrated] = useState(false);
     useEffect(() => {
@@ -53,15 +48,14 @@ function AuthGateLoading() {
 export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps) {
     const pathname = usePathname() ?? "";
     const router = useRouter();
-    const token = useAuthStore((s) => s.token);
-    const user = useAuthStore((s) => s.user);
+    const token = useAuthStore((s) => s.accessToken);
     const clearAuth = useAuthStore((s) => s.clearAuth);
 
     const mounted = useIsClient();
     const hydrated = useHasHydrated();
 
     const isPublic = isPublicPath(pathname);
-    const sessionInvalid = !token || !user || isAccessTokenExpired(token);
+    const sessionInvalid = !token || isAccessTokenExpired(token);
 
     useEffect(() => {
         if (!mounted || !hydrated || isPublic) return;
