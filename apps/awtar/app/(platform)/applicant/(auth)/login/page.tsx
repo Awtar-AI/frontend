@@ -3,45 +3,26 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { ApiError } from "@/lib/http";
-import { toastService } from "@/lib/services/toast.service";
 import { AuthSplitLayout } from "../../_components/AuthSplitLayout";
 import { useLogin } from "./hooks/use-login";
 import { type LoginFormData, loginFormSchema } from "./schemas/login.schema";
 
 export default function LoginPage() {
-    const router = useRouter();
     const loginMutation = useLogin();
     const [showPassword, setShowPassword] = useState(false);
 
     const {
         register,
         handleSubmit,
-        setError,
         formState: { errors },
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginFormSchema),
         defaultValues: { email: "", password: "" },
     });
 
-    const onSubmit = handleSubmit(async (data) => {
-        try {
-            await loginMutation.mutateAsync(data);
-            toastService.success("Logged in successfully.");
-            router.push("/applicant/dashboard");
-        } catch (error) {
-            if (error instanceof ApiError) {
-                const message = error.message || "Failed to log in.";
-                toastService.error(message);
-                setError("root", { message });
-                return;
-            }
-            toastService.error("Something went wrong. Please try again.");
-        }
-    });
+    const onSubmit = handleSubmit((data) => loginMutation.mutate(data));
 
     return (
         <AuthSplitLayout>
@@ -129,7 +110,6 @@ export default function LoginPage() {
                     >
                         {loginMutation.isPending ? "Signing in..." : "Sign In"}
                     </button>
-                    {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
                 </form>
 
                 <p className="mt-10 text-center text-sm text-gray-600">

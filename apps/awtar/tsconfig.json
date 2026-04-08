@@ -20,7 +20,8 @@
         ],
         "paths": {
             "@/*": ["./*"],
-            "@/applicant/user-me/*": ["./app/(platform)/applicant/(dashboard)/user-me/*"]
+            "@/applicant/user-me/*": ["./app/(platform)/applicant/(dashboard)/user-me/*"],
+            "@/applicant/logout/*": ["./app/(platform)/applicant/(auth)/logout/*"]
         }
     },
     "include": [
