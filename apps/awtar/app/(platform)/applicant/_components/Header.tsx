@@ -2,16 +2,15 @@
 
 import { Bell, LogOut, Search, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UserAvatar } from "@/applicant/user-me/_components/UserAvatar";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
 import { useAuthUser } from "@/lib/hooks/use-auth";
-import { authService } from "@/lib/services/auth.service";
+import { useLogout } from "@/applicant/logout/hooks/use-logout";
 
 export function Header() {
-    const router = useRouter();
     const user = useAuthUser();
+    const logout = useLogout();
     const [activeMenu, setActiveMenu] = useState<"notifications" | "user" | null>(null);
 
     const toggleMenu = (menu: "notifications" | "user") => {
@@ -23,8 +22,7 @@ export function Header() {
 
     const handleSignOut = () => {
         setActiveMenu(null);
-        authService.logout();
-        router.push("/applicant/login");
+        logout();
     };
 
     return (
