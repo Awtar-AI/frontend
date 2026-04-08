@@ -3,10 +3,10 @@
 import { Bell, LogOut, Search, Settings, Shield, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useLogout } from "@/applicant/logout/hooks/use-logout";
 import { UserAvatar } from "@/applicant/user-me/_components/UserAvatar";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
 import { useAuthUser } from "@/lib/hooks/use-auth";
-import { useLogout } from "@/applicant/logout/hooks/use-logout";
 
 export function Header() {
     const user = useAuthUser();

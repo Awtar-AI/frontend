@@ -1,10 +1,9 @@
-import { request } from "@/lib/http";
+import http from "@/lib/http";
 import type { UserMeResponse } from "../schemas/user-me.schema";
 
 export const usersApi = {
-    getSingle(userId: string) {
-        return request<UserMeResponse>(`/api/v1/users/${userId}/single`, {
-            method: "GET",
-        });
+    async getSingle(userId: string) {
+        const { data } = await http.get<UserMeResponse>(`/api/v1/users/${userId}/single`);
+        return data;
     },
 };
