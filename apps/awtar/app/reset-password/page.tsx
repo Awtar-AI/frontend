@@ -7,8 +7,6 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthSplitLayout } from "@/app/(platform)/applicant/_components/AuthSplitLayout";
-import { ApiError } from "@/lib/http";
-import { toastService } from "@/lib/services/toast.service";
 import { useResetPassword } from "./hooks/use-reset-password";
 import {
     type ResetPasswordFormData,
@@ -73,12 +71,10 @@ export default function ResetPasswordPage() {
     const mutation = useResetPassword();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
-    const [success, setSuccess] = useState(false);
 
     const {
         register,
         handleSubmit,
-        setError,
         formState: { errors },
     } = useForm<ResetPasswordFormData>({
         resolver: zodResolver(resetPasswordFormSchema),
@@ -86,23 +82,9 @@ export default function ResetPasswordPage() {
     });
 
     if (!token) return <MissingTokenView />;
-    if (success) return <SuccessView />;
+    if (mutation.isSuccess) return <SuccessView />;
 
-    const onSubmit = handleSubmit(async (data) => {
-        try {
-            await mutation.mutateAsync({ token, password: data.password });
-            setSuccess(true);
-            toastService.success("Password reset successfully.");
-        } catch (error) {
-            if (error instanceof ApiError) {
-                const message = error.message || "Failed to reset password.";
-                toastService.error(message);
-                setError("root", { message });
-                return;
-            }
-            toastService.error("Something went wrong. Please try again.");
-        }
-    });
+    const onSubmit = handleSubmit((data) => mutation.mutate({ token, password: data.password }));
 
     return (
         <AuthSplitLayout>
@@ -190,7 +172,6 @@ export default function ResetPasswordPage() {
                     >
                         {mutation.isPending ? "Resetting..." : "Reset Password"}
                     </button>
-                    {errors.root && <p className="text-xs text-red-600">{errors.root.message}</p>}
                 </form>
 
                 <Link
