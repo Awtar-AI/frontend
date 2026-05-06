@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 const ADMIN_NAV = [
     { label: "Dashboard", href: "/dashboard" },
+    { label: "Organizations", href: "/organizations" },
     { label: "Users", href: "/users" },
     { label: "Settings", href: "/settings" },
 ] as const;
