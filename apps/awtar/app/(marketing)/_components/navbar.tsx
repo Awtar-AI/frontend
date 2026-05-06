@@ -16,9 +16,24 @@ export function Navbar() {
         <header className="fixed top-0 z-50 w-full border-b border-white/5 bg-awtar-navy/80 backdrop-blur-xl">
             <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
                 <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-awtar-blue text-sm font-black text-white">
-                        A
-                    </span>
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="text-blue-400"
+                        aria-hidden="true"
+                    >
+                        <circle cx="12" cy="12" r="3" fill="currentColor" />
+                        <circle cx="12" cy="4" r="2" fill="currentColor" opacity="0.7" />
+                        <circle cx="12" cy="20" r="2" fill="currentColor" opacity="0.7" />
+                        <circle cx="4" cy="12" r="2" fill="currentColor" opacity="0.7" />
+                        <circle cx="20" cy="12" r="2" fill="currentColor" opacity="0.7" />
+                        <circle cx="6.34" cy="6.34" r="1.5" fill="currentColor" opacity="0.4" />
+                        <circle cx="17.66" cy="17.66" r="1.5" fill="currentColor" opacity="0.4" />
+                        <circle cx="17.66" cy="6.34" r="1.5" fill="currentColor" opacity="0.4" />
+                        <circle cx="6.34" cy="17.66" r="1.5" fill="currentColor" opacity="0.4" />
+                    </svg>
                     Awtar AI
                 </Link>
 

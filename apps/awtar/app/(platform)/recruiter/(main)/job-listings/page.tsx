@@ -300,6 +300,8 @@ export default function JobListingsPage() {
                             <tr>
                                 <th className="px-6 py-4 font-semibold w-12 align-middle">
                                     <input
+                                        title="n"
+                                        placeholder=""
                                         type="checkbox"
                                         checked={
                                             selectedRows.length === currentJobs.length &&
@@ -377,6 +379,7 @@ export default function JobListingsPage() {
                                     >
                                         <td className="px-6 py-4">
                                             <input
+                                                title="check"
                                                 type="checkbox"
                                                 checked={selectedRows.includes(job.id)}
                                                 onChange={() => toggleRow(job.id)}
@@ -460,6 +463,7 @@ export default function JobListingsPage() {
                 <div className="flex flex-col items-center justify-center p-6 border-t border-gray-100">
                     <div className="flex items-center gap-1">
                         <button
+                            title="button"
                             type="button"
                             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
@@ -485,6 +489,7 @@ export default function JobListingsPage() {
 
                         <button
                             type="button"
+                            title="button"
                             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
