@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueries, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowUpDown,
     ChevronDown,
@@ -11,15 +12,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useQueries, useQueryClient } from "@tanstack/react-query";
 import { normalizeError } from "@/lib/errors";
 import { useAuthOrganizationId } from "@/lib/hooks/use-auth";
 import { toastService } from "@/lib/services/toast.service";
-import { recruiterApplicationsApi } from "./api/recruiter-applications.api";
 import { postJobApi } from "../post-job/api/post-job.api";
 import { useDeleteJob } from "../post-job/hooks/use-delete-job";
 import { RECRUITER_JOBS_QUERY_KEY, useRecruiterJobs } from "../post-job/hooks/use-recruiter-jobs";
 import type { JobPostResponse } from "../post-job/schemas/post-job.schema";
+import { recruiterApplicationsApi } from "./api/recruiter-applications.api";
 
 const ITEMS_PER_PAGE = 5;
 

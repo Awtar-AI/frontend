@@ -1,7 +1,7 @@
 "use client";
 
-import { isRecruiterPublicRoute } from "./recruiter-public-routes";
 import { AuthGuard } from "./auth-guard";
+import { isRecruiterPublicRoute } from "./recruiter-public-routes";
 
 const RECRUITER_LOGIN_PATH = "/recruiter/login";
 

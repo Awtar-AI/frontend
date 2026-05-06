@@ -211,16 +211,16 @@ export default function OrganizationDetailPage({
                                     {detailQuery.data.document_url?.length ? (
                                         <div className="mt-5 space-y-3">
                                             {detailQuery.data.document_url.map((documentUrl) => (
-                                                    <a
-                                                        key={documentUrl}
-                                                        href={documentUrl}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="flex items-center justify-between rounded-xl border border-white/10 bg-awtar-navy-light/60 px-4 py-3 text-sm text-red-300 transition-colors hover:border-red-500/20 hover:text-white"
-                                                    >
-                                                        <span>{documentUrl}</span>
-                                                        <ExternalLink className="h-4 w-4" />
-                                                    </a>
+                                                <a
+                                                    key={documentUrl}
+                                                    href={documentUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-between rounded-xl border border-white/10 bg-awtar-navy-light/60 px-4 py-3 text-sm text-red-300 transition-colors hover:border-red-500/20 hover:text-white"
+                                                >
+                                                    <span>{documentUrl}</span>
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
                                             ))}
                                         </div>
                                     ) : (

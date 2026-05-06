@@ -99,7 +99,10 @@ export default function OrganizationsPage() {
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/10">
                     <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
                         <div>
-                            <label htmlFor="org-name-filter" className="mb-2 block text-sm text-awtar-slate">
+                            <label
+                                htmlFor="org-name-filter"
+                                className="mb-2 block text-sm text-awtar-slate"
+                            >
                                 Search by name
                             </label>
                             <div className="relative">
@@ -120,7 +123,12 @@ export default function OrganizationsPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="org-status-filter" className="mb-2 block text-sm text-awtar-slate">Status</label>
+                            <label
+                                htmlFor="org-status-filter"
+                                className="mb-2 block text-sm text-awtar-slate"
+                            >
+                                Status
+                            </label>
                             <select
                                 id="org-status-filter"
                                 value={draftFilters.status}
@@ -146,7 +154,12 @@ export default function OrganizationsPage() {
                         </div>
 
                         <div>
-                            <label htmlFor="org-industry-filter" className="mb-2 block text-sm text-awtar-slate">Industry</label>
+                            <label
+                                htmlFor="org-industry-filter"
+                                className="mb-2 block text-sm text-awtar-slate"
+                            >
+                                Industry
+                            </label>
                             <input
                                 id="org-industry-filter"
                                 value={draftFilters.industry}

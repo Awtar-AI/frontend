@@ -3,9 +3,9 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAuthStore } from "@/lib/store/auth";
+import { isAccessTokenExpired } from "./jwt";
 import { isTerminalRefreshError, refreshAuthSessionSingleFlight } from "./refresh-session";
 import { WrongRoleAccess } from "./wrong-role-access";
-import { isAccessTokenExpired } from "./jwt";
 
 function subscribeToNothing() {
     return () => {};
