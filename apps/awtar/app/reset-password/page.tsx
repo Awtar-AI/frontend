@@ -4,18 +4,136 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthSplitLayout } from "@/app/(platform)/applicant/_components/AuthSplitLayout";
+import { RecruiterAuthLayout } from "@/app/(platform)/recruiter/_components/RecruiterAuthLayout";
+import { decodeJwtPayload } from "@/lib/auth/jwt";
 import { useResetPassword } from "./hooks/use-reset-password";
 import {
     type ResetPasswordFormData,
     resetPasswordFormSchema,
 } from "./schemas/reset-password.schema";
 
-function MissingTokenView() {
+type ResetAudience = "candidate" | "recruiter" | "unknown";
+
+function getResetAudience(token: string | null): ResetAudience {
+    if (!token) return "unknown";
+    const role = decodeJwtPayload(token)?.role;
+    if (role === "candidate") return "candidate";
+    if (role === "hr" || role === "admin") return "recruiter";
+    return "unknown";
+}
+
+function ResetLayout({ audience, children }: { audience: ResetAudience; children: ReactNode }) {
+    if (audience === "recruiter") {
+        return <RecruiterAuthLayout reversed>{children}</RecruiterAuthLayout>;
+    }
+    return <AuthSplitLayout>{children}</AuthSplitLayout>;
+}
+
+function LoginLinks({ audience }: { audience: ResetAudience }) {
+    if (audience === "recruiter") {
+        return (
+            <Link
+                href="/recruiter/login"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Sign in to recruiter account
+            </Link>
+        );
+    }
+
+    if (audience === "candidate") {
+        return (
+            <Link
+                href="/applicant/login"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Sign in to applicant account
+            </Link>
+        );
+    }
+
     return (
-        <AuthSplitLayout>
+        <div className="w-full space-y-3">
+            <Link
+                href="/applicant/login"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Applicant sign in
+            </Link>
+            <Link
+                href="/recruiter/login"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 border border-gray-300 hover:bg-gray-50 text-gray-900 font-bold rounded-lg transition-colors"
+            >
+                Recruiter sign in
+            </Link>
+        </div>
+    );
+}
+
+function ForgotLinks({ audience }: { audience: ResetAudience }) {
+    if (audience === "recruiter") {
+        return (
+            <Link
+                href="/recruiter/forgot-password"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Request new recruiter link
+            </Link>
+        );
+    }
+
+    if (audience === "candidate") {
+        return (
+            <Link
+                href="/applicant/forgot-password"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Request new applicant link
+            </Link>
+        );
+    }
+
+    return (
+        <div className="w-full space-y-3">
+            <Link
+                href="/applicant/forgot-password"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+            >
+                Applicant forgot password
+            </Link>
+            <Link
+                href="/recruiter/forgot-password"
+                className="inline-flex items-center justify-center gap-2 w-full py-3 border border-gray-300 hover:bg-gray-50 text-gray-900 font-bold rounded-lg transition-colors"
+            >
+                Recruiter forgot password
+            </Link>
+        </div>
+    );
+}
+
+function BackToLoginLink({ audience }: { audience: ResetAudience }) {
+    const href = audience === "recruiter" ? "/recruiter/login" : "/applicant/login";
+    const label = audience === "recruiter" ? "Back to recruiter login" : "Back to login";
+
+    if (audience === "unknown") return null;
+
+    return (
+        <Link
+            href={href}
+            className="mt-4 inline-flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+        >
+            <ArrowLeft className="h-4 w-4" />
+            {label}
+        </Link>
+    );
+}
+
+function MissingTokenView({ audience }: { audience: ResetAudience }) {
+    return (
+        <ResetLayout audience={audience}>
             <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto text-center">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
                     <ShieldAlert className="h-8 w-8 text-red-600" />
@@ -24,27 +142,16 @@ function MissingTokenView() {
                 <p className="text-gray-500 mb-8">
                     This password reset link is invalid or has expired. Please request a new one.
                 </p>
-                <Link
-                    href="/applicant/forgot-password"
-                    className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
-                >
-                    Request new link
-                </Link>
-                <Link
-                    href="/applicant/login"
-                    className="mt-4 inline-flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to login
-                </Link>
+                <ForgotLinks audience={audience} />
+                <BackToLoginLink audience={audience} />
             </div>
-        </AuthSplitLayout>
+        </ResetLayout>
     );
 }
 
-function SuccessView() {
+function SuccessView({ audience }: { audience: ResetAudience }) {
     return (
-        <AuthSplitLayout>
+        <ResetLayout audience={audience}>
             <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto text-center">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                     <CheckCircle2 className="h-8 w-8 text-green-600" />
@@ -54,20 +161,16 @@ function SuccessView() {
                     Your password has been successfully updated. You can now sign in with your new
                     password.
                 </p>
-                <Link
-                    href="/applicant/login"
-                    className="inline-flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
-                >
-                    Sign in
-                </Link>
+                <LoginLinks audience={audience} />
             </div>
-        </AuthSplitLayout>
+        </ResetLayout>
     );
 }
 
 export default function ResetPasswordPage() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
+    const audience = getResetAudience(token);
     const mutation = useResetPassword();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -81,13 +184,13 @@ export default function ResetPasswordPage() {
         defaultValues: { password: "", confirmPassword: "" },
     });
 
-    if (!token) return <MissingTokenView />;
-    if (mutation.isSuccess) return <SuccessView />;
+    if (!token) return <MissingTokenView audience={audience} />;
+    if (mutation.isSuccess) return <SuccessView audience={audience} />;
 
     const onSubmit = handleSubmit((data) => mutation.mutate({ token, password: data.password }));
 
     return (
-        <AuthSplitLayout>
+        <ResetLayout audience={audience}>
             <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
                 <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                     <Lock className="h-8 w-8 text-blue-600" />
@@ -96,7 +199,7 @@ export default function ResetPasswordPage() {
                     Set new password
                 </h1>
                 <p className="text-gray-500 mb-8 text-center">
-                    Your new password must be different from previously used passwords.
+                    Choose a strong new password for your account.
                 </p>
 
                 <form className="space-y-5" onSubmit={onSubmit}>
@@ -174,14 +277,34 @@ export default function ResetPasswordPage() {
                     </button>
                 </form>
 
-                <Link
-                    href="/applicant/login"
-                    className="mt-8 inline-flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 mx-auto"
-                >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to login
-                </Link>
+                {audience === "recruiter" ? (
+                    <Link
+                        href="/recruiter/login"
+                        className="mt-8 inline-flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 mx-auto"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to recruiter login
+                    </Link>
+                ) : audience === "candidate" ? (
+                    <Link
+                        href="/applicant/login"
+                        className="mt-8 inline-flex items-center justify-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 mx-auto"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Back to login
+                    </Link>
+                ) : (
+                    <div className="mt-8 flex items-center justify-center gap-4 text-sm font-semibold">
+                        <Link href="/applicant/login" className="text-blue-600 hover:text-blue-700">
+                            Applicant login
+                        </Link>
+                        <span className="text-gray-300">|</span>
+                        <Link href="/recruiter/login" className="text-blue-600 hover:text-blue-700">
+                            Recruiter login
+                        </Link>
+                    </div>
+                )}
             </div>
-        </AuthSplitLayout>
+        </ResetLayout>
     );
 }

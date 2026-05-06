@@ -101,6 +101,15 @@ export const createJobFormSchema = z
                 message: "Auto-response must be between 50 and 200 characters",
             });
         }
+
+        const deadline = new Date(data.deadline);
+        if (!Number.isFinite(deadline.getTime()) || deadline.getTime() <= Date.now()) {
+            ctx.addIssue({
+                code: "custom",
+                path: ["deadline"],
+                message: "Deadline must be a future date/time",
+            });
+        }
     });
 
 export type CreateJobFormData = z.infer<typeof createJobFormSchema>;

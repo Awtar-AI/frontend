@@ -1,8 +1,5 @@
 import http from "@/lib/http";
-import {
-    parseLoginResponse,
-    type LoginResponse,
-} from "../../login/schemas/login.schema";
+import { type LoginResponse, parseLoginResponse } from "../../login/schemas/login.schema";
 import type { RefreshSessionPayload } from "../schemas/refresh.schema";
 
 export const refreshSessionApi = {

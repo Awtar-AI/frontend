@@ -13,6 +13,18 @@ export function useAuthToken() {
     return useAuthStore((s) => s.accessToken);
 }
 
+export function useAuthOrganizationId() {
+    return useAuthStore((s) => s.organizationId);
+}
+
+export function useKnownOrganizations() {
+    return useAuthStore((s) => s.knownOrganizations);
+}
+
 export function useIsAuthenticated() {
     return Boolean(useAuthStore((s) => s.accessToken));
+}
+
+export function useAuthRole() {
+    return useAuthStore((s) => s.role);
 }

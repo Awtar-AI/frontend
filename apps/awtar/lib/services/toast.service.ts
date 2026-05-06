@@ -1,4 +1,4 @@
-import { appToast } from "../store/toast";
+import { appToast, useToastStore } from "../store/toast";
 
 export const toastService = {
     success(message: string) {
@@ -9,5 +9,8 @@ export const toastService = {
     },
     info(message: string) {
         appToast.info(message);
+    },
+    dismissAll() {
+        useToastStore.getState().dismissAll();
     },
 };

@@ -3,11 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { recruiterCandidateApi } from "../api/recruiter-candidate.api";
 
-export const RECRUITER_CANDIDATE_PROFILE_QUERY_KEY = [
-    "recruiter",
-    "candidate",
-    "profile",
-] as const;
+export const RECRUITER_CANDIDATE_PROFILE_QUERY_KEY = ["recruiter", "candidate", "profile"] as const;
 
 export function useRecruiterCandidateProfile(userId: string | null, enabled = true) {
     return useQuery({

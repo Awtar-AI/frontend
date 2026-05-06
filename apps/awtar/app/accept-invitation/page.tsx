@@ -1,15 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-    ArrowLeft,
-    CheckCircle2,
-    Eye,
-    EyeOff,
-    Lock,
-    ShieldAlert,
-    UserPlus,
-} from "lucide-react";
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, ShieldAlert, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -17,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { RecruiterAuthLayout } from "@/app/(platform)/recruiter/_components/RecruiterAuthLayout";
 import { useAcceptInvitation } from "./hooks/use-accept-invitation";
 import {
-    acceptInvitationFormSchema,
     type AcceptInvitationFormData,
+    acceptInvitationFormSchema,
 } from "./schemas/accept-invitation.schema";
 
 function MissingTokenView() {
@@ -111,7 +103,10 @@ export default function AcceptInvitationPage() {
                 <form className="space-y-5" onSubmit={onSubmit}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label htmlFor="firstName" className="text-sm font-semibold text-gray-700">
+                            <label
+                                htmlFor="firstName"
+                                className="text-sm font-semibold text-gray-700"
+                            >
                                 First Name
                             </label>
                             <input
@@ -127,7 +122,10 @@ export default function AcceptInvitationPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label htmlFor="lastName" className="text-sm font-semibold text-gray-700">
+                            <label
+                                htmlFor="lastName"
+                                className="text-sm font-semibold text-gray-700"
+                            >
                                 Last Name
                             </label>
                             <input
@@ -154,7 +152,9 @@ export default function AcceptInvitationPage() {
                             placeholder="sarah@company.com"
                             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                         />
-                        {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
+                        {errors.email && (
+                            <p className="text-xs text-red-600">{errors.email.message}</p>
+                        )}
                     </div>
 
                     <div className="space-y-1.5">
@@ -194,7 +194,10 @@ export default function AcceptInvitationPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                        <label htmlFor="confirmPassword" className="text-sm font-semibold text-gray-700">
+                        <label
+                            htmlFor="confirmPassword"
+                            className="text-sm font-semibold text-gray-700"
+                        >
                             Confirm Password
                         </label>
                         <div className="relative">
@@ -210,7 +213,9 @@ export default function AcceptInvitationPage() {
                                 type="button"
                                 onClick={() => setShowConfirm((prev) => !prev)}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                                aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                                aria-label={
+                                    showConfirm ? "Hide confirm password" : "Show confirm password"
+                                }
                             >
                                 {showConfirm ? (
                                     <EyeOff className="w-5 h-5" />

@@ -15,7 +15,9 @@ export function useUpdateRecruiterJob(jobId: string) {
         onSuccess: () => {
             toastService.success("Job updated successfully.");
             void queryClient.invalidateQueries({ queryKey: [...RECRUITER_JOBS_QUERY_KEY] });
-            void queryClient.invalidateQueries({ queryKey: ["recruiter", "jobs", "detail", jobId] });
+            void queryClient.invalidateQueries({
+                queryKey: ["recruiter", "jobs", "detail", jobId],
+            });
         },
         onError: (error) => {
             toastService.error(normalizeError(error).message);

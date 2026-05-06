@@ -1,13 +1,25 @@
 "use client";
 
 import { CheckCircle2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
+    jobTitle?: string;
+    viewJobsHref?: string;
+    dashboardHref?: string;
 }
 
-export function JobLiveModal({ isOpen, onClose }: Props) {
+export function JobLiveModal({
+    isOpen,
+    onClose,
+    jobTitle = "New Job Post",
+    viewJobsHref = "/recruiter/job-listings",
+    dashboardHref = "/recruiter/dashboard",
+}: Props) {
+    const router = useRouter();
+
     if (!isOpen) return null;
 
     return (
@@ -36,18 +48,24 @@ export function JobLiveModal({ isOpen, onClose }: Props) {
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
                             JOB TITLE
                         </p>
-                        <p className="text-lg font-bold text-blue-600">Senior Product Designer</p>
+                        <p className="text-lg font-bold text-blue-600">{jobTitle}</p>
                     </div>
 
                     <div className="w-full grid grid-cols-2 gap-3">
                         <button
-                            onClick={onClose}
+                            onClick={() => {
+                                onClose();
+                                router.push(viewJobsHref);
+                            }}
                             className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-lg transition-colors text-sm"
                         >
-                            View Job
+                            View Jobs
                         </button>
                         <button
-                            onClick={onClose}
+                            onClick={() => {
+                                onClose();
+                                router.push(dashboardHref);
+                            }}
                             className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-md shadow-blue-600/20 text-sm"
                         >
                             Go to Dashboard

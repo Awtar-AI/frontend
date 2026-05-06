@@ -75,8 +75,9 @@ export default function TeamMembersPage() {
 
                     {lastInvitedEmail && (
                         <div className="mb-4 rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
-                            Invitation sent to <span className="font-semibold">{lastInvitedEmail}</span>.
-                            They can finish signup from the email link.
+                            Invitation sent to{" "}
+                            <span className="font-semibold">{lastInvitedEmail}</span>. They can
+                            finish signup from the email link.
                         </div>
                     )}
 
@@ -97,7 +98,9 @@ export default function TeamMembersPage() {
                                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                 />
                                 {errors.firstName && (
-                                    <p className="text-xs text-red-600">{errors.firstName.message}</p>
+                                    <p className="text-xs text-red-600">
+                                        {errors.firstName.message}
+                                    </p>
                                 )}
                             </div>
 
@@ -116,7 +119,9 @@ export default function TeamMembersPage() {
                                     className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                 />
                                 {errors.lastName && (
-                                    <p className="text-xs text-red-600">{errors.lastName.message}</p>
+                                    <p className="text-xs text-red-600">
+                                        {errors.lastName.message}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -174,7 +179,9 @@ export default function TeamMembersPage() {
                             <ShieldCheck className="h-5 w-5" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-gray-900">Acceptance workflow</h2>
+                            <h2 className="text-base font-bold text-gray-900">
+                                Acceptance workflow
+                            </h2>
                             <p className="text-xs text-gray-500 mt-0.5">
                                 What happens after you send the invite.
                             </p>
@@ -191,19 +198,25 @@ export default function TeamMembersPage() {
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 2
                             </span>
-                            <span>They complete the public HR acceptance form with their password.</span>
+                            <span>
+                                They complete the public HR acceptance form with their password.
+                            </span>
                         </li>
                         <li className="flex gap-3">
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 3
                             </span>
-                            <span>We create the HR user through `POST /users/create?token=...`.</span>
+                            <span>
+                                We create the HR user through `POST /users/create?token=...`.
+                            </span>
                         </li>
                         <li className="flex gap-3">
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 4
                             </span>
-                            <span>They sign in from the recruiter login page and join the team.</span>
+                            <span>
+                                They sign in from the recruiter login page and join the team.
+                            </span>
                         </li>
                     </ol>
                 </div>
@@ -211,7 +224,9 @@ export default function TeamMembersPage() {
 
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-base font-bold text-gray-900">Current organization members</h2>
+                    <h2 className="text-base font-bold text-gray-900">
+                        Current organization members
+                    </h2>
                     <span className="text-xs font-bold text-gray-500">
                         {employeesQuery.data?.length ?? 0} Total
                     </span>
@@ -220,22 +235,23 @@ export default function TeamMembersPage() {
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                {["Name", "Email Address", "Role"].map(
-                                    (h) => (
-                                        <th
-                                            key={h}
-                                            className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest"
-                                        >
-                                            {h}
-                                        </th>
-                                    ),
-                                )}
+                                {["Name", "Email Address", "Role"].map((h) => (
+                                    <th
+                                        key={h}
+                                        className="px-6 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest"
+                                    >
+                                        {h}
+                                    </th>
+                                ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {employeesQuery.isLoading && (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-10 text-center text-sm text-gray-400">
+                                    <td
+                                        colSpan={3}
+                                        className="px-6 py-10 text-center text-sm text-gray-400"
+                                    >
                                         <div className="inline-flex items-center gap-2">
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                             Loading team members...
@@ -245,13 +261,19 @@ export default function TeamMembersPage() {
                             )}
                             {employeesQuery.isError && (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-10 text-center text-sm text-red-500">
+                                    <td
+                                        colSpan={3}
+                                        className="px-6 py-10 text-center text-sm text-red-500"
+                                    >
                                         We couldn&apos;t load your organization members right now.
                                     </td>
                                 </tr>
                             )}
                             {employeesQuery.data?.map((member) => (
-                                <tr key={member.user_id} className="hover:bg-gray-50/50 transition-colors">
+                                <tr
+                                    key={member.user_id}
+                                    className="hover:bg-gray-50/50 transition-colors"
+                                >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-600">
@@ -262,11 +284,15 @@ export default function TeamMembersPage() {
                                                 <p className="font-semibold text-gray-900">
                                                     {member.first_name} {member.last_name}
                                                 </p>
-                                                <p className="text-xs text-gray-500">Organization member</p>
+                                                <p className="text-xs text-gray-500">
+                                                    Organization member
+                                                </p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{member.email}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                        {member.email}
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-gray-600">
                                             {member.role}

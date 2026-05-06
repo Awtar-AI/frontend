@@ -33,9 +33,7 @@ export interface AcceptInvitationParams {
     token: string;
 }
 
-export function toAcceptInvitationPayload(
-    data: AcceptInvitationFormData,
-): AcceptInvitationPayload {
+export function toAcceptInvitationPayload(data: AcceptInvitationFormData): AcceptInvitationPayload {
     return {
         first_name: data.firstName.trim(),
         last_name: data.lastName.trim(),

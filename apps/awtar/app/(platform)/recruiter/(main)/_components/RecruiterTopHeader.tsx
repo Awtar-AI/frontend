@@ -4,10 +4,10 @@ import { Bell, LogOut, Search, Settings, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
-import { AwtarLogo } from "../../_components/AwtarLogo";
-import { OrganizationSwitcher } from "../../_components/OrganizationSwitcher";
 import { useAuthUser } from "@/lib/hooks/use-auth";
 import { useSignOut } from "@/lib/hooks/use-signout";
+import { AwtarLogo } from "../../_components/AwtarLogo";
+import { OrganizationSwitcher } from "../../_components/OrganizationSwitcher";
 
 export function RecruiterTopHeader() {
     const user = useAuthUser();
@@ -48,7 +48,9 @@ export function RecruiterTopHeader() {
                     <button
                         type="button"
                         onClick={() =>
-                            setActiveMenu((prev) => (prev === "notifications" ? null : "notifications"))
+                            setActiveMenu((prev) =>
+                                prev === "notifications" ? null : "notifications",
+                            )
                         }
                         className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors"
                     >
@@ -65,7 +67,10 @@ export function RecruiterTopHeader() {
                     )}
                 </div>
 
-                <button type="button" className="p-2 text-gray-500 hover:text-gray-700 transition-colors">
+                <button
+                    type="button"
+                    className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                >
                     <Settings className="w-5 h-5" />
                 </button>
 
@@ -82,7 +87,9 @@ export function RecruiterTopHeader() {
                         <div className="absolute right-0 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-2 shadow-lg z-50">
                             <div className="px-3 py-2 border-b border-gray-100">
                                 <p className="text-sm font-bold text-gray-900">{displayName}</p>
-                                <p className="text-xs text-gray-500 truncate">{user?.email ?? ""}</p>
+                                <p className="text-xs text-gray-500 truncate">
+                                    {user?.email ?? ""}
+                                </p>
                             </div>
                             <div className="py-1">
                                 <Link

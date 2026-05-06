@@ -1,8 +1,5 @@
 import http from "@/lib/http";
-import {
-    parseOrganizationDetail,
-    type OrganizationDetail,
-} from "../schemas/organization.schema";
+import { type OrganizationDetail, parseOrganizationDetail } from "../schemas/organization.schema";
 
 export const recruiterOrganizationApi = {
     async getOne(organizationId: string): Promise<OrganizationDetail> {

@@ -28,3 +28,20 @@ export function isAccessTokenExpired(token: string | null | undefined, clockSkew
     const now = Math.floor(Date.now() / 1000);
     return exp <= now + clockSkewSec;
 }
+
+function readJwtStringClaim(token: string | null | undefined, claim: string): string | null {
+    if (!token?.trim()) return null;
+    const payload = decodeJwtPayload(token);
+    const value = payload?.[claim];
+    if (typeof value !== "string") return null;
+    const normalized = value.trim();
+    return normalized.length > 0 ? normalized : null;
+}
+
+/**
+ * Organization context used by recruiter/admin tenant-scoped routes (e.g. /jobs).
+ * Backend resolves this from JWT claim `organization_id`.
+ */
+export function getOrganizationIdFromToken(token: string | null | undefined): string | null {
+    return readJwtStringClaim(token, "organization_id");
+}

@@ -12,6 +12,7 @@ interface ToastState {
     toasts: ToastItem[];
     push: (kind: ToastKind, message: string) => void;
     remove: (id: string) => void;
+    dismissAll: () => void;
 }
 
 export const useToastStore = create<ToastState>((set) => ({
@@ -31,6 +32,7 @@ export const useToastStore = create<ToastState>((set) => ({
         set((state) => ({
             toasts: state.toasts.filter((toast) => toast.id !== id),
         })),
+    dismissAll: () => set({ toasts: [] }),
 }));
 
 export const appToast = {

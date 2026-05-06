@@ -6,8 +6,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { useForgotPassword } from "@/app/(platform)/applicant/(auth)/forgot-password/hooks/use-forgot-password";
 import {
-    forgotPasswordFormSchema,
     type ForgotPasswordFormData,
+    forgotPasswordFormSchema,
 } from "@/app/(platform)/applicant/(auth)/forgot-password/schemas/forgot-password.schema";
 import { RecruiterAuthLayout } from "../../_components/RecruiterAuthLayout";
 

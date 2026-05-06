@@ -24,7 +24,10 @@ export default function RecruiterJobApplicationDetailPage({
 }) {
     const { jobId, applicationId } = use(params);
     const applicationQuery = useRecruiterJobApplicationDetail(jobId, applicationId, true);
-    const candidateQuery = useRecruiterCandidateProfile(applicationQuery.data?.user_id ?? null, true);
+    const candidateQuery = useRecruiterCandidateProfile(
+        applicationQuery.data?.user_id ?? null,
+        true,
+    );
 
     if (applicationQuery.isLoading) {
         return (
@@ -73,7 +76,10 @@ export default function RecruiterJobApplicationDetailPage({
                         </p>
                         <p className="text-xs text-gray-600">{application.applicant_email}</p>
                         <p className="text-xs text-gray-600">
-                            Status: <span className="font-semibold text-blue-700">{application.status}</span>
+                            Status:{" "}
+                            <span className="font-semibold text-blue-700">
+                                {application.status}
+                            </span>
                         </p>
                         <p className="text-xs text-gray-600">
                             Submitted: {formatDateLabel(application.created_at)}
@@ -81,14 +87,18 @@ export default function RecruiterJobApplicationDetailPage({
                     </div>
 
                     <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Cover Letter</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            Cover Letter
+                        </p>
                         <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">
                             {application.cover_letter || "Not provided"}
                         </p>
                     </div>
 
                     <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Resume</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            Resume
+                        </p>
                         <p className="text-sm text-gray-800 mt-2">
                             {application.resume_url ? (
                                 <a
@@ -115,7 +125,9 @@ export default function RecruiterJobApplicationDetailPage({
                         </div>
                     )}
                     {candidateQuery.isError && (
-                        <p className="text-sm text-red-600">Could not load candidate profile details.</p>
+                        <p className="text-sm text-red-600">
+                            Could not load candidate profile details.
+                        </p>
                     )}
                     {candidate && (
                         <div className="space-y-3">
@@ -127,17 +139,23 @@ export default function RecruiterJobApplicationDetailPage({
                             </div>
                             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                                 <p className="text-xs text-gray-500">Current job title</p>
-                                <p className="text-sm text-gray-800">{profile?.current_job_title || "—"}</p>
+                                <p className="text-sm text-gray-800">
+                                    {profile?.current_job_title || "—"}
+                                </p>
                             </div>
                             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                                 <p className="text-xs text-gray-500">Years of experience</p>
                                 <p className="text-sm text-gray-800">
-                                    {profile?.years_of_experience ?? application.years_of_experience ?? "—"}
+                                    {profile?.years_of_experience ??
+                                        application.years_of_experience ??
+                                        "—"}
                                 </p>
                             </div>
                             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                                 <p className="text-xs text-gray-500">Education level</p>
-                                <p className="text-sm text-gray-800">{profile?.education_level || "—"}</p>
+                                <p className="text-sm text-gray-800">
+                                    {profile?.education_level || "—"}
+                                </p>
                             </div>
                             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
                                 <p className="text-xs text-gray-500">Primary skills</p>

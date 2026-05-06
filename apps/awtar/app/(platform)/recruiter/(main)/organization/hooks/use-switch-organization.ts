@@ -2,12 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppError, normalizeError } from "@/lib/errors";
-import { refreshSessionApi } from "../../../(auth)/refresh/api/refresh.api";
 import { useAuthStore } from "@/lib/store/auth";
+import { refreshSessionApi } from "../../../(auth)/refresh/api/refresh.api";
+import { ORGANIZATION_EMPLOYEES_QUERY_KEY } from "../../team/hooks/use-organization-employees";
 import { recruiterOrganizationApi } from "../api/organization.api";
 import { toKnownOrganization } from "../schemas/organization.schema";
 import { RECRUITER_ORGANIZATION_QUERY_KEY } from "./use-recruiter-organization";
-import { ORGANIZATION_EMPLOYEES_QUERY_KEY } from "../../team/hooks/use-organization-employees";
 
 export function useSwitchOrganization() {
     const queryClient = useQueryClient();
@@ -22,7 +22,11 @@ export function useSwitchOrganization() {
             const detail = await recruiterOrganizationApi.switchOrganization(organizationId);
 
             if (!refreshToken) {
-                throw new AppError(401, "Missing refresh token. Please sign in again.", "UNAUTHORIZED");
+                throw new AppError(
+                    401,
+                    "Missing refresh token. Please sign in again.",
+                    "UNAUTHORIZED",
+                );
             }
 
             const session = await refreshSessionApi.refresh({ refresh_token: refreshToken });

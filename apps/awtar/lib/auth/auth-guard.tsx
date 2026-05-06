@@ -3,6 +3,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { useAuthStore } from "@/lib/store/auth";
+import { isTerminalRefreshError, refreshAuthSessionSingleFlight } from "./refresh-session";
+import { WrongRoleAccess } from "./wrong-role-access";
 import { isAccessTokenExpired } from "./jwt";
 
 function subscribeToNothing() {
@@ -31,6 +33,8 @@ export type AuthGuardProps = {
     children: React.ReactNode;
     loginPath: string;
     isPublicPath: (pathname: string) => boolean;
+    allowedRoles?: Array<"candidate" | "hr" | "admin">;
+    expectedAreaLabel?: string;
 };
 
 function AuthGateLoading() {
@@ -45,25 +49,63 @@ function AuthGateLoading() {
     );
 }
 
-export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps) {
+export function AuthGuard({
+    children,
+    loginPath,
+    isPublicPath,
+    allowedRoles,
+    expectedAreaLabel = "this area",
+}: AuthGuardProps) {
     const pathname = usePathname() ?? "";
     const router = useRouter();
     const token = useAuthStore((s) => s.accessToken);
+    const refreshToken = useAuthStore((s) => s.refreshToken);
+    const role = useAuthStore((s) => s.role);
     const clearAuth = useAuthStore((s) => s.clearAuth);
+    const [recoveringSession, setRecoveringSession] = useState(false);
 
     const mounted = useIsClient();
     const hydrated = useHasHydrated();
 
     const isPublic = isPublicPath(pathname);
     const sessionInvalid = !token || isAccessTokenExpired(token);
+    const wrongRole =
+        !isPublic &&
+        !sessionInvalid &&
+        !!allowedRoles?.length &&
+        (!role || !allowedRoles.includes(role));
 
     useEffect(() => {
         if (!mounted || !hydrated || isPublic) return;
-        if (sessionInvalid) {
+        let cancelled = false;
+
+        const recover = async () => {
+            if (!sessionInvalid) return;
+            if (refreshToken) {
+                setRecoveringSession(true);
+                try {
+                    await refreshAuthSessionSingleFlight();
+                    if (!cancelled) setRecoveringSession(false);
+                    return;
+                } catch (error) {
+                    if (isTerminalRefreshError(error)) {
+                        clearAuth();
+                    }
+                } finally {
+                    if (!cancelled) setRecoveringSession(false);
+                }
+            }
+
             clearAuth();
             router.replace(loginPath);
-        }
-    }, [mounted, hydrated, isPublic, sessionInvalid, clearAuth, router, loginPath]);
+        };
+
+        void recover();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [mounted, hydrated, isPublic, sessionInvalid, refreshToken, clearAuth, router, loginPath]);
 
     if (!mounted || !hydrated) {
         if (isPublic) return <>{children}</>;
@@ -71,7 +113,16 @@ export function AuthGuard({ children, loginPath, isPublicPath }: AuthGuardProps)
     }
 
     if (isPublic) return <>{children}</>;
-    if (sessionInvalid) return <AuthGateLoading />;
+    if (sessionInvalid || recoveringSession) return <AuthGateLoading />;
+    if (wrongRole) {
+        return (
+            <WrongRoleAccess
+                role={role}
+                expectedAreaLabel={expectedAreaLabel}
+                loginPath={loginPath}
+            />
+        );
+    }
 
     return <>{children}</>;
 }
