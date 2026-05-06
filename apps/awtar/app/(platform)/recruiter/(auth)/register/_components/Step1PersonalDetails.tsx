@@ -3,25 +3,29 @@
 import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import type { RecruiterRegisterFormData } from "../page";
+import type { UseFormReturn } from "react-hook-form";
+import type { RecruiterRegisterFormData } from "../schemas/recruiter-register.schema";
 
 interface Props {
-    formData: RecruiterRegisterFormData;
-    setFormData: React.Dispatch<React.SetStateAction<RecruiterRegisterFormData>>;
+    form: UseFormReturn<RecruiterRegisterFormData>;
     onNext: () => void;
 }
 
-export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
+export function Step1PersonalDetails({ form, onNext }: Props) {
     const [showPassword, setShowPassword] = useState(false);
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onNext();
-    };
+    const {
+        register,
+        formState: { errors },
+    } = form;
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Full Name */}
+        <form
+            onSubmit={(e) => {
+                e.preventDefault();
+                onNext();
+            }}
+            className="flex flex-col gap-4"
+        >
             <div className="space-y-1.5">
                 <label htmlFor="s1-fullname" className="text-sm font-semibold text-gray-700">
                     Full Name
@@ -32,15 +36,15 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                         id="s1-fullname"
                         type="text"
                         placeholder="John Doe"
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                        {...register("fullName")}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                 </div>
+                {errors.fullName && (
+                    <p className="text-xs text-red-600">{errors.fullName.message}</p>
+                )}
             </div>
 
-            {/* Work Email */}
             <div className="space-y-1.5">
                 <label htmlFor="s1-email" className="text-sm font-semibold text-gray-700">
                     Work Email
@@ -51,15 +55,13 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                         id="s1-email"
                         type="email"
                         placeholder="john@company.com"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        {...register("email")}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                 </div>
+                {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
             </div>
 
-            {/* Phone Number */}
             <div className="space-y-1.5">
                 <label htmlFor="s1-phone" className="text-sm font-semibold text-gray-700">
                     Phone Number
@@ -69,16 +71,14 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                     <input
                         id="s1-phone"
                         type="tel"
-                        placeholder="+1 (555) 000-0000"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="+251911234567"
+                        {...register("phone")}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                 </div>
+                {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
             </div>
 
-            {/* Password */}
             <div className="space-y-1.5">
                 <label htmlFor="s1-password" className="text-sm font-semibold text-gray-700">
                     Password
@@ -89,10 +89,8 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                         id="s1-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        {...register("password")}
                         className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        required
                     />
                     <button
                         type="button"
@@ -107,12 +105,15 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                         )}
                     </button>
                 </div>
-                <p className="text-xs text-gray-500 font-medium ml-1">
-                    Must be at least 8 characters with a symbol.
-                </p>
+                {errors.password ? (
+                    <p className="text-xs text-red-600">{errors.password.message}</p>
+                ) : (
+                    <p className="text-xs text-gray-500 font-medium ml-1">
+                        Min 8 chars with uppercase, lowercase, number, and symbol.
+                    </p>
+                )}
             </div>
 
-            {/* CTA */}
             <button
                 type="submit"
                 className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] mt-2 flex items-center justify-center gap-2"
@@ -136,7 +137,7 @@ export function Step1PersonalDetails({ formData, setFormData, onNext }: Props) {
                 <Link href="/privacy" className="underline hover:text-gray-700">
                     Privacy Policy
                 </Link>
-                . We&apos;ll send you occasional product updates.
+                .
             </p>
         </form>
     );
