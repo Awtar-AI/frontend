@@ -353,7 +353,11 @@ export default function RecruiterDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button title="button" type="button" className="text-gray-400 hover:text-gray-600 p-1">
+                                            <button
+                                                title="button"
+                                                type="button"
+                                                className="text-gray-400 hover:text-gray-600 p-1"
+                                            >
                                                 <MoreHorizontal className="w-5 h-5" />
                                             </button>
                                         </td>

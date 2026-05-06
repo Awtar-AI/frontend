@@ -42,7 +42,7 @@ function BrandingPanel() {
             </div>
 
             {/* Hero content */}
-            <div className="relative z-10 flex-1 flex items-center px-12 lg:px-16">
+            <div className="relative z-10 flex-1 flex items-start px-12 pt-14 lg:px-16 lg:pt-20">
                 <div className="max-w-sm">
                     <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
                         Connect with the future of talent.
