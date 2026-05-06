@@ -1,9 +1,9 @@
 import http from "@/lib/http";
 import {
-    parseJobPostList,
-    parseJobPostResponse,
     type CreateJobPayload,
     type JobPostResponse,
+    parseJobPostList,
+    parseJobPostResponse,
     type UpdateJobPayload,
 } from "../schemas/post-job.schema";
 

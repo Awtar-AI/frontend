@@ -11,7 +11,8 @@ export function useCreateJob() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (formData: CreateJobFormData) => postJobApi.create(toCreateJobPayload(formData)),
+        mutationFn: (formData: CreateJobFormData) =>
+            postJobApi.create(toCreateJobPayload(formData)),
         onSuccess: () => {
             toastService.success("Job posted successfully.");
             void queryClient.invalidateQueries({ queryKey: [...RECRUITER_JOBS_QUERY_KEY] });

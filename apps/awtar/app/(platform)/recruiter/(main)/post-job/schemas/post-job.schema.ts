@@ -24,10 +24,7 @@ export const salaryTypeOptions = [
 export const createJobFormSchema = z
     .object({
         title: z.string().trim().min(2, "Job title must be at least 2 characters").max(255),
-        description: z
-            .string()
-            .trim()
-            .min(10, "Job description must be at least 10 characters"),
+        description: z.string().trim().min(10, "Job description must be at least 10 characters"),
         location: z.string().trim().optional(),
         isRemote: z.boolean(),
         employmentType: z.enum(employmentTypeOptions.map((o) => o.value) as [string, ...string[]]),
@@ -52,7 +49,10 @@ export const createJobFormSchema = z
             });
         }
 
-        if (data.salaryType === "fixed" && (data.minSalary == null || Number.isNaN(data.minSalary))) {
+        if (
+            data.salaryType === "fixed" &&
+            (data.minSalary == null || Number.isNaN(data.minSalary))
+        ) {
             ctx.addIssue({
                 code: "custom",
                 path: ["minSalary"],

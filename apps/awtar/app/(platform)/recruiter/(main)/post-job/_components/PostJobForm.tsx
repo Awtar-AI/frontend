@@ -11,11 +11,11 @@ import { DeadlineWarningModal } from "../../../_components/modals/DeadlineWarnin
 import { JobLiveModal } from "../../../_components/modals/JobLiveModal";
 import { useCreateJob } from "../hooks/use-create-job";
 import {
+    type CreateJobFormData,
     createJobFormSchema,
     employmentTypeOptions,
     experienceLevelOptions,
     salaryTypeOptions,
-    type CreateJobFormData,
 } from "../schemas/post-job.schema";
 
 export function PostJobForm() {
@@ -95,7 +95,9 @@ export function PostJobForm() {
                             placeholder='e.g., "Senior Backend Engineer"'
                             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm outline-none transition-all placeholder:text-gray-400"
                         />
-                        {errors.title && <p className="text-xs text-red-600">{errors.title.message}</p>}
+                        {errors.title && (
+                            <p className="text-xs text-red-600">{errors.title.message}</p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
@@ -207,7 +209,9 @@ export function PostJobForm() {
                                 type="text"
                                 {...register("location")}
                                 disabled={isRemote}
-                                placeholder={isRemote ? "Remote role" : "e.g., Addis Ababa, Ethiopia"}
+                                placeholder={
+                                    isRemote ? "Remote role" : "e.g., Addis Ababa, Ethiopia"
+                                }
                                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none placeholder:text-gray-400 disabled:bg-gray-50"
                             />
                             {errors.location && (
@@ -261,7 +265,9 @@ export function PostJobForm() {
                                     setValueAs: (value) => (value === "" ? null : Number(value)),
                                 })}
                                 disabled={salaryType === "undisclosed"}
-                                placeholder={salaryType === "undisclosed" ? "Not required" : "e.g., 50000"}
+                                placeholder={
+                                    salaryType === "undisclosed" ? "Not required" : "e.g., 50000"
+                                }
                                 className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none placeholder:text-gray-400 disabled:bg-gray-50"
                             />
                             {errors.minSalary && (
@@ -351,7 +357,9 @@ export function PostJobForm() {
                             Optional. If included, it must be between 50 and 200 characters.
                         </p>
                         {errors.automaticResponse && (
-                            <p className="text-xs text-red-600">{errors.automaticResponse.message}</p>
+                            <p className="text-xs text-red-600">
+                                {errors.automaticResponse.message}
+                            </p>
                         )}
                     </div>
                 </div>
