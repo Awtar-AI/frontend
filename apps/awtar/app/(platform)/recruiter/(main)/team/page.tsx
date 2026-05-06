@@ -1,220 +1,226 @@
 "use client";
 
-import { RotateCw, UserPlus } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Mail, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
-
-type Invitation = {
-    id: number;
-    email: string;
-    role: string;
-    sentDate: string;
-    status: "Pending" | "Expired";
-};
-
-const INITIAL_INVITATIONS: Invitation[] = [
-    {
-        id: 1,
-        email: "michael.ross@design.co",
-        role: "Recruiter",
-        sentDate: "Oct 12, 2023",
-        status: "Pending",
-    },
-    {
-        id: 2,
-        email: "lisa.vogel@tech.io",
-        role: "Admin",
-        sentDate: "Oct 08, 2023",
-        status: "Pending",
-    },
-    {
-        id: 3,
-        email: "david.wu@global.net",
-        role: "Reviewer",
-        sentDate: "Sep 24, 2023",
-        status: "Expired",
-    },
-];
-
-const ROLES = ["Recruiter", "Admin", "Reviewer", "Viewer"];
+import { useForm } from "react-hook-form";
+import { useAuthOrganizationId } from "@/lib/hooks/use-auth";
+import { useInviteHr } from "./hooks/use-invite-hr";
+import { useOrganizationEmployees } from "./hooks/use-organization-employees";
+import { type InviteHrFormData, inviteHrFormSchema } from "./schemas/team.schema";
 
 export default function TeamMembersPage() {
-    const [invitations, setInvitations] = useState<Invitation[]>(INITIAL_INVITATIONS);
-    const [form, setForm] = useState({ name: "", email: "", role: "Recruiter" });
-    const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
-    const [successMsg, setSuccessMsg] = useState("");
+    const organizationId = useAuthOrganizationId();
+    const inviteMutation = useInviteHr(organizationId);
+    const employeesQuery = useOrganizationEmployees(organizationId);
+    const [lastInvitedEmail, setLastInvitedEmail] = useState<string | null>(null);
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { errors },
+    } = useForm<InviteHrFormData>({
+        resolver: zodResolver(inviteHrFormSchema),
+        defaultValues: {
+            firstName: "",
+            lastName: "",
+            email: "",
+        },
+    });
 
-    const validate = () => {
-        const errs: typeof errors = {};
-        if (!form.name.trim()) errs.name = "Full name is required.";
-        if (!form.email.trim()) errs.email = "Work email is required.";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-            errs.email = "Enter a valid email address.";
-        return errs;
-    };
-
-    const handleSend = (e: React.FormEvent) => {
-        e.preventDefault();
-        const errs = validate();
-        if (Object.keys(errs).length > 0) {
-            setErrors(errs);
-            return;
-        }
-        const newInvite: Invitation = {
-            id: Date.now(),
-            email: form.email.trim(),
-            role: form.role,
-            sentDate: new Date().toLocaleDateString("en-US", {
-                month: "short",
-                day: "2-digit",
-                year: "numeric",
-            }),
-            status: "Pending",
-        };
-        setInvitations([newInvite, ...invitations]);
-        setForm({ name: "", email: "", role: "Recruiter" });
-        setErrors({});
-        setSuccessMsg(`Invitation sent to ${newInvite.email}!`);
-        setTimeout(() => setSuccessMsg(""), 3000);
-    };
-
-    const resendInvite = (id: number) => {
-        setInvitations(
-            invitations.map((inv) =>
-                inv.id === id
-                    ? {
-                          ...inv,
-                          status: "Pending",
-                          sentDate: new Date().toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "2-digit",
-                              year: "numeric",
-                          }),
-                      }
-                    : inv,
-            ),
-        );
-    };
+    const onSubmit = handleSubmit((data) => {
+        inviteMutation.mutate(data, {
+            onSuccess: () => {
+                setLastInvitedEmail(data.email.trim());
+                reset();
+            },
+        });
+    });
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            {/* Page Header */}
+        <div className="max-w-5xl mx-auto space-y-6">
             <div className="flex items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        Manage and invite recruiters to your talent acquisition team.
+                        Invite HR teammates and manage the people already connected to your
+                        organization.
                     </p>
                 </div>
-                <button
-                    onClick={() =>
-                        document
-                            .getElementById("invite-form")
-                            ?.scrollIntoView({ behavior: "smooth" })
-                    }
-                    className="flex items-center gap-2 bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                    <UserPlus className="w-4 h-4" /> Invite New Recruiter
-                </button>
             </div>
 
-            {/* Invite Form */}
-            <div
-                id="invite-form"
-                className="bg-white rounded-xl border border-gray-200 shadow-sm p-6"
-            >
-                <h2 className="text-base font-bold text-gray-900 mb-1">Invite New Recruiter</h2>
-                <p className="text-xs text-gray-500 mb-5">
-                    New members will receive an email invitation to join your workspace.
-                </p>
+            {!organizationId && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    Your active organization could not be determined from the current session.
+                    Please sign out and sign in again before sending invitations.
+                </div>
+            )}
 
-                {successMsg && (
-                    <div className="mb-4 px-4 py-2.5 bg-green-50 border border-green-100 text-green-700 text-xs font-semibold rounded-lg">
-                        ✓ {successMsg}
-                    </div>
-                )}
-
-                <form onSubmit={handleSend}>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                Full Name
-                            </label>
-                            <input
-                                type="text"
-                                placeholder="e.g. Sarah Jenkins"
-                                value={form.name}
-                                onChange={(e) => {
-                                    setForm({ ...form, name: e.target.value });
-                                    setErrors({ ...errors, name: undefined });
-                                }}
-                                className={`w-full border rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder:text-gray-300 ${errors.name ? "border-red-300 bg-red-50" : "border-gray-200"}`}
-                            />
-                            {errors.name && (
-                                <p className="text-[11px] text-red-500 mt-1 font-medium">
-                                    {errors.name}
-                                </p>
-                            )}
+            <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_1fr] gap-6">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                            <UserPlus className="h-5 w-5" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                Work Email
-                            </label>
-                            <input
-                                type="email"
-                                placeholder="sarah@company.com"
-                                value={form.email}
-                                onChange={(e) => {
-                                    setForm({ ...form, email: e.target.value });
-                                    setErrors({ ...errors, email: undefined });
-                                }}
-                                className={`w-full border rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder:text-gray-300 ${errors.email ? "border-red-300 bg-red-50" : "border-gray-200"}`}
-                            />
-                            {errors.email && (
-                                <p className="text-[11px] text-red-500 mt-1 font-medium">
-                                    {errors.email}
-                                </p>
-                            )}
+                            <h2 className="text-base font-bold text-gray-900">
+                                Invite a new HR teammate
+                            </h2>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                                They&apos;ll receive an email with a secure link to complete their
+                                account setup.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="flex items-end gap-4">
-                        <div className="flex-1">
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                                Role
-                            </label>
-                            <select
-                                value={form.role}
-                                onChange={(e) => setForm({ ...form, role: e.target.value })}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    {lastInvitedEmail && (
+                        <div className="mb-4 rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">
+                            Invitation sent to <span className="font-semibold">{lastInvitedEmail}</span>.
+                            They can finish signup from the email link.
+                        </div>
+                    )}
+
+                    <form className="space-y-4" onSubmit={onSubmit}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label
+                                    htmlFor="invite-first-name"
+                                    className="text-sm font-semibold text-gray-700"
+                                >
+                                    First name
+                                </label>
+                                <input
+                                    id="invite-first-name"
+                                    type="text"
+                                    {...register("firstName")}
+                                    placeholder="Sarah"
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                                />
+                                {errors.firstName && (
+                                    <p className="text-xs text-red-600">{errors.firstName.message}</p>
+                                )}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label
+                                    htmlFor="invite-last-name"
+                                    className="text-sm font-semibold text-gray-700"
+                                >
+                                    Last name
+                                </label>
+                                <input
+                                    id="invite-last-name"
+                                    type="text"
+                                    {...register("lastName")}
+                                    placeholder="Jenkins"
+                                    className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                                />
+                                {errors.lastName && (
+                                    <p className="text-xs text-red-600">{errors.lastName.message}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="invite-email"
+                                className="text-sm font-semibold text-gray-700"
                             >
-                                {ROLES.map((r) => (
-                                    <option key={r}>{r}</option>
-                                ))}
-                            </select>
+                                Work email
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    id="invite-email"
+                                    type="email"
+                                    {...register("email")}
+                                    placeholder="sarah@company.com"
+                                    className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            {errors.email && (
+                                <p className="text-xs text-red-600">{errors.email.message}</p>
+                            )}
                         </div>
+
+                        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+                            The invite email should send them to ` /accept-invitation?token=... ` so
+                            they can create their HR account.
+                        </div>
+
                         <button
                             type="submit"
-                            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-bold px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+                            disabled={!organizationId || inviteMutation.isPending}
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
                         >
-                            <UserPlus className="w-4 h-4" /> Send Invitation
+                            {inviteMutation.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Sending invite...
+                                </>
+                            ) : (
+                                <>
+                                    <UserPlus className="h-4 w-4" />
+                                    Send invitation
+                                </>
+                            )}
                         </button>
+                    </form>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                            <ShieldCheck className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-bold text-gray-900">Acceptance workflow</h2>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                                What happens after you send the invite.
+                            </p>
+                        </div>
                     </div>
-                </form>
+                    <ol className="space-y-4 text-sm text-gray-600">
+                        <li className="flex gap-3">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                                1
+                            </span>
+                            <span>The invited person opens the secure email link.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                                2
+                            </span>
+                            <span>They complete the public HR acceptance form with their password.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                                3
+                            </span>
+                            <span>We create the HR user through `POST /users/create?token=...`.</span>
+                        </li>
+                        <li className="flex gap-3">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                                4
+                            </span>
+                            <span>They sign in from the recruiter login page and join the team.</span>
+                        </li>
+                    </ol>
+                </div>
             </div>
 
-            {/* Pending Invitations Table */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <h2 className="text-base font-bold text-gray-900">Pending Invitations</h2>
+                    <h2 className="text-base font-bold text-gray-900">Current organization members</h2>
                     <span className="text-xs font-bold text-gray-500">
-                        {invitations.length} Total
+                        {employeesQuery.data?.length ?? 0} Total
                     </span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                {["Email Address", "Role", "Sent Date", "Status", "Action"].map(
+                                {["Name", "Email Address", "Role"].map(
                                     (h) => (
                                         <th
                                             key={h}
@@ -227,47 +233,62 @@ export default function TeamMembersPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {invitations.map((inv) => (
-                                <tr key={inv.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">
-                                        {inv.email}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{inv.role}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">
-                                        {inv.sentDate}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span
-                                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                                                inv.status === "Pending"
-                                                    ? "bg-amber-50 text-amber-600"
-                                                    : "bg-red-50 text-red-500"
-                                            }`}
-                                        >
-                                            • {inv.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <button
-                                            onClick={() => resendInvite(inv.id)}
-                                            className="text-gray-400 hover:text-blue-600 transition-colors"
-                                            title="Resend Invite"
-                                        >
-                                            <RotateCw className="w-4 h-4" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                            {invitations.length === 0 && (
+                            {employeesQuery.isLoading && (
                                 <tr>
-                                    <td
-                                        colSpan={5}
-                                        className="px-6 py-10 text-center text-sm text-gray-400"
-                                    >
-                                        No pending invitations. Send one above!
+                                    <td colSpan={3} className="px-6 py-10 text-center text-sm text-gray-400">
+                                        <div className="inline-flex items-center gap-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            Loading team members...
+                                        </div>
                                     </td>
                                 </tr>
                             )}
+                            {employeesQuery.isError && (
+                                <tr>
+                                    <td colSpan={3} className="px-6 py-10 text-center text-sm text-red-500">
+                                        We couldn&apos;t load your organization members right now.
+                                    </td>
+                                </tr>
+                            )}
+                            {employeesQuery.data?.map((member) => (
+                                <tr key={member.user_id} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-600">
+                                                {member.first_name[0]}
+                                                {member.last_name[0]}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-gray-900">
+                                                    {member.first_name} {member.last_name}
+                                                </p>
+                                                <p className="text-xs text-gray-500">Organization member</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">{member.email}</td>
+                                    <td className="px-6 py-4">
+                                        <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-gray-600">
+                                            {member.role}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                            {!employeesQuery.isLoading &&
+                                !employeesQuery.isError &&
+                                !employeesQuery.data?.length && (
+                                    <tr>
+                                        <td
+                                            colSpan={3}
+                                            className="px-6 py-12 text-center text-sm text-gray-400"
+                                        >
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Users className="h-5 w-5" />
+                                                <span>No HR team members found yet.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
                         </tbody>
                     </table>
                 </div>
