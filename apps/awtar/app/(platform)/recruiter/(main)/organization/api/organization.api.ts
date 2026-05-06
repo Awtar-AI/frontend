@@ -1,0 +1,17 @@
+import http from "@/lib/http";
+import {
+    parseOrganizationDetail,
+    type OrganizationDetail,
+} from "../schemas/organization.schema";
+
+export const recruiterOrganizationApi = {
+    async getOne(organizationId: string): Promise<OrganizationDetail> {
+        const { data } = await http.get(`/api/v1/organizations/${organizationId}/single`);
+        return parseOrganizationDetail(data);
+    },
+
+    async switchOrganization(organizationId: string): Promise<OrganizationDetail> {
+        const { data } = await http.patch(`/api/v1/organizations/${organizationId}/switch`);
+        return parseOrganizationDetail(data);
+    },
+};
