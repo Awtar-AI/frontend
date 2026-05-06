@@ -1,464 +1,389 @@
 "use client";
 
-import {
-    ArrowRight,
-    Bookmark,
-    CheckCircle2,
-    ChevronDown,
-    MapPin,
-    Search,
-    Star,
-} from "lucide-react";
+import { ArrowRight, Bookmark, ChevronDown, Loader2, MapPin, Search } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { mockJobs } from "../../lib/mockData";
-import type { JobPost } from "../../types";
+import { useEffect, useMemo, useState } from "react";
+import { useMyApplications } from "../applications/hooks/use-my-applications";
+import { usePublicJobs } from "../public-jobs/hooks/use-public-jobs";
+import {
+    formatEmploymentTypeLabel,
+    formatExperienceLevelLabel,
+    formatPublicJobLocation,
+    formatPublicJobSalary,
+} from "../public-jobs/lib/format-job";
+import type { PublicJobsQuery } from "../public-jobs/schemas/public-jobs.schema";
+
+const JOBS_PER_PAGE = 9;
+
+const EMPLOYMENT_TYPES = [
+    { value: "", label: "All types" },
+    { value: "full_time", label: "Full-time" },
+    { value: "part_time", label: "Part-time" },
+    { value: "contract", label: "Contract" },
+    { value: "internship", label: "Internship" },
+    { value: "temporary", label: "Temporary" },
+] as const;
+
+const EXPERIENCE_LEVELS = [
+    { value: "", label: "All levels" },
+    { value: "entry", label: "Entry" },
+    { value: "mid", label: "Mid" },
+    { value: "senior", label: "Senior" },
+    { value: "lead", label: "Lead" },
+] as const;
+
+const REMOTE_FILTER = [
+    { value: "" as const, label: "All" },
+    { value: "remote" as const, label: "Remote only" },
+    { value: "onsite" as const, label: "On-site only" },
+];
+
+function formatDeadlineLabel(value: string): string {
+    try {
+        return new Intl.DateTimeFormat(undefined, {
+            dateStyle: "medium",
+        }).format(new Date(value));
+    } catch {
+        return value;
+    }
+}
+
+function isJobClosed(status: string, deadline: string): boolean {
+    const deadlineDate = new Date(deadline);
+    const pastDeadline =
+        Number.isFinite(deadlineDate.getTime()) && deadlineDate.getTime() < Date.now();
+    return status !== "active" || pastDeadline;
+}
 
 export default function JobsPage() {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+    const [page, setPage] = useState(1);
+    const [titleInput, setTitleInput] = useState("");
+    const [titleQuery, setTitleQuery] = useState("");
+    const [employmentType, setEmploymentType] = useState("");
+    const [experienceLevel, setExperienceLevel] = useState("");
+    const [remoteFilter, setRemoteFilter] = useState<(typeof REMOTE_FILTER)[number]["value"]>("");
 
-    const JOBS_PER_PAGE = 3;
+    useEffect(() => {
+        const t = setTimeout(() => setTitleQuery(titleInput.trim()), 400);
+        return () => clearTimeout(t);
+    }, [titleInput]);
 
-    const filteredJobs = mockJobs.filter((job) => {
-        const matchesSearch =
-            job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            job.company.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory =
-            selectedCategories.length === 0 || selectedCategories.includes(job.tags[0]); // Mock category logic
-        const matchesType = selectedTypes.length === 0 || selectedTypes.includes(job.type);
+    const query: PublicJobsQuery = useMemo(() => {
+        const q: PublicJobsQuery = {
+            page,
+            limit: JOBS_PER_PAGE,
+            status: "active",
+        };
+        if (titleQuery.length >= 2) q.title = titleQuery;
+        if (employmentType) q.employment_type = employmentType;
+        if (experienceLevel) q.experience_level = experienceLevel;
+        if (remoteFilter === "remote") q.is_remote = true;
+        if (remoteFilter === "onsite") q.is_remote = false;
+        return q;
+    }, [page, titleQuery, employmentType, experienceLevel, remoteFilter]);
 
-        return matchesSearch && matchesCategory && matchesType;
-    });
+    const jobsQuery = usePublicJobs(query);
+    const myApplicationsQuery = useMyApplications();
+    const jobs = jobsQuery.data?.jobs ?? [];
+    const total = jobsQuery.data?.total ?? 0;
+    const totalPages = Math.max(1, Math.ceil(total / JOBS_PER_PAGE));
 
-    const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
-    const displayedJobs = filteredJobs.slice(
-        (currentPage - 1) * JOBS_PER_PAGE,
-        currentPage * JOBS_PER_PAGE,
-    );
-
-    const toggleCategory = (cat: string) => {
-        setSelectedCategories((prev) =>
-            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
-        );
-        setCurrentPage(1);
-    };
-
-    const toggleType = (type: string) => {
-        setSelectedTypes((prev) =>
-            prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
-        );
-        setCurrentPage(1);
-    };
+    const showingFrom = total === 0 ? 0 : (page - 1) * JOBS_PER_PAGE + 1;
+    const showingTo = Math.min(page * JOBS_PER_PAGE, total);
 
     return (
-        <div className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
-            {/* Top Illustration Banner */}
-            <div className="bg-[#EBF1FA] rounded-[32px] overflow-hidden flex items-center justify-center p-12 relative min-h-[300px]">
-                <div className="relative w-full max-w-2xl h-64">
-                    {/* Placeholder for the illustration in screenshot 1 */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative w-[500px] h-[250px] bg-white rounded-2xl shadow-xl flex items-center justify-center border-b-8 border-blue-500 overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-blue-100"></div>
-                            <div className="flex gap-4 items-center">
-                                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                    <Search className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="w-32 h-3 bg-gray-100 rounded-full"></div>
-                                    <div className="w-24 h-2 bg-gray-50 rounded-full"></div>
-                                </div>
-                            </div>
-                            {/* Abstract shapes to mimic the illustration */}
-                            <div className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full bg-blue-50 opacity-50"></div>
-                            <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-blue-100 opacity-30"></div>
-                        </div>
-                    </div>
+        <div className="p-4 lg:p-6 max-w-[1500px] mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
+            <div className="bg-[#EBF1FA] rounded-[32px] overflow-hidden flex items-center justify-center p-10 relative min-h-[200px]">
+                <div className="text-center space-y-2 max-w-xl">
+                    <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+                        Find your next role
+                    </h1>
+                    <p className="text-sm font-medium text-gray-500">
+                        Browse open positions from organizations on Awtar (`GET /jobs/public`).
+                    </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-                {/* Left Sidebar: Filters */}
                 <div className="xl:col-span-3 space-y-8">
                     <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm space-y-8">
-                        {/* Search by Title */}
                         <div className="space-y-3">
                             <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Search by Job Title
+                                Search by title
                             </h4>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    value={searchQuery}
+                                    value={titleInput}
                                     onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setCurrentPage(1);
+                                        setTitleInput(e.target.value);
+                                        setPage(1);
                                     }}
-                                    placeholder="Job title or company"
+                                    placeholder="Job title (min 2 characters)"
                                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-900 focus:bg-white focus:border-blue-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
 
-                        {/* Location */}
                         <div className="space-y-3">
                             <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Location
+                                Work location
                             </h4>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <select className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:bg-white focus:border-blue-500 outline-none transition-all cursor-pointer">
-                                    <option>Choose city</option>
-                                    <option>Addis Ababa</option>
-                                    <option>Remote</option>
+                                <select
+                                    value={remoteFilter}
+                                    onChange={(e) => {
+                                        setRemoteFilter(e.target.value as typeof remoteFilter);
+                                        setPage(1);
+                                    }}
+                                    className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:bg-white focus:border-blue-500 outline-none cursor-pointer"
+                                >
+                                    {REMOTE_FILTER.map((o) => (
+                                        <option key={o.value || "all"} value={o.value}>
+                                            {o.label}
+                                        </option>
+                                    ))}
                                 </select>
                                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                             </div>
                         </div>
 
-                        {/* Category */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Category
+                                Employment type
                             </h4>
-                            <div className="space-y-2.5">
-                                {["marketing", "design", "engineering", "management"].map((cat) => (
-                                    <button
-                                        key={cat}
-                                        type="button"
-                                        onClick={() => toggleCategory(cat)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                toggleCategory(cat);
-                                            }
-                                        }}
-                                        className="w-full flex items-center justify-between group cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={`w-4 h-4 rounded border-2 transition-colors ${
-                                                    selectedCategories.includes(cat)
-                                                        ? "bg-blue-600 border-blue-600"
-                                                        : "border-gray-200 group-hover:border-blue-500"
-                                                }`}
-                                            >
-                                                {selectedCategories.includes(cat) && (
-                                                    <CheckCircle2 className="w-3 h-3 text-white" />
-                                                )}
-                                            </div>
-                                            <span
-                                                className={`text-xs font-bold transition-colors uppercase ${
-                                                    selectedCategories.includes(cat)
-                                                        ? "text-blue-600"
-                                                        : "text-gray-600 group-hover:text-gray-900"
-                                                }`}
-                                            >
-                                                {cat}
-                                            </span>
-                                        </div>
-                                        <span className="text-[10px] font-black text-gray-400">
-                                            10
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                type="button"
-                                className="w-full py-2 bg-blue-600 text-white text-xs font-black rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                            <select
+                                value={employmentType}
+                                onChange={(e) => {
+                                    setEmploymentType(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-900 focus:bg-white focus:border-blue-500 outline-none"
                             >
-                                Show More
-                            </button>
-                        </div>
-
-                        {/* Job Type */}
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Job Type
-                            </h4>
-                            <div className="space-y-2.5">
-                                {["Full-time", "Part-time", "Freelance"].map((type) => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => toggleType(type)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter" || e.key === " ") {
-                                                toggleType(type);
-                                            }
-                                        }}
-                                        className="w-full flex items-center justify-between group cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div
-                                                className={`w-4 h-4 rounded border-2 transition-colors ${
-                                                    selectedTypes.includes(type)
-                                                        ? "bg-blue-600 border-blue-600"
-                                                        : "border-gray-200 group-hover:border-blue-500"
-                                                }`}
-                                            >
-                                                {selectedTypes.includes(type) && (
-                                                    <CheckCircle2 className="w-3 h-3 text-white" />
-                                                )}
-                                            </div>
-                                            <span
-                                                className={`text-xs font-bold transition-colors ${
-                                                    selectedTypes.includes(type)
-                                                        ? "text-blue-600"
-                                                        : "text-gray-600 group-hover:text-gray-900"
-                                                }`}
-                                            >
-                                                {type}
-                                            </span>
-                                        </div>
-                                        <span className="text-[10px] font-black text-gray-400">
-                                            10
-                                        </span>
-                                    </button>
+                                {EMPLOYMENT_TYPES.map((o) => (
+                                    <option key={o.value || "all-emp"} value={o.value}>
+                                        {o.label}
+                                    </option>
                                 ))}
-                            </div>
+                            </select>
                         </div>
 
-                        {/* Experience Level */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Experience Level
+                                Experience level
                             </h4>
-                            <div className="space-y-2.5">
-                                {["Fresher", "Intermediate", "Senior"].map((lvl) => (
-                                    <label
-                                        key={lvl}
-                                        className="flex items-center justify-between group cursor-pointer"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <input type="checkbox" className="sr-only" />
-                                            <div className="w-4 h-4 rounded border-2 border-gray-200 group-hover:border-blue-500 transition-colors"></div>
-                                            <span className="text-xs font-bold text-gray-600 group-hover:text-gray-900">
-                                                {lvl}
-                                            </span>
-                                        </div>
-                                        <span className="text-[10px] font-black text-gray-400">
-                                            10
-                                        </span>
-                                    </label>
+                            <select
+                                value={experienceLevel}
+                                onChange={(e) => {
+                                    setExperienceLevel(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold text-gray-900 focus:bg-white focus:border-blue-500 outline-none"
+                            >
+                                {EXPERIENCE_LEVELS.map((o) => (
+                                    <option key={o.value || "all-exp"} value={o.value}>
+                                        {o.label}
+                                    </option>
                                 ))}
-                            </div>
+                            </select>
                         </div>
 
-                        {/* Salary Range */}
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Salary
-                            </h4>
-                            <div className="px-2">
-                                <div className="h-1 bg-blue-100 rounded-full relative">
-                                    <div className="absolute inset-0 right-1/4 bg-blue-600 rounded-full"></div>
-                                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-600 rounded-full cursor-pointer shadow-md"></div>
-                                    <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-4 h-4 bg-white border-2 border-blue-600 rounded-full cursor-pointer shadow-md"></div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold text-gray-900">
-                                    Salary: $0 - $9999
-                                </span>
-                                <button
-                                    type="button"
-                                    className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-md"
-                                >
-                                    Apply
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="space-y-4 pb-4">
-                            <h4 className="text-sm font-black text-gray-900 tracking-tight">
-                                Tags
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                                {[
-                                    "engineering",
-                                    "design",
-                                    "ui/ux",
-                                    "marketing",
-                                    "management",
-                                    "soft",
-                                ].map((tag) => (
-                                    <button
-                                        key={tag}
-                                        type="button"
-                                        onClick={() => toggleCategory(tag)}
-                                        className={`px-3 py-1.5 text-[10px] font-black rounded-lg cursor-pointer transition-all ${
-                                            selectedCategories.includes(tag)
-                                                ? "bg-blue-600 text-white shadow-md"
-                                                : "bg-blue-50 text-blue-600 hover:bg-blue-100"
-                                        }`}
-                                    >
-                                        {tag}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setTitleInput("");
+                                setEmploymentType("");
+                                setExperienceLevel("");
+                                setRemoteFilter("");
+                                setPage(1);
+                            }}
+                            className="w-full py-2.5 border border-gray-200 text-gray-700 text-xs font-black rounded-xl hover:bg-gray-50 transition-colors"
+                        >
+                            Clear filters
+                        </button>
                     </div>
                 </div>
 
-                {/* Right Column: Listing */}
                 <div className="xl:col-span-9 space-y-6">
-                    <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center justify-between px-2 flex-wrap gap-3">
                         <p className="text-sm font-bold text-gray-500 tracking-tight">
-                            Showing {(currentPage - 1) * JOBS_PER_PAGE + 1}-
-                            {Math.min(currentPage * JOBS_PER_PAGE, filteredJobs.length)} of{" "}
-                            {filteredJobs.length} results
+                            {jobsQuery.isLoading ? (
+                                "Loading…"
+                            ) : (
+                                <>
+                                    Showing {showingFrom}-{showingTo} of {total} results
+                                </>
+                            )}
                         </p>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-gray-400">Sort by latest</span>
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                        </div>
                     </div>
 
-                    <div className="space-y-6 min-h-[600px]">
-                        {displayedJobs.length > 0 ? (
-                            displayedJobs.map((job: JobPost) => (
-                                <div
-                                    key={job.id}
-                                    className="bg-white rounded-[24px] p-8 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative animate-in fade-in slide-in-from-bottom-2 duration-300"
-                                >
-                                    {/* Match Badge */}
-                                    <div className="absolute top-[-10px] left-1/2 -translate-x-1/2 bg-[#D1FAE5] text-[#065F46] text-[10px] font-black px-4 py-1 rounded-full shadow-sm border border-white">
-                                        {job.matchScore}% match
-                                    </div>
+                    {jobsQuery.isError && (
+                        <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            Could not load jobs. Check your API URL and try again.
+                        </div>
+                    )}
 
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="space-y-2">
-                                            <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black rounded-md">
-                                                {job.datePosted}
-                                            </span>
-                                            <Link href={`/applicant/jobs/${job.id}`}>
-                                                <h3 className="text-xl font-black text-gray-900 tracking-tight hover:text-blue-600 transition-colors uppercase">
-                                                    {job.title}
-                                                </h3>
-                                            </Link>
-                                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-bold text-gray-400">
-                                                <span className="flex items-center gap-1.5">
-                                                    {job.salary}
-                                                </span>
-                                                <span className="flex items-center gap-1.5">
-                                                    3 months
-                                                </span>
-                                                <span className="flex items-center gap-1.5">
-                                                    {job.type}
-                                                </span>
-                                                <span className="flex items-center gap-1.5 uppercase">
-                                                    {job.level}
-                                                </span>
-                                            </div>
+                    <div className="space-y-6 min-h-[400px]">
+                        {jobsQuery.isLoading ? (
+                            <div className="flex flex-col items-center justify-center py-24 gap-3 text-gray-500">
+                                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                                <span className="text-sm font-semibold">Loading listings…</span>
+                            </div>
+                        ) : jobs.length > 0 ? (
+                            jobs.map((job) => {
+                                const application = (myApplicationsQuery.data ?? []).find(
+                                    (item) => item.job_id === job.id,
+                                );
+                                const closed = isJobClosed(job.status, job.deadline);
+                                return (
+                                    <div
+                                        key={job.id}
+                                        className="w-full rounded-[22px] border border-gray-200 bg-white px-6 py-5 shadow-sm hover:shadow-md transition-all"
+                                    >
+                                        <div className="mb-4 inline-block rounded-full bg-blue-50 px-3 py-1 text-[10px] font-bold text-blue-600">
+                                            {closed ? "Closed" : "Active now"}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <button
-                                                type="button"
-                                                className="p-2.5 bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors"
-                                            >
-                                                <Bookmark className="w-5 h-5 text-gray-400" />
-                                            </button>
-                                            <Link
-                                                href={`/applicant/apply/${job.id}`}
-                                                className="px-8 py-2.5 bg-gray-900 hover:bg-black text-white text-sm font-black rounded-xl transition-all shadow-lg flex items-center gap-2"
-                                            >
-                                                Apply <ArrowRight className="w-4 h-4" />
-                                            </Link>
-                                        </div>
-                                    </div>
 
-                                    <p className="text-sm text-gray-500 font-medium leading-relaxed mb-6 line-clamp-2">
-                                        Looking for a creative UI/UX Designer to enhance user
-                                        experience for our mobile application. Must possess strong
-                                        design skills and experience with prototyping tools.
-                                    </p>
-
-                                    <div className="flex items-center justify-between border-t border-gray-50 pt-6">
-                                        <div className="flex items-center gap-2">
-                                            {job.tags.slice(0, 4).map((tag: string) => (
-                                                <span
-                                                    key={tag}
-                                                    className="px-4 py-1.5 bg-gray-100 text-gray-600 text-[11px] font-black rounded-full uppercase tracking-wider"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-[13px] font-black text-gray-900">
-                                                    4.8
-                                                </span>
-                                                <div className="flex items-center">
-                                                    {[1, 2, 3, 4, 5].map((starIdx) => (
-                                                        <Star
-                                                            key={starIdx}
-                                                            className={`w-3.5 h-3.5 ${starIdx <= 5 ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`}
-                                                        />
-                                                    ))}
+                                        <div className="mb-3 flex items-start justify-between gap-4">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <Link href={`/applicant/jobs/${job.id}`}>
+                                                    <h3 className="truncate text-[30px]/[1.15] font-black tracking-tight text-gray-900 hover:text-blue-600">
+                                                        {job.title}
+                                                    </h3>
+                                                </Link>
+                                                <div className="rounded-lg bg-orange-100 px-2.5 py-1 text-[10px] font-black text-orange-700 shrink-0">
+                                                    Best fit
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                                                <MapPin className="w-4 h-4" />
-                                                {job.location}
+                                            <div className="flex shrink-0 items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    className="rounded-xl bg-gray-50 p-2.5 transition-colors hover:bg-gray-100"
+                                                    aria-label="Save (coming soon)"
+                                                >
+                                                    <Bookmark className="h-5 w-5 text-gray-400" />
+                                                </button>
+                                                {application ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="rounded-full bg-blue-100 px-3 py-1 text-[10px] font-black uppercase text-blue-700">
+                                                            {application.status}
+                                                        </span>
+                                                        <Link
+                                                            href={`/applicant/applications/${job.id}`}
+                                                            className="inline-flex items-center gap-2 rounded-2xl bg-gray-900 px-6 py-2.5 text-xs font-black text-white shadow-lg transition-all hover:bg-black"
+                                                        >
+                                                            View application
+                                                            <ArrowRight className="h-3.5 w-3.5" />
+                                                        </Link>
+                                                    </div>
+                                                ) : (
+                                                    <Link
+                                                        href={
+                                                            closed
+                                                                ? "#"
+                                                                : `/applicant/apply/${job.id}`
+                                                        }
+                                                        aria-disabled={closed}
+                                                        onClick={(e) => {
+                                                            if (closed) e.preventDefault();
+                                                        }}
+                                                        className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-xs font-black shadow-lg transition-all ${
+                                                            closed
+                                                                ? "bg-gray-200 text-gray-500 cursor-not-allowed pointer-events-none"
+                                                                : "bg-gray-900 text-white hover:bg-black"
+                                                        }`}
+                                                    >
+                                                        {closed ? "Closed" : "Apply"}
+                                                        {!closed && (
+                                                            <ArrowRight className="h-3.5 w-3.5" />
+                                                        )}
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="mb-5 flex flex-wrap items-center gap-2.5 text-xs font-bold text-gray-500">
+                                            <span>{formatPublicJobSalary(job)}</span>
+                                            <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                            <span>
+                                                {formatEmploymentTypeLabel(job.employment_type)}
+                                            </span>
+                                            <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                            <span>{job.is_remote ? "Remote" : "On-site"}</span>
+                                            <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                            <span>{formatExperienceLevelLabel(job)}</span>
+                                            <span className="h-1 w-1 rounded-full bg-gray-300" />
+                                            <span>
+                                                Deadline {formatDeadlineLabel(job.deadline)}
+                                            </span>
+                                        </div>
+
+                                        <p className="mb-6 line-clamp-2 text-sm font-medium text-gray-600">
+                                            {job.description}
+                                        </p>
+
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-2">
+                                                <span className="rounded-xl bg-gray-100 px-4 py-1.5 text-xs font-bold text-gray-700">
+                                                    {formatEmploymentTypeLabel(job.employment_type)}
+                                                </span>
+                                                <span className="rounded-xl bg-gray-100 px-4 py-1.5 text-xs font-bold text-gray-700">
+                                                    {job.is_resume_required
+                                                        ? "Resume required"
+                                                        : "Quick apply"}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                                <MapPin className="h-4 w-4" />
+                                                {formatPublicJobLocation(job)}
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
-                            <div className="bg-white rounded-[32px] p-20 flex flex-col items-center justify-center text-center space-y-4 border border-gray-100 border-dashed">
-                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                                    <Search className="w-8 h-8" />
-                                </div>
+                            <div className="bg-white rounded-[32px] p-16 flex flex-col items-center justify-center text-center border border-gray-100 border-dashed">
+                                <Search className="w-10 h-10 text-gray-300 mb-4" />
                                 <h3 className="text-xl font-black text-gray-900">No jobs found</h3>
-                                <p className="text-sm text-gray-400 font-medium max-w-xs">
-                                    We couldn&apos;t find any jobs matching your current filters.
-                                    Try adjusting your search.
+                                <p className="text-sm text-gray-400 font-medium max-w-xs mt-2">
+                                    Try broadening your search or clearing filters.
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setSearchQuery("");
-                                        setSelectedCategories([]);
-                                        setSelectedTypes([]);
-                                    }}
-                                    className="px-6 py-2 bg-blue-600 text-white text-xs font-black rounded-xl shadow-md hover:bg-blue-700 transition-all"
-                                >
-                                    Clear all filters
-                                </button>
                             </div>
                         )}
                     </div>
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-2 pt-10 pb-4">
-                            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                                (pageNumber) => (
-                                    <button
-                                        key={`page-${pageNumber}`}
-                                        type="button"
-                                        onClick={() => setCurrentPage(pageNumber)}
-                                        className={`w-10 h-10 rounded-full text-sm font-black transition-all ${pageNumber === currentPage ? "bg-blue-600 text-white shadow-lg scale-110" : "hover:bg-gray-100 text-gray-500"}`}
-                                    >
-                                        {pageNumber}
-                                    </button>
-                                ),
-                            )}
+                    {totalPages > 1 && !jobsQuery.isLoading && (
+                        <div className="flex items-center justify-center gap-2 pt-6">
                             <button
                                 type="button"
-                                disabled={currentPage === totalPages}
-                                onClick={() =>
-                                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                                }
-                                className={`w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-all ${currentPage === totalPages ? "text-gray-200 cursor-not-allowed" : "text-gray-500 hover:scale-110"}`}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page <= 1}
+                                className="w-10 h-10 rounded-full text-sm font-black transition-all hover:bg-gray-100 disabled:opacity-40"
                             >
-                                <ArrowRight className="w-4 h-4" />
+                                ‹
+                            </button>
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                                <button
+                                    key={num}
+                                    type="button"
+                                    onClick={() => setPage(num)}
+                                    className={`w-10 h-10 rounded-full text-sm font-black transition-all ${
+                                        num === page
+                                            ? "bg-blue-600 text-white shadow-lg"
+                                            : "hover:bg-gray-100 text-gray-500"
+                                    }`}
+                                >
+                                    {num}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={page >= totalPages}
+                                className="w-10 h-10 rounded-full text-sm font-black transition-all hover:bg-gray-100 disabled:opacity-40"
+                            >
+                                ›
                             </button>
                         </div>
                     )}

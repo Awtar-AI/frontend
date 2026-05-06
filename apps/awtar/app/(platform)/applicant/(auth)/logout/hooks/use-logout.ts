@@ -21,7 +21,8 @@ export function useLogout() {
         } finally {
             useAuthStore.getState().clearAuth();
             queryClient.clear();
-            toastService.success("Logged out successfully.");
+            toastService.dismissAll();
+            toastService.success("Signed out successfully.");
             router.push("/applicant/login");
         }
     }, [queryClient, router]);

@@ -21,6 +21,7 @@ export function useLogin() {
                 refreshToken: data.refresh_token,
                 userId: data.id,
                 role: data.role,
+                organizationId: data.last_login_organization,
             });
             queryClient.invalidateQueries({ queryKey: [...USER_QUERY_KEY] });
             toastService.success("Logged in successfully.");
