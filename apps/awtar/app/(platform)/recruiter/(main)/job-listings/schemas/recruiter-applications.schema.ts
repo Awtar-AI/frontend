@@ -5,7 +5,16 @@ export const recruiterApplicationSchema = z
         id: z.string(),
         job_id: z.string(),
         user_id: z.string(),
-        status: z.enum(["Pending", "Accepted", "Rejected"]),
+        status: z.enum([
+            "Applied",
+            "Shortlisted",
+            "Interviewed",
+            "Passed",
+            "Rejected",
+            // Legacy values accepted for older rows.
+            "Pending",
+            "Accepted",
+        ]),
         resume_url: z.string().optional(),
         cover_letter: z.string().optional(),
         applicant_first_name: z.string(),

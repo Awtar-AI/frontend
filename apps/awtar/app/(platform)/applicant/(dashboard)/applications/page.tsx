@@ -4,7 +4,10 @@ import { Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMyApplications } from "../../(jobs)/applications/hooks/use-my-applications";
-import type { ApplicationResponse } from "../../(jobs)/applications/schemas/candidate-applications.schema";
+import type {
+    ApplicationResponse,
+    ApplicationStatus,
+} from "../../(jobs)/applications/schemas/candidate-applications.schema";
 
 function formatAppliedAt(iso: string): string {
     try {
@@ -14,26 +17,38 @@ function formatAppliedAt(iso: string): string {
     }
 }
 
-function statusLabel(status: ApplicationResponse["status"]): string {
-    if (status === "Pending") return "Pending";
-    if (status === "Accepted") return "Accepted";
-    return "Rejected";
+function normalizeStatus(status: ApplicationStatus): Exclude<ApplicationStatus, "Pending" | "Accepted"> {
+    if (status === "Pending") return "Applied";
+    if (status === "Accepted") return "Passed";
+    return status;
 }
 
-function statusDotClass(status: ApplicationResponse["status"]): string {
-    if (status === "Pending") return "bg-blue-600";
-    if (status === "Accepted") return "bg-green-500";
+function statusLabel(status: ApplicationStatus): string {
+    return normalizeStatus(status);
+}
+
+function statusDotClass(status: ApplicationStatus): string {
+    const normalized = normalizeStatus(status);
+    if (normalized === "Applied") return "bg-blue-600";
+    if (normalized === "Shortlisted") return "bg-purple-600";
+    if (normalized === "Interviewed") return "bg-amber-500";
+    if (normalized === "Passed") return "bg-green-500";
     return "bg-red-500";
 }
 
-function statusTextClass(status: ApplicationResponse["status"]): string {
-    if (status === "Pending") return "text-blue-600";
-    if (status === "Accepted") return "text-green-600";
+function statusTextClass(status: ApplicationStatus): string {
+    const normalized = normalizeStatus(status);
+    if (normalized === "Applied") return "text-blue-600";
+    if (normalized === "Shortlisted") return "text-purple-600";
+    if (normalized === "Interviewed") return "text-amber-600";
+    if (normalized === "Passed") return "text-green-600";
     return "text-red-600";
 }
 
 export default function ApplicationsPage() {
-    const [activeTab, setActiveTab] = useState<"All" | "Pending" | "Accepted" | "Rejected">("All");
+    const [activeTab, setActiveTab] = useState<
+        "All" | "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected"
+    >("All");
     const statusFilter = activeTab === "All" ? undefined : activeTab;
     const appsQuery = useMyApplications(statusFilter);
 
@@ -62,7 +77,9 @@ export default function ApplicationsPage() {
             </div>
 
             <div className="flex items-center gap-2 border-b border-gray-100 pb-2 flex-wrap">
-                {(["All", "Pending", "Accepted", "Rejected"] as const).map((tab) => (
+                {(
+                    ["All", "Applied", "Shortlisted", "Interviewed", "Passed", "Rejected"] as const
+                ).map((tab) => (
                     <button
                         type="button"
                         key={tab}
