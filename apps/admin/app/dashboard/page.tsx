@@ -1,10 +1,11 @@
 "use client";
 
-import { Building2, Clock3, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Building2, Clock3, ShieldCheck, TrendingDown, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/lib/hooks/use-theme";
 import { AdminShell } from "../_components/admin-shell";
 import { useOrganizations } from "../organizations/hooks/use-organizations";
+import { useDashboardStats } from "./hooks/use-dashboard-stats";
 
 function statusTextClass(status: "pending" | "active" | "suspended") {
     switch (status) {
@@ -17,17 +18,61 @@ function statusTextClass(status: "pending" | "active" | "suspended") {
     }
 }
 
+function formatDelta(diff: number) {
+    if (diff === 0) return "No change";
+
+    return `${diff > 0 ? "+" : ""}${diff.toLocaleString()} vs last month`;
+}
+
+function getDeltaIcon(diff: number) {
+    if (diff < 0) return TrendingDown;
+    return TrendingUp;
+}
+
 export default function DashboardPage() {
     const organizationsQuery = useOrganizations({ page: 1, page_size: 6 });
     const organizations = organizationsQuery.data?.organizations ?? [];
     const { theme } = useTheme();
 
     const isDark = theme === "dark";
+    const statsQuery = useDashboardStats();
+    const stats = statsQuery.data ?? {
+        active_organizations: 0,
+        active_organizations_diff: 0,
+        active_users: 0,
+        active_users_diff: 0,
+        pending_organizations: 0,
+        pending_organizations_diff: 0,
+        total_staff: 0,
+        total_staff_diff: 0,
+    };
 
-    const total = organizationsQuery.data?.total ?? 0;
-    const pending = organizations.filter((item) => item.status === "pending").length;
-    const active = organizations.filter((item) => item.status === "active").length;
-    const suspended = organizations.filter((item) => item.status === "suspended").length;
+    const overviewCards = [
+        {
+            label: "Active organizations",
+            value: stats.active_organizations,
+            diff: stats.active_organizations_diff,
+            icon: Building2,
+        },
+        {
+            label: "Pending review",
+            value: stats.pending_organizations,
+            diff: stats.pending_organizations_diff,
+            icon: Clock3,
+        },
+        {
+            label: "Active users",
+            value: stats.active_users,
+            diff: stats.active_users_diff,
+            icon: Users,
+        },
+        {
+            label: "Total staff",
+            value: stats.total_staff,
+            diff: stats.total_staff_diff,
+            icon: ShieldCheck,
+        },
+    ] as const;
 
     return (
         <AdminShell title="Admin Panel">
@@ -45,28 +90,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-4">
-                    {[
-                        {
-                            label: "Organizations",
-                            value: total.toString(),
-                            icon: Building2,
-                        },
-                        {
-                            label: "Pending review",
-                            value: pending.toString(),
-                            icon: Clock3,
-                        },
-                        {
-                            label: "Active",
-                            value: active.toString(),
-                            icon: ShieldCheck,
-                        },
-                        {
-                            label: "Suspended",
-                            value: suspended.toString(),
-                            icon: TriangleAlert,
-                        },
-                    ].map((card) => (
+                    {overviewCards.map((card) => (
                         <div
                             key={card.label}
                             className={`rounded-2xl border p-5 shadow-xl transition-colors ${
@@ -86,8 +110,41 @@ export default function DashboardPage() {
                             <p
                                 className={`mt-4 text-3xl font-bold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
                             >
-                                {card.value}
+                                {statsQuery.isLoading ? "—" : card.value.toLocaleString()}
                             </p>
+                            <div
+                                className={`mt-2 flex items-center gap-1.5 text-xs font-semibold ${
+                                    isDark ? "text-awtar-slate" : "text-gray-500"
+                                }`}
+                            >
+                                {statsQuery.isLoading ? (
+                                    "Loading stats..."
+                                ) : card.diff === 0 ? (
+                                    <span>No change</span>
+                                ) : (
+                                    <>
+                                        {(() => {
+                                            const DeltaIcon = getDeltaIcon(card.diff);
+                                            return (
+                                                <DeltaIcon
+                                                    className={`h-3.5 w-3.5 ${
+                                                        card.diff > 0
+                                                            ? "text-emerald-400"
+                                                            : "text-red-300"
+                                                    }`}
+                                                />
+                                            );
+                                        })()}
+                                        <span
+                                            className={
+                                                card.diff > 0 ? "text-emerald-300" : "text-red-300"
+                                            }
+                                        >
+                                            {formatDelta(card.diff)}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>

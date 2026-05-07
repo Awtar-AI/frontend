@@ -85,8 +85,8 @@ export default function UsersPage() {
         <AdminShell title="Admin Panel">
             <div className="space-y-8">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                        <div>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="max-w-2xl">
                             <h1
                                 className={`text-3xl font-bold tracking-tight ${isDark ? "text-awtar-white" : "text-gray-900"}`}
                             >
@@ -99,7 +99,7 @@ export default function UsersPage() {
                         </div>
                         <Link
                             href="/users/create"
-                            className={`inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors ${
+                            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-colors lg:w-auto ${
                                 isDark
                                     ? "bg-awtar-blue text-white hover:bg-awtar-blue-light"
                                     : "bg-blue-600 text-white hover:bg-blue-700"
@@ -128,13 +128,17 @@ export default function UsersPage() {
                             value: metrics.inactive.toString(),
                             icon: UserX,
                         },
-                        { label: "Admins", value: metrics.admins.toString(), icon: Shield },
+                        {
+                            label: "Admins",
+                            value: metrics.admins.toString(),
+                            icon: Shield,
+                        },
                     ].map((card) => {
                         const _Icon = card.icon;
                         return (
                             <div
                                 key={card.label}
-                                className={`relative overflow-hidden rounded-2xl border p-5 shadow-xl transition-colors ${
+                                className={`rounded-2xl border p-5 shadow-xl transition-colors ${
                                     isDark
                                         ? "border-white/10 bg-white/3 shadow-black/10"
                                         : "border-gray-200 bg-white shadow-gray-200/50"
@@ -343,9 +347,9 @@ export default function UsersPage() {
                             : "border-gray-200 bg-white shadow-gray-200/50"
                     }`}
                 >
-                    <div className="overflow-x-auto">
+                    <div className="min-w-0 w-full max-w-full overflow-x-auto overscroll-x-contain">
                         <table
-                            className={`w-full text-left text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                            className={`min-w-275 w-full text-left text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
                         >
                             <thead
                                 className={`border-b uppercase transition-colors ${
@@ -444,7 +448,7 @@ export default function UsersPage() {
                                             <td className="whitespace-nowrap px-6 py-4">
                                                 <span
                                                     className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusClasses(
-                                                        user.is_active ? "active" : "suspended",
+                                                        user.is_active ? "active" : "inactive",
                                                     )}`}
                                                 >
                                                     {user.is_active ? "Active" : "Inactive"}
