@@ -374,9 +374,6 @@ export default function UsersPage() {
                                         Status
                                     </th>
                                     <th scope="col" className="px-6 py-4 font-semibold">
-                                        Last Login
-                                    </th>
-                                    <th scope="col" className="px-6 py-4 font-semibold">
                                         Created At
                                     </th>
                                     <th scope="col" className="px-6 py-4 text-right font-semibold">
@@ -452,13 +449,6 @@ export default function UsersPage() {
                                                 >
                                                     {user.is_active ? "Active" : "Inactive"}
                                                 </span>
-                                            </td>
-                                            <td
-                                                className={`whitespace-nowrap px-6 py-4 ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
-                                            >
-                                                {user.last_logged_in_at
-                                                    ? formatDate(user.last_logged_in_at)
-                                                    : "Never"}
                                             </td>
                                             <td
                                                 className={`whitespace-nowrap px-6 py-4 ${isDark ? "text-awtar-slate" : "text-gray-600"}`}

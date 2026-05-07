@@ -23,7 +23,24 @@ const baseUserSchema = z.object({
 
 // User list response
 export const userSummarySchema = baseUserSchema.extend({
-    // Add any additional fields for summary if needed
+    candidate_profile: z
+        .object({
+            current_job_title: z.string().optional(),
+            years_of_experience: z.number().optional(),
+            primary_skills: z.array(z.string()).optional(),
+            education_level: z.string().optional(),
+            preferred_job_types: z.array(z.string()).optional(),
+            desired_annual_salary_min: z.number().optional(),
+            desired_annual_salary_max: z.number().optional(),
+            industry_interest: z.string().optional(),
+            match_smart_notification: z.boolean().optional(),
+            linkedin_url: z.string().optional(),
+            location: z.string().optional(),
+            professional_summary: z.string().optional(),
+            profile_pic_url: z.string().optional(),
+            resume_url: z.string().optional(),
+        })
+        .optional(),
 });
 
 export const userListResponseSchema = z.object({
