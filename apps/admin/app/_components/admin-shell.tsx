@@ -26,7 +26,7 @@ export function AdminShell({ children, title = "Admin" }: { children: ReactNode;
             }`}
         >
             <aside
-                className={`hidden lg:flex w-64 shrink-0 flex-col p-6 shadow-lg ${
+                className={`hidden lg:fixed lg:left-0 lg:top-0 lg:bottom-0 lg:flex w-64 flex-col p-6 shadow-lg ${
                     isDark
                         ? "border-r border-white/10 bg-linear-to-b from-awtar-navy-light to-awtar-navy"
                         : "border-r border-gray-200 bg-white"
@@ -96,7 +96,7 @@ export function AdminShell({ children, title = "Admin" }: { children: ReactNode;
             </aside>
 
             <main
-                className={`flex-1 p-6 lg:p-10 transition-colors ${
+                className={`flex-1 p-6 lg:p-10 lg:ml-64 transition-colors ${
                     isDark ? "bg-slate-950 text-awtar-white" : "bg-gray-50 text-gray-900"
                 }`}
             >
