@@ -399,7 +399,7 @@ export default function JobListingsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-center text-gray-600 text-xs font-medium">
                                             {applicantCountsQueries.find(
-                                                (q, idx) => jobs[idx]?.id === job.id,
+                                                (_q, idx) => jobs[idx]?.id === job.id,
                                             )?.isLoading
                                                 ? "..."
                                                 : (applicantCountMap[job.id] ?? 0)}
