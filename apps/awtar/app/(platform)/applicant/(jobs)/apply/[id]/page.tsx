@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Briefcase, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { use, useMemo } from "react";
 import { useMyApplications } from "../../applications/hooks/use-my-applications";
@@ -75,7 +75,13 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
                     Status: <span className="font-bold">{existingApplication.status}</span>
                 </p>
                 <p className="text-sm text-emerald-800">
-                    Cover letter: {existingApplication.cover_letter || "Not provided"}
+                    Cover letter:{" "}
+                    {existingApplication.cover_letter
+                        ? existingApplication.cover_letter
+                              .replace(/<[^>]*>/g, " ")
+                              .replace(/\s+/g, " ")
+                              .trim()
+                        : "Not provided"}
                 </p>
                 <p className="text-sm text-emerald-800">
                     Resume:{" "}
@@ -111,7 +117,30 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
     }
 
     return (
-        <div className="p-4 lg:p-6 max-w-[1400px] mx-auto space-y-8 animate-in fade-in duration-500 pb-10">
+        <div className="p-6 lg:p-8 max-w-[1400px] mx-auto space-y-5 animate-in fade-in duration-500 pb-16">
+            <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0">
+                    <Link
+                        href={`/applicant/jobs/${id}`}
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gray-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                        aria-label="Back to job"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                    </Link>
+                    <div className="min-w-0">
+                        <p className="mb-0.5 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-blue-600">
+                            <Briefcase className="h-3.5 w-3.5" />
+                            Job application
+                        </p>
+                        <h1 className="truncate text-lg font-black tracking-tight text-slate-950">
+                            Submit your application
+                        </h1>
+                        <p className="mt-0.5 truncate text-xs font-medium text-slate-500">
+                            Complete your details for {jobQuery.data.title}.
+                        </p>
+                    </div>
+                </div>
+            </div>
             <ApplyToJobForm job={jobQuery.data} />
         </div>
     );

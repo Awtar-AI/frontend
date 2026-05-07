@@ -4,6 +4,13 @@ import { Briefcase, Building2, Code, DollarSign, GraduationCap, User } from "luc
 import type { AppUser } from "@/applicant/user-me/models/app-user";
 import { labelForEducation, labelForIndustry, labelForJobType } from "../../schemas/profile.schema";
 
+const cardClass =
+    "bg-white rounded-xl p-6 border border-gray-200 shadow-[0_10px_30px_-18px_rgba(15,23,42,0.35)]";
+const sectionTitleClass =
+    "flex items-center gap-2 text-sm font-black text-slate-950 tracking-tight mb-5";
+const iconTileClass =
+    "w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600";
+
 export function ProfessionalSummary({ user }: { user: AppUser }) {
     const cp = user.candidate_profile;
     const jobTitle = cp?.current_job_title;
@@ -11,12 +18,15 @@ export function ProfessionalSummary({ user }: { user: AppUser }) {
     const experience = cp?.years_of_experience;
 
     return (
-        <div className="bg-white rounded-[24px] p-8 lg:p-10 border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)]">
-            <h3 className="flex items-center gap-2 text-[18px] font-black text-gray-900 tracking-tight mb-5">
-                <User className="w-5 h-5 text-blue-600" /> About
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <User className="w-4 h-4" />
+                </span>
+                Professional Summary
             </h3>
             {jobTitle || industry || experience != null ? (
-                <p className="text-gray-600 font-medium leading-relaxed text-sm">
+                <p className="text-slate-600 font-medium leading-7 text-sm">
                     {jobTitle && (
                         <>
                             Currently working as a{" "}
@@ -53,11 +63,26 @@ export function ProfessionalSummary({ user }: { user: AppUser }) {
 
 export function WorkExperience() {
     return (
-        <div className="bg-white rounded-[24px] p-8 lg:p-10 border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)]">
-            <h3 className="flex items-center gap-2 text-[18px] font-black text-gray-900 tracking-tight mb-6">
-                <Building2 className="w-5 h-5 text-blue-600" /> Work Experience
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <Building2 className="w-4 h-4" />
+                </span>
+                Work Experience
             </h3>
-            <p className="text-gray-400 text-sm italic">Work experience will be available soon.</p>
+            <div className="flex gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+                <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                    <Briefcase className="w-4 h-4 text-slate-400" />
+                </div>
+                <div>
+                    <p className="text-sm font-black text-slate-800">
+                        Work experience will be available soon.
+                    </p>
+                    <p className="mt-1 text-xs font-medium leading-5 text-slate-500">
+                        Add roles, companies, and achievements from the edit profile page.
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }
@@ -66,16 +91,19 @@ export function TechnicalSkills({ user }: { user: AppUser }) {
     const skills = user.candidate_profile?.primary_skills ?? [];
 
     return (
-        <div className="bg-white rounded-[24px] p-8 lg:p-10 border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)]">
-            <h3 className="flex items-center gap-2 text-[18px] font-black text-gray-900 tracking-tight mb-8">
-                <Code className="w-5 h-5 text-blue-600" /> Skills
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <Code className="w-4 h-4" />
+                </span>
+                Technical Skills
             </h3>
             {skills.length > 0 ? (
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex flex-wrap gap-2">
                     {skills.map((skill) => (
                         <span
                             key={skill}
-                            className="px-4 py-2 bg-gray-50 border border-gray-200 text-gray-700 text-xs font-bold rounded-[10px] shadow-sm"
+                            className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-md"
                         >
                             {skill}
                         </span>
@@ -92,19 +120,25 @@ export function EducationSection({ user }: { user: AppUser }) {
     const level = user.candidate_profile?.education_level;
 
     return (
-        <div className="bg-white rounded-[24px] p-8 lg:p-10 border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)]">
-            <h3 className="flex items-center gap-2 text-[18px] font-black text-gray-900 tracking-tight mb-6">
-                <GraduationCap className="w-5 h-5 text-blue-600" /> Education
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <GraduationCap className="w-4 h-4" />
+                </span>
+                Education
             </h3>
             {level ? (
-                <div className="flex gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
-                        <GraduationCap className="w-6 h-6 text-gray-400" />
+                <div className="flex gap-4 rounded-xl bg-slate-50/70 p-4 border border-slate-100">
+                    <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-5 h-5 text-blue-600" />
                     </div>
-                    <div className="flex-1 pt-1">
-                        <h4 className="text-lg font-black text-gray-900 tracking-tight">
+                    <div className="flex-1">
+                        <h4 className="text-sm font-black text-slate-950 tracking-tight">
                             {labelForEducation(level)}
                         </h4>
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                            Highest education level
+                        </p>
                     </div>
                 </div>
             ) : (
@@ -123,21 +157,24 @@ export function JobPreferences({ user }: { user: AppUser }) {
     const hasSalary = minSalary != null || maxSalary != null;
 
     return (
-        <div className="bg-white rounded-[24px] p-8 lg:p-10 border border-gray-100 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.05)]">
-            <h3 className="flex items-center gap-2 text-[18px] font-black text-gray-900 tracking-tight mb-6">
-                <Briefcase className="w-5 h-5 text-blue-600" /> Job Preferences
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <Briefcase className="w-4 h-4" />
+                </span>
+                Job Preferences
             </h3>
 
             {jobTypes.length > 0 && (
                 <div className="mb-6">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
                         Preferred Job Types
                     </h4>
                     <div className="flex flex-wrap gap-2">
                         {jobTypes.map((jt) => (
                             <span
                                 key={jt}
-                                className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-lg"
+                                className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-md"
                             >
                                 {labelForJobType(jt)}
                             </span>
@@ -148,12 +185,12 @@ export function JobPreferences({ user }: { user: AppUser }) {
 
             {hasSalary && (
                 <div>
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
                         Salary Expectation
                     </h4>
-                    <div className="flex items-center gap-2 text-sm font-bold text-gray-700">
-                        <DollarSign className="w-4 h-4 text-gray-400" />
-                        {minSalary?.toLocaleString() ?? "—"} – {maxSalary?.toLocaleString() ?? "—"}
+                    <div className="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm font-bold text-slate-700 border border-slate-100">
+                        <DollarSign className="w-4 h-4 text-blue-600" />
+                        {minSalary?.toLocaleString() ?? "-"} - {maxSalary?.toLocaleString() ?? "-"}
                     </div>
                 </div>
             )}

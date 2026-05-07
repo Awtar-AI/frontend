@@ -89,7 +89,9 @@ export function toCandidatePayload(
         education_level: data.education_level || undefined,
         desired_annual_salary_min: data.desired_annual_salary_min,
         desired_annual_salary_max: data.desired_annual_salary_max,
-        industry_interest: data.industry_interest || undefined,
+        industry_interest: data.industry_interest
+            ? data.industry_interest.charAt(0).toUpperCase() + data.industry_interest.slice(1)
+            : undefined,
         match_smart_notification: data.match_smart_notification,
         primary_skills: data.skills.length ? data.skills.join(",") : undefined,
         preferred_job_types: data.preferred_job_types.length ? data.preferred_job_types : undefined,

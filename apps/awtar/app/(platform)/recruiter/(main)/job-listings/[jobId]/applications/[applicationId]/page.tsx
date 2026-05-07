@@ -6,6 +6,7 @@ import Link from "next/link";
 import { use } from "react";
 import { normalizeError } from "@/lib/errors";
 import { toastService } from "@/lib/services/toast.service";
+import { CoverLetterViewer } from "../../../../../../_components/CoverLetterViewer";
 import { recruiterApplicationsApi } from "../../../api/recruiter-applications.api";
 import { useRecruiterCandidateProfile } from "../../../hooks/use-recruiter-candidate-profile";
 import {
@@ -258,9 +259,16 @@ export default function RecruiterJobApplicationDetailPage({
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                             Cover Letter
                         </p>
-                        <p className="text-sm text-gray-800 mt-2 whitespace-pre-wrap">
-                            {application.cover_letter || "Not provided"}
-                        </p>
+                        {application.cover_letter ? (
+                            <div className="mt-2 min-h-[120px] rounded-lg bg-white px-1 py-1">
+                                <CoverLetterViewer
+                                    html={application.cover_letter}
+                                    className="text-gray-800"
+                                />
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-400 italic mt-2">Not provided</p>
+                        )}
                     </div>
 
                     <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">

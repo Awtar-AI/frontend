@@ -20,6 +20,7 @@ export const publicJobSchema = z
         is_resume_required: z.boolean(),
         is_cover_letter_required: z.boolean(),
         status: z.string(),
+        created_at: z.string().optional(),
     })
     .passthrough();
 
