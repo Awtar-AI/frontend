@@ -17,7 +17,9 @@ function formatAppliedAt(iso: string): string {
     }
 }
 
-function normalizeStatus(status: ApplicationStatus): Exclude<ApplicationStatus, "Pending" | "Accepted"> {
+function normalizeStatus(
+    status: ApplicationStatus,
+): Exclude<ApplicationStatus, "Pending" | "Accepted"> {
     if (status === "Pending") return "Applied";
     if (status === "Accepted") return "Passed";
     return status;

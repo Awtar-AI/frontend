@@ -4,13 +4,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
-import { toastService } from "@/lib/services/toast.service";
 import { normalizeError } from "@/lib/errors";
+import { toastService } from "@/lib/services/toast.service";
 import { recruiterApplicationsApi } from "../../../api/recruiter-applications.api";
 import { useRecruiterCandidateProfile } from "../../../hooks/use-recruiter-candidate-profile";
+import {
+    RECRUITER_JOB_APPLICATION_DETAIL_QUERY_KEY,
+    useRecruiterJobApplicationDetail,
+} from "../../../hooks/use-recruiter-job-application-detail";
 import { RECRUITER_JOB_APPLICATIONS_QUERY_KEY } from "../../../hooks/use-recruiter-job-applications";
-import { useRecruiterJobApplicationDetail } from "../../../hooks/use-recruiter-job-application-detail";
-import { RECRUITER_JOB_APPLICATION_DETAIL_QUERY_KEY } from "../../../hooks/use-recruiter-job-application-detail";
 
 function formatDateLabel(value: string): string {
     try {
@@ -24,14 +26,23 @@ function formatDateLabel(value: string): string {
 }
 
 function normalizeLifecycleStatus(
-    status: "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected" | "Pending" | "Accepted",
+    status:
+        | "Applied"
+        | "Shortlisted"
+        | "Interviewed"
+        | "Passed"
+        | "Rejected"
+        | "Pending"
+        | "Accepted",
 ): "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected" {
     if (status === "Pending") return "Applied";
     if (status === "Accepted") return "Passed";
     return status;
 }
 
-function statusBadgeClass(status: "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected"): string {
+function statusBadgeClass(
+    status: "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected",
+): string {
     if (status === "Applied") return "bg-blue-100 text-blue-700";
     if (status === "Shortlisted") return "bg-purple-100 text-purple-700";
     if (status === "Interviewed") return "bg-amber-100 text-amber-700";
@@ -43,7 +54,8 @@ function stepperStateClass(
     step: "Applied" | "Shortlisted" | "Interviewed" | "Passed",
     current: "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected",
 ): string {
-    if (current === "Rejected") return step === "Applied" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500";
+    if (current === "Rejected")
+        return step === "Applied" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500";
     const order = ["Applied", "Shortlisted", "Interviewed", "Passed"] as const;
     const stepIndex = order.indexOf(step);
     const currentIndex = order.indexOf(current);
@@ -111,18 +123,42 @@ export default function RecruiterJobApplicationDetailPage({
     const workflowActions =
         lifecycleStatus === "Applied"
             ? [
-                  { id: "shortlist" as const, label: "Shortlist", className: "bg-purple-600 hover:bg-purple-700" },
-                  { id: "reject" as const, label: "Reject", className: "bg-red-600 hover:bg-red-700" },
+                  {
+                      id: "shortlist" as const,
+                      label: "Shortlist",
+                      className: "bg-purple-600 hover:bg-purple-700",
+                  },
+                  {
+                      id: "reject" as const,
+                      label: "Reject",
+                      className: "bg-red-600 hover:bg-red-700",
+                  },
               ]
             : lifecycleStatus === "Shortlisted"
               ? [
-                    { id: "interview" as const, label: "Mark Interviewed", className: "bg-amber-600 hover:bg-amber-700" },
-                    { id: "reject" as const, label: "Reject", className: "bg-red-600 hover:bg-red-700" },
+                    {
+                        id: "interview" as const,
+                        label: "Mark Interviewed",
+                        className: "bg-amber-600 hover:bg-amber-700",
+                    },
+                    {
+                        id: "reject" as const,
+                        label: "Reject",
+                        className: "bg-red-600 hover:bg-red-700",
+                    },
                 ]
               : lifecycleStatus === "Interviewed"
                 ? [
-                      { id: "pass" as const, label: "Mark Passed", className: "bg-green-600 hover:bg-green-700" },
-                      { id: "reject" as const, label: "Reject", className: "bg-red-600 hover:bg-red-700" },
+                      {
+                          id: "pass" as const,
+                          label: "Mark Passed",
+                          className: "bg-green-600 hover:bg-green-700",
+                      },
+                      {
+                          id: "reject" as const,
+                          label: "Reject",
+                          className: "bg-red-600 hover:bg-red-700",
+                      },
                   ]
                 : [];
 
@@ -167,9 +203,7 @@ export default function RecruiterJobApplicationDetailPage({
                                     onClick={() => transitionMutation.mutate(action.id)}
                                     className={`inline-flex items-center rounded-lg px-3 py-2 text-xs font-bold text-white transition-colors disabled:opacity-60 ${action.className}`}
                                 >
-                                    {transitionMutation.isPending
-                                        ? "Updating..."
-                                        : action.label}
+                                    {transitionMutation.isPending ? "Updating..." : action.label}
                                 </button>
                             ))}
                         </div>
@@ -192,9 +226,7 @@ export default function RecruiterJobApplicationDetailPage({
                                 {step.slice(0, 1)}
                             </span>
                             <span className="text-xs font-semibold text-gray-600">{step}</span>
-                            {step !== "Passed" && (
-                                <span className="h-px w-4 bg-gray-300" />
-                            )}
+                            {step !== "Passed" && <span className="h-px w-4 bg-gray-300" />}
                         </div>
                     ))}
                     {lifecycleStatus === "Rejected" && (
@@ -215,9 +247,7 @@ export default function RecruiterJobApplicationDetailPage({
                         <p className="text-xs text-gray-600">{application.applicant_email}</p>
                         <p className="text-xs text-gray-600">
                             Status:{" "}
-                            <span className="font-semibold text-blue-700">
-                                {lifecycleStatus}
-                            </span>
+                            <span className="font-semibold text-blue-700">{lifecycleStatus}</span>
                         </p>
                         <p className="text-xs text-gray-600">
                             Submitted: {formatDateLabel(application.created_at)}

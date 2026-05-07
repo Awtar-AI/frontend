@@ -1,7 +1,7 @@
 import http from "@/lib/http";
 import {
-    type ApplicationStatus,
     type ApplicationResponse,
+    type ApplicationStatus,
     type ApplyRequestPayload,
     parseApplicationList,
     parseApplicationResponse,

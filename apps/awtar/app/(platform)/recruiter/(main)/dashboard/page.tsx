@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import {
     Activity,
     Briefcase,
@@ -16,7 +17,6 @@ import {
     UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { useQueries } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
     Bar,
@@ -34,7 +34,7 @@ import { useAuthUser } from "@/lib/hooks/use-auth";
 import { recruiterApplicationsApi } from "../job-listings/api/recruiter-applications.api";
 import { useRecruiterJobs } from "../post-job/hooks/use-recruiter-jobs";
 import { getJobExperienceLevel } from "../post-job/schemas/post-job.schema";
-import { type OrgTrendPeriod } from "./api/recruiter-dashboard.api";
+import type { OrgTrendPeriod } from "./api/recruiter-dashboard.api";
 import { useRecruiterOrgStats } from "./hooks/use-recruiter-org-stats";
 import { useRecruiterOrgTrend } from "./hooks/use-recruiter-org-trend";
 
@@ -94,10 +94,7 @@ export default function RecruiterDashboard() {
     const topJobs = useMemo(
         () =>
             [...(jobsQuery.data ?? [])]
-                .sort(
-                    (a, b) =>
-                        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-                )
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 .slice(0, 6),
         [jobsQuery.data],
     );
@@ -131,8 +128,8 @@ export default function RecruiterDashboard() {
                         Recruiter Dashboard
                     </h1>
                     <p className="text-sm text-gray-500 font-medium">
-                        Welcome back, {firstName}. Here&apos;s what&apos;s happening with your hiring
-                        funnel today.
+                        Welcome back, {firstName}. Here&apos;s what&apos;s happening with your
+                        hiring funnel today.
                     </p>
                 </div>
                 <Link
@@ -189,7 +186,9 @@ export default function RecruiterDashboard() {
                         </span>
                         <span
                             className={`text-xs font-bold mb-1.5 ${
-                                statsQuery.data ? metricDeltaClass(statsQuery.data.apps_diff) : "text-gray-500"
+                                statsQuery.data
+                                    ? metricDeltaClass(statsQuery.data.apps_diff)
+                                    : "text-gray-500"
                             }`}
                         >
                             {statsQuery.data
@@ -401,7 +400,10 @@ export default function RecruiterDashboard() {
                             </thead>
                             <tbody className="divide-y divide-gray-100 bg-white">
                                 {topJobs.map((job, idx) => (
-                                    <tr key={job.id} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr
+                                        key={job.id}
+                                        className="hover:bg-gray-50/50 transition-colors"
+                                    >
                                         <td className="px-6 py-4">
                                             <Link
                                                 href={`/recruiter/job-listings/${job.id}`}
@@ -426,9 +428,7 @@ export default function RecruiterDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span
-                                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700"
-                                            >
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
                                                 <Activity className="h-3 w-3" />
                                                 {getJobExperienceLevel(job) || "N/A"}
                                             </span>
@@ -461,8 +461,8 @@ export default function RecruiterDashboard() {
                                             colSpan={6}
                                             className="px-6 py-8 text-center text-sm text-gray-500"
                                         >
-                                            No jobs yet. Post your first role to start tracking pipeline
-                                            metrics.
+                                            No jobs yet. Post your first role to start tracking
+                                            pipeline metrics.
                                         </td>
                                     </tr>
                                 )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { recruiterDashboardApi, type OrgTrendPeriod } from "../api/recruiter-dashboard.api";
+import { type OrgTrendPeriod, recruiterDashboardApi } from "../api/recruiter-dashboard.api";
 
 export const RECRUITER_ORG_TREND_QUERY_KEY = ["recruiter", "dashboard", "org-trend"] as const;
 
