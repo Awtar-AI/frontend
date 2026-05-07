@@ -21,4 +21,11 @@ export const profileApi = {
         const { data } = await http.patch(`/api/v1/users/${userId}/upload-resume`, fd);
         return data;
     },
+
+    async uploadProfilePic(userId: string, file: File) {
+        const fd = new FormData();
+        fd.append("profile_pic", file);
+        const { data } = await http.patch(`/api/v1/users/${userId}/upload-profile-pic`, fd);
+        return data as { message: string };
+    },
 };

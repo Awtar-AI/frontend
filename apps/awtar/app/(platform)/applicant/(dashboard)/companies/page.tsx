@@ -1,115 +1,281 @@
 "use client";
 
-import { ArrowRight, Building2, MapPin, Search, Star, Users } from "lucide-react";
+import {
+    ArrowRight,
+    ArrowUpDown,
+    Briefcase,
+    Building2,
+    Search,
+    Sparkles,
+    Users,
+    X,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { mockJobs } from "../../lib/mockData";
+import { useMemo, useState } from "react";
+import { usePublicOrganizationsList } from "../../(jobs)/public-jobs/hooks/use-public-organizations-list";
+
+type SortOption = "name" | "open_roles" | "company_size";
+
+const COMPANY_SKELETON_KEYS = [
+    "company-skeleton-1",
+    "company-skeleton-2",
+    "company-skeleton-3",
+    "company-skeleton-4",
+    "company-skeleton-5",
+    "company-skeleton-6",
+];
+
+function CompanySkeleton() {
+    return (
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm animate-pulse">
+            <div className="mb-5 flex items-start gap-4">
+                <div className="h-12 w-12 rounded-xl bg-gray-100" />
+                <div className="flex-1">
+                    <div className="mb-3 h-5 w-2/3 rounded bg-gray-100" />
+                    <div className="h-4 w-1/2 rounded bg-gray-100" />
+                </div>
+            </div>
+            <div className="mb-5 h-16 rounded-lg bg-gray-100" />
+            <div className="h-9 rounded-lg bg-gray-100" />
+        </div>
+    );
+}
 
 export default function CompaniesPage() {
+    const { organizations, isLoading, isError } = usePublicOrganizationsList();
     const [searchQuery, setSearchQuery] = useState("");
+    const [industryFilter, setIndustryFilter] = useState("all");
+    const [sortBy, setSortBy] = useState<SortOption>("open_roles");
 
-    // Extract unique companies from mockJobs
-    const uniqueCompanies = Array.from(new Set(mockJobs.map((j) => j.company))).map((name) => {
-        const job = mockJobs.find((j) => j.company === name);
-        return {
-            name,
-            location: job?.location || "Remote",
-            industry: job?.tags[0] || "Technology",
-            jobsCount: mockJobs.filter((j) => j.company === name).length,
-            id: job?.id || "1", // Using job ID for routing demo
-        };
-    });
+    const industries = useMemo(() => {
+        return Array.from(
+            new Set(organizations.map((company) => company.industry).filter(Boolean)),
+        ).sort((a, b) => a.localeCompare(b));
+    }, [organizations]);
 
-    const filteredCompanies = uniqueCompanies.filter(
-        (c) =>
-            c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            c.industry.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    const filteredOrganizations = useMemo(() => {
+        const normalizedSearch = searchQuery.trim().toLowerCase();
+
+        return organizations
+            .filter((company) => {
+                const matchesSearch =
+                    !normalizedSearch ||
+                    company.organization_name.toLowerCase().includes(normalizedSearch) ||
+                    company.industry.toLowerCase().includes(normalizedSearch);
+                const matchesIndustry =
+                    industryFilter === "all" || company.industry === industryFilter;
+                return matchesSearch && matchesIndustry;
+            })
+            .sort((a, b) => {
+                if (sortBy === "name") {
+                    return a.organization_name.localeCompare(b.organization_name);
+                }
+                if (sortBy === "company_size") {
+                    return b.organization_size - a.organization_size;
+                }
+                return b.job_count - a.job_count;
+            });
+    }, [industryFilter, organizations, searchQuery, sortBy]);
+
+    const hasFilters =
+        searchQuery.trim().length > 0 || industryFilter !== "all" || sortBy !== "open_roles";
+
+    function clearFilters() {
+        setSearchQuery("");
+        setIndustryFilter("all");
+        setSortBy("open_roles");
+    }
 
     return (
-        <div className="p-8 lg:p-12 max-w-6xl mx-auto space-y-12 animate-in fade-in duration-700">
-            <div className="text-center space-y-4 max-w-2xl mx-auto">
-                <h1 className="text-4xl font-black text-gray-900 tracking-tight uppercase">
-                    Discover Companies
-                </h1>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
-                    Deep dive into company cultures and find your next dream team
-                </p>
-
-                <div className="relative max-w-md mx-auto mt-8">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search companies by name or industry..."
-                        className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-[24px] text-sm font-bold shadow-xl shadow-blue-50 focus:border-blue-500 outline-none transition-all"
+        <div className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-6 animate-in fade-in duration-500 pb-20">
+            <div
+                className="relative overflow-hidden rounded-3xl bg-[#475ca3] p-8 lg:p-10 text-white shadow-sm z-0"
+                style={{ backgroundColor: "#8fa3c4" }}
+            >
+                <div className="absolute inset-0 z-[-1] mix-blend-overlay">
+                    <Image
+                        src="/images/slide-recruiter.jpg"
+                        alt="Office background"
+                        fill
+                        priority
+                        className="object-cover opacity-30"
                     />
+                </div>
+                <div className="absolute inset-0 z-[-1] bg-gradient-to-r from-blue-900/90 to-blue-800/40" />
+
+                <div className="max-w-3xl">
+                    <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-blue-50 backdrop-blur">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Company discovery
+                    </span>
+                    <h1 className="text-3xl lg:text-[40px] font-black mb-3 tracking-tight text-white drop-shadow-md">
+                        Discover Companies
+                    </h1>
+                    <p className="max-w-2xl text-sm lg:text-base font-bold text-blue-50 drop-shadow">
+                        Browse employers with active roles and review their public hiring profiles.
+                    </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredCompanies.map((company) => (
-                    <div
-                        key={company.name}
-                        className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm hover:shadow-2xl hover:translate-y-[-4px] transition-all group"
-                    >
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="w-16 h-16 rounded-3xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xl uppercase border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-                                {company.name.substring(0, 2)}
-                            </div>
-                            <span className="px-4 py-1.5 bg-gray-50 text-gray-400 text-[10px] font-black rounded-full uppercase tracking-widest border border-gray-100">
-                                {company.jobsCount} Open Roles
-                            </span>
-                        </div>
+            <div className="flex flex-col gap-3 border-b border-gray-200 pb-5 lg:flex-row lg:items-center lg:justify-between">
+                <p className="text-sm font-bold text-slate-500">
+                    {isLoading
+                        ? "Loading companies..."
+                        : `${filteredOrganizations.length} of ${organizations.length} companies`}
+                </p>
 
-                        <div className="space-y-1 mb-6">
-                            <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight group-hover:text-blue-600 transition-colors uppercase">
-                                {company.name}
-                            </h3>
-                            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-blue-500" />{" "}
-                                    {company.location}
-                                </span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1.5 uppercase">
-                                    {company.industry}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="flex items-center gap-1">
-                                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                <span className="text-sm font-black text-gray-900">4.9</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest">
-                                <Users className="w-4 h-4" /> 2k+ Employees
-                            </div>
-                        </div>
-
-                        <Link
-                            href={`/applicant/companies/${company.id}`}
-                            className="w-full py-4 bg-gray-50 hover:bg-gray-900 hover:text-white text-gray-900 text-[10px] font-black rounded-2xl uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2"
-                        >
-                            View Profile <ArrowRight className="w-4 h-4" />
-                        </Link>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="relative sm:w-72">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(event) => setSearchQuery(event.target.value)}
+                            placeholder="Search"
+                            className="h-9 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm font-semibold text-slate-900 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+                        />
                     </div>
-                ))}
+
+                    <div className="flex gap-2">
+                        <select
+                            value={industryFilter}
+                            onChange={(event) => setIndustryFilter(event.target.value)}
+                            className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+                            aria-label="Filter by industry"
+                        >
+                            <option value="all">All industries</option>
+                            {industries.map((industry) => (
+                                <option key={industry} value={industry}>
+                                    {industry}
+                                </option>
+                            ))}
+                        </select>
+
+                        <div className="relative">
+                            <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                            <select
+                                value={sortBy}
+                                onChange={(event) => setSortBy(event.target.value as SortOption)}
+                                className="h-9 rounded-lg border border-slate-200 bg-white pl-8 pr-3 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-50"
+                                aria-label="Sort companies"
+                            >
+                                <option value="open_roles">Most roles</option>
+                                <option value="company_size">Largest team</option>
+                                <option value="name">Company name</option>
+                            </select>
+                        </div>
+
+                        {hasFilters && (
+                            <button
+                                type="button"
+                                onClick={clearFilters}
+                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 text-xs font-black text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+                            >
+                                <X className="h-3.5 w-3.5" />
+                                Clear
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            {filteredCompanies.length === 0 && (
-                <div className="text-center py-20 space-y-4">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-200">
-                        <Building2 className="w-10 h-10" />
+            {isError && (
+                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                    Could not load companies. Check your API URL and try again.
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {isLoading
+                    ? COMPANY_SKELETON_KEYS.map((key) => <CompanySkeleton key={key} />)
+                    : filteredOrganizations.map((company) => {
+                          const initial = company.organization_name.slice(0, 1).toUpperCase();
+                          const hiringLabel = `${company.job_count} open ${
+                              company.job_count === 1 ? "role" : "roles"
+                          }`;
+                          return (
+                              <Link
+                                  key={company.id}
+                                  href={`/applicant/companies/${company.id}`}
+                                  className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-[0_18px_36px_-24px_rgba(37,99,235,0.45)] focus:outline-none focus:ring-4 focus:ring-blue-50"
+                              >
+                                  <div className="mb-5 flex items-start justify-between gap-4">
+                                      <div className="flex min-w-0 items-start gap-4">
+                                          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-slate-200 bg-white shadow-sm">
+                                              <div className="grid h-9 w-9 place-items-center rounded-full bg-blue-50 text-sm font-black text-blue-700">
+                                                  {initial}
+                                              </div>
+                                          </div>
+                                          <div className="min-w-0">
+                                              <h2 className="truncate text-base font-black tracking-tight text-slate-950 group-hover:text-blue-600">
+                                                  {company.organization_name}
+                                              </h2>
+                                              <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                                                  <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                                                  {company.industry}
+                                              </p>
+                                          </div>
+                                      </div>
+                                      <span className="shrink-0 rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-700">
+                                          Hiring
+                                      </span>
+                                  </div>
+
+                                  <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3">
+                                      <div>
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                              Team size
+                                          </p>
+                                          <p className="mt-1 flex items-center gap-1.5 text-sm font-black text-slate-950">
+                                              <Users className="h-3.5 w-3.5 text-blue-600" />
+                                              {company.organization_size.toLocaleString()}
+                                          </p>
+                                      </div>
+                                      <div>
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                              Hiring
+                                          </p>
+                                          <p className="mt-1 flex items-center gap-1.5 text-sm font-black text-slate-950">
+                                              <Briefcase className="h-3.5 w-3.5 text-blue-600" />
+                                              {hiringLabel}
+                                          </p>
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                                      <span className="text-xs font-black text-slate-600">
+                                          Open profile
+                                      </span>
+                                      <span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-50 text-slate-500 transition-colors group-hover:bg-blue-600 group-hover:text-white">
+                                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                                      </span>
+                                  </div>
+                              </Link>
+                          );
+                      })}
+            </div>
+
+            {!isLoading && filteredOrganizations.length === 0 && (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-white py-16 text-center">
+                    <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-slate-50 text-slate-300">
+                        <Building2 className="h-7 w-7" />
                     </div>
-                    <h3 className="text-xl font-black text-gray-900 uppercase">
-                        No companies found
-                    </h3>
-                    <p className="text-sm text-gray-400 font-bold uppercase tracking-tighter">
-                        Try searching for something else.
+                    <h3 className="text-base font-black text-slate-950">No companies found</h3>
+                    <p className="mt-1 text-sm font-medium text-slate-500">
+                        {organizations.length === 0
+                            ? "No companies have active public roles right now."
+                            : "Try adjusting your search, industry, or sorting filters."}
                     </p>
+                    {organizations.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="mt-5 rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-black"
+                        >
+                            Reset filters
+                        </button>
+                    )}
                 </div>
             )}
         </div>

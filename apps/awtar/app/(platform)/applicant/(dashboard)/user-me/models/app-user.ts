@@ -19,6 +19,7 @@ export type AppUser = {
     last_name: string;
     role: "candidate" | "hr" | "admin";
     is_active?: boolean;
+    profile_pic_url?: string | null;
     candidate_profile?: CandidateProfile | null;
     created_at?: string;
     updated_at?: string;

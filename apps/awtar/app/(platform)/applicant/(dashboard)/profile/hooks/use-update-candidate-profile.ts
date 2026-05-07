@@ -5,9 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import type { AppUser } from "@/applicant/user-me/models/app-user";
-import { normalizeError } from "@/lib/errors";
 import { USER_QUERY_KEY } from "@/lib/hooks/use-current-user";
-import { toastService } from "@/lib/services/toast.service";
 import { useAuthStore } from "@/lib/store/auth";
 import { profileApi } from "../api/profile.api";
 import {
@@ -57,14 +55,10 @@ export function useUpdateCandidateProfile(user?: AppUser | null) {
             profileApi.updateCandidateProfile(userId!, toCandidatePayload(data)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [...USER_QUERY_KEY] });
-            toastService.success("Professional profile updated.");
-        },
-        onError: (error) => {
-            toastService.error(normalizeError(error).message);
         },
     });
 
-    const submit = form.handleSubmit((data) => mutation.mutate(data));
+    const submit = form.handleSubmit((data) => mutation.mutateAsync(data));
 
     return { form, submit, isPending: mutation.isPending };
 }
