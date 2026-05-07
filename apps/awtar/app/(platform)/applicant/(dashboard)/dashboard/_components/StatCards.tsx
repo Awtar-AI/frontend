@@ -3,16 +3,19 @@
 import { Bookmark, CheckCircle2, FileText, TrendingDown, TrendingUp, XCircle } from "lucide-react";
 import { useDashboardStats } from "../hooks/use-dashboard-stats";
 
-function DiffBadge({ diff }: { diff: number }) {
+function DiffBadge({ diff, label }: { diff: number; label: string }) {
     if (diff === 0) return <span className="text-[10px] font-bold text-gray-400">No change</span>;
     const up = diff > 0;
+    const absoluteDiff = Math.abs(diff);
+    const changeLabel = absoluteDiff === 1 ? label : `${label}s`;
+
     return (
         <span
             className={`inline-flex items-center gap-1 text-[10px] font-bold ${up ? "text-green-600" : "text-red-500"}`}
         >
             {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {up ? "+" : ""}
-            {diff}
+            {diff} {changeLabel}
         </span>
     );
 }
@@ -28,6 +31,7 @@ export function StatCards() {
             icon: FileText,
             color: "text-blue-500",
             bg: "bg-blue-50 border-blue-100",
+            changeLabel: "application sent",
         },
         {
             label: "Accepted",
@@ -36,6 +40,7 @@ export function StatCards() {
             icon: CheckCircle2,
             color: "text-green-500",
             bg: "bg-green-50 border-green-100",
+            changeLabel: "accepted application",
         },
         {
             label: "Rejected",
@@ -44,6 +49,7 @@ export function StatCards() {
             icon: XCircle,
             color: "text-red-400",
             bg: "bg-red-50 border-red-100",
+            changeLabel: "rejected application",
         },
         {
             label: "Saved Jobs",
@@ -52,6 +58,7 @@ export function StatCards() {
             icon: Bookmark,
             color: "text-orange-500",
             bg: "bg-orange-50 border-orange-100",
+            changeLabel: "saved job",
         },
     ];
 
@@ -80,7 +87,7 @@ export function StatCards() {
                         {isLoading ? (
                             <span className="inline-block w-16 h-3 bg-gray-100 rounded animate-pulse" />
                         ) : (
-                            <DiffBadge diff={stat.diff} />
+                            <DiffBadge diff={stat.diff} label={stat.changeLabel} />
                         )}
                     </div>
                 );

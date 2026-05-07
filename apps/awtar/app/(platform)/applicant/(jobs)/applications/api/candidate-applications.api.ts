@@ -12,7 +12,9 @@ export const candidateApplicationsApi = {
         return parseApplicationResponse(data);
     },
 
-    async listMine(status?: "Applied" | "Pending" | "Accepted" | "Rejected"): Promise<ApplicationResponse[]> {
+    async listMine(
+        status?: "Applied" | "Pending" | "Accepted" | "Rejected",
+    ): Promise<ApplicationResponse[]> {
         const { data } = await http.get("/api/v1/applications", {
             params: status ? { status } : undefined,
         });

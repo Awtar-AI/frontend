@@ -1,6 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import LinkExt from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import UnderlineExt from "@tiptap/extension-underline";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import {
     ArrowLeft,
     Bold,
@@ -24,8 +29,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useRef } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { useAuthStore } from "@/lib/store/auth";
 import { useApplyToJob } from "../../../applications/hooks/use-apply-to-job";
@@ -53,47 +58,69 @@ type CoverLetterEditorProps = {
     required?: boolean;
 };
 
-const editorButtonClass =
-    "grid h-8 w-8 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-blue-100";
+const editorButtonClass = (active?: boolean) =>
+    `grid h-8 w-8 place-items-center rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 ${
+        active
+            ? "bg-blue-100 text-blue-700"
+            : "text-slate-500 hover:bg-slate-100 hover:text-slate-950"
+    }`;
 
 function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEditorProps) {
-    const editorRef = useRef<HTMLTextAreaElement>(null);
+    const lastEmitted = useRef(value);
 
-    function replaceSelection(format: (selected: string) => string) {
-        const editor = editorRef.current;
-        if (!editor) return;
+    const editor = useEditor({
+        immediatelyRender: false,
+        extensions: [
+            StarterKit,
+            UnderlineExt,
+            LinkExt.configure({ openOnClick: false }),
+            Placeholder.configure({
+                placeholder: "Introduce yourself and explain why you are a strong fit...",
+            }),
+        ],
+        content: value,
+        editorProps: {
+            attributes: {
+                id: "cover_letter_editor",
+                class: "min-h-[220px] px-5 py-4 text-sm font-medium leading-7 text-gray-700 outline-none",
+            },
+        },
+        onUpdate: ({ editor }) => {
+            const html = editor.getHTML();
+            lastEmitted.current = html;
+            onChange(html);
+        },
+    });
 
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-        const selected = value.slice(start, end);
-        const replacement = format(selected);
-        const nextValue = `${value.slice(0, start)}${replacement}${value.slice(end)}`;
-        onChange(nextValue);
+    useEffect(() => {
+        if (editor && value !== lastEmitted.current) {
+            editor.commands.setContent(value);
+            lastEmitted.current = value;
+        }
+    }, [value, editor]);
 
-        window.requestAnimationFrame(() => {
-            editor.focus();
-            editor.setSelectionRange(start, start + replacement.length);
-        });
-    }
-
-    function addLink() {
+    function handleAddLink() {
         const url = window.prompt("Enter a link URL");
-        if (!url?.trim()) return;
-        replaceSelection((selected) => `[${selected || "link text"}](${url.trim()})`);
-    }
-
-    function formatLines(prefix: string) {
-        replaceSelection((selected) => {
-            const text = selected || "List item";
-            return text
-                .split("\n")
-                .map((line) => `${prefix}${line}`)
-                .join("\n");
-        });
+        if (!url?.trim() || !editor) return;
+        editor.chain().focus().setLink({ href: url.trim() }).run();
     }
 
     return (
         <div className="space-y-2">
+            <style>{`
+                .cover-letter-editor .tiptap p.is-editor-empty:first-child::before {
+                    color: #D1D5DB;
+                    content: attr(data-placeholder);
+                    float: left;
+                    height: 0;
+                    pointer-events: none;
+                }
+                .cover-letter-editor .tiptap ul { list-style-type: disc; padding-left: 1.5rem; margin: 0.25rem 0; }
+                .cover-letter-editor .tiptap ol { list-style-type: decimal; padding-left: 1.5rem; margin: 0.25rem 0; }
+                .cover-letter-editor .tiptap blockquote { border-left: 3px solid #E5E7EB; padding-left: 1rem; color: #6B7280; margin: 0.5rem 0; }
+                .cover-letter-editor .tiptap a { color: #2563EB; text-decoration: underline; }
+            `}</style>
+
             <label htmlFor="cover_letter_editor" className="text-sm font-black text-gray-900">
                 Cover letter
                 {required ? (
@@ -104,17 +131,15 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
             </label>
 
             <div
-                className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${
+                className={`cover-letter-editor overflow-hidden rounded-2xl border-2 bg-white transition-all ${
                     error ? "border-red-200" : "border-gray-100 focus-within:border-blue-500"
                 }`}
             >
                 <div className="flex flex-wrap items-center gap-1 border-b border-gray-100 bg-slate-50 px-3 py-2">
                     <button
                         type="button"
-                        onClick={() =>
-                            replaceSelection((selected) => `**${selected || "bold text"}**`)
-                        }
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleBold().run()}
+                        className={editorButtonClass(editor?.isActive("bold"))}
                         aria-label="Bold"
                         title="Bold"
                     >
@@ -122,10 +147,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     </button>
                     <button
                         type="button"
-                        onClick={() =>
-                            replaceSelection((selected) => `_${selected || "italic text"}_`)
-                        }
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleItalic().run()}
+                        className={editorButtonClass(editor?.isActive("italic"))}
                         aria-label="Italic"
                         title="Italic"
                     >
@@ -133,12 +156,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     </button>
                     <button
                         type="button"
-                        onClick={() =>
-                            replaceSelection(
-                                (selected) => `<u>${selected || "underlined text"}</u>`,
-                            )
-                        }
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleUnderline().run()}
+                        className={editorButtonClass(editor?.isActive("underline"))}
                         aria-label="Underline"
                         title="Underline"
                     >
@@ -147,8 +166,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     <span className="mx-1 h-5 w-px bg-gray-200" />
                     <button
                         type="button"
-                        onClick={() => formatLines("- ")}
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                        className={editorButtonClass(editor?.isActive("bulletList"))}
                         aria-label="Bullet list"
                         title="Bullet list"
                     >
@@ -156,8 +175,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     </button>
                     <button
                         type="button"
-                        onClick={() => formatLines("1. ")}
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                        className={editorButtonClass(editor?.isActive("orderedList"))}
                         aria-label="Numbered list"
                         title="Numbered list"
                     >
@@ -165,8 +184,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     </button>
                     <button
                         type="button"
-                        onClick={() => formatLines("> ")}
-                        className={editorButtonClass}
+                        onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+                        className={editorButtonClass(editor?.isActive("blockquote"))}
                         aria-label="Quote"
                         title="Quote"
                     >
@@ -175,8 +194,8 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     <span className="mx-1 h-5 w-px bg-gray-200" />
                     <button
                         type="button"
-                        onClick={addLink}
-                        className={editorButtonClass}
+                        onClick={handleAddLink}
+                        className={editorButtonClass(editor?.isActive("link"))}
                         aria-label="Add link"
                         title="Add link"
                     >
@@ -184,14 +203,7 @@ function CoverLetterEditor({ value, onChange, error, required }: CoverLetterEdit
                     </button>
                 </div>
 
-                <textarea
-                    id="cover_letter_editor"
-                    ref={editorRef}
-                    value={value}
-                    onChange={(event) => onChange(event.target.value)}
-                    placeholder="Introduce yourself and explain why you are a strong fit..."
-                    className="min-h-[220px] w-full resize-y px-5 py-4 text-sm font-medium leading-7 text-gray-700 outline-none placeholder:text-gray-300"
-                />
+                <EditorContent editor={editor} />
             </div>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
@@ -242,12 +254,14 @@ export function ApplyToJobForm({ job }: Props) {
     const {
         handleSubmit,
         setValue,
-        watch,
+        control,
         formState: { errors },
     } = useForm<ApplyFormInput>({
         resolver: zodResolver(schema),
         defaultValues: { cover_letter: "" },
     });
+
+    const coverLetterValue = useWatch({ control, name: "cover_letter" }) ?? "";
 
     const onSubmit = handleSubmit((data) => {
         if (job.is_resume_required && !hasResume) {
@@ -328,7 +342,7 @@ export function ApplyToJobForm({ job }: Props) {
                     )}
 
                     <CoverLetterEditor
-                        value={watch("cover_letter") ?? ""}
+                        value={coverLetterValue}
                         onChange={(nextValue) =>
                             setValue("cover_letter", nextValue, {
                                 shouldDirty: true,

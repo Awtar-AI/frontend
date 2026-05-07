@@ -75,7 +75,13 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
                     Status: <span className="font-bold">{existingApplication.status}</span>
                 </p>
                 <p className="text-sm text-emerald-800">
-                    Cover letter: {existingApplication.cover_letter || "Not provided"}
+                    Cover letter:{" "}
+                    {existingApplication.cover_letter
+                        ? existingApplication.cover_letter
+                              .replace(/<[^>]*>/g, " ")
+                              .replace(/\s+/g, " ")
+                              .trim()
+                        : "Not provided"}
                 </p>
                 <p className="text-sm text-emerald-800">
                     Resume:{" "}
@@ -116,7 +122,7 @@ export default function ApplyPage({ params }: { params: Promise<{ id: string }> 
                 <div className="flex items-center gap-3 min-w-0">
                     <Link
                         href={`/applicant/jobs/${id}`}
-                        className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-gray-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-gray-200 bg-white text-slate-500 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
                         aria-label="Back to job"
                     >
                         <ArrowLeft className="h-4 w-4" />

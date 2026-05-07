@@ -342,7 +342,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                 <p>
                                     Cover letter:{" "}
                                     <span className="font-medium">
-                                        {existingApplication?.cover_letter || "Not provided"}
+                                        {existingApplication?.cover_letter
+                                            ? existingApplication.cover_letter
+                                                  .replace(/<[^>]*>/g, " ")
+                                                  .replace(/\s+/g, " ")
+                                                  .trim()
+                                            : "Not provided"}
                                     </span>
                                 </p>
                                 <p>
