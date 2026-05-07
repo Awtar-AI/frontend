@@ -20,12 +20,25 @@ export const applyRequestSchema = z.object({
 
 export type ApplyRequestPayload = z.infer<typeof applyRequestSchema>;
 
+export const applicationStatusValues = [
+    "Applied",
+    "Shortlisted",
+    "Interviewed",
+    "Passed",
+    "Rejected",
+    // Legacy values for old rows.
+    "Pending",
+    "Accepted",
+] as const;
+
+export type ApplicationStatus = (typeof applicationStatusValues)[number];
+
 export const applicationResponseSchema = z
     .object({
         id: z.string(),
         job_id: z.string(),
         user_id: z.string(),
-        status: z.enum(["Pending", "Accepted", "Rejected"]),
+        status: z.enum(applicationStatusValues),
         resume_url: z.string().optional(),
         cover_letter: z.string().optional(),
         applicant_first_name: z.string(),

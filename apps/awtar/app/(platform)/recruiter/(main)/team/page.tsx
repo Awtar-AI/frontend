@@ -148,11 +148,6 @@ export default function TeamMembersPage() {
                             )}
                         </div>
 
-                        <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-                            The invite email should send them to ` /accept-invitation?token=... ` so
-                            they can create their HR account.
-                        </div>
-
                         <button
                             type="submit"
                             disabled={!organizationId || inviteMutation.isPending}

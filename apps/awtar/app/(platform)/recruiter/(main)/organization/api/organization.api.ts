@@ -2,8 +2,8 @@ import http from "@/lib/http";
 import { type OrganizationDetail, parseOrganizationDetail } from "../schemas/organization.schema";
 
 export const recruiterOrganizationApi = {
-    async getOne(organizationId: string): Promise<OrganizationDetail> {
-        const { data } = await http.get(`/api/v1/organizations/${organizationId}/single`);
+    async getOne(_organizationId: string): Promise<OrganizationDetail> {
+        const { data } = await http.get("/api/v1/organizations/single");
         return parseOrganizationDetail(data);
     },
 

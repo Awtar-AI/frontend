@@ -8,13 +8,13 @@ import {
 } from "../schemas/team.schema";
 
 export const recruiterTeamApi = {
-    async listEmployees(organizationId: string): Promise<TeamMember[]> {
-        const { data } = await http.get(`/api/v1/organizations/${organizationId}/employees`);
+    async listEmployees(_organizationId: string): Promise<TeamMember[]> {
+        const { data } = await http.get("/api/v1/organizations/employees");
         return parseTeamMembers(data);
     },
 
-    async inviteHr(organizationId: string, payload: InviteHrPayload): Promise<InviteHrResponse> {
-        const { data } = await http.post(`/api/v1/organizations/${organizationId}/invite`, payload);
+    async inviteHr(_organizationId: string, payload: InviteHrPayload): Promise<InviteHrResponse> {
+        const { data } = await http.post("/api/v1/organizations/invite", payload);
         return parseInviteHrResponse(data);
     },
 };

@@ -1,6 +1,7 @@
 import http from "@/lib/http";
 import {
     type ApplicationResponse,
+    type ApplicationStatus,
     type ApplyRequestPayload,
     parseApplicationList,
     parseApplicationResponse,
@@ -12,7 +13,7 @@ export const candidateApplicationsApi = {
         return parseApplicationResponse(data);
     },
 
-    async listMine(status?: "Pending" | "Accepted" | "Rejected"): Promise<ApplicationResponse[]> {
+    async listMine(status?: ApplicationStatus): Promise<ApplicationResponse[]> {
         const { data } = await http.get("/api/v1/applications", {
             params: status ? { status } : undefined,
         });

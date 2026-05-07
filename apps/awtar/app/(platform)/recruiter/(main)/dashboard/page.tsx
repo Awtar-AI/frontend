@@ -1,12 +1,15 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import {
+    Activity,
     Briefcase,
     Calendar,
     ChevronDown,
     Clock,
     FileText,
     Info,
+    Loader2,
     MessageSquare,
     MoreHorizontal,
     Plus,
@@ -14,17 +17,26 @@ import {
     UserPlus,
 } from "lucide-react";
 import Link from "next/link";
-import { Bar, BarChart, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
-
-// Data for LineChart
-const TREND_DATA = [
-    { name: "JAN", applications: 400 },
-    { name: "FEB", applications: 700 },
-    { name: "MAR", applications: 600 },
-    { name: "APR", applications: 900 },
-    { name: "MAY", applications: 800 },
-    { name: "JUN", applications: 1200 },
-];
+import { useMemo, useState } from "react";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
+import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
+import { useAuthUser } from "@/lib/hooks/use-auth";
+import { recruiterApplicationsApi } from "../job-listings/api/recruiter-applications.api";
+import { useRecruiterJobs } from "../post-job/hooks/use-recruiter-jobs";
+import { getJobExperienceLevel } from "../post-job/schemas/post-job.schema";
+import type { OrgTrendPeriod } from "./api/recruiter-dashboard.api";
+import { useRecruiterOrgStats } from "./hooks/use-recruiter-org-stats";
+import { useRecruiterOrgTrend } from "./hooks/use-recruiter-org-trend";
 
 // Data for BarChart (Quality Distribution)
 const QUALITY_DATA = [
@@ -34,41 +46,79 @@ const QUALITY_DATA = [
     { range: "<60%", count: 5 },
 ];
 
-// Active Jobs Table Mock Data
-const ACTIVE_JOBS = [
-    {
-        title: "Senior Software Engineer",
-        details: "Remote • Full-time",
-        department: "Engineering",
-        applicants: 42,
-        matchScore: 98,
-        matchColor: "text-green-600",
-        matchBg: "bg-green-50",
-        status: "ACTIVE",
-    },
-    {
-        title: "Product Designer (L4)",
-        details: "SF / NYC • Hybrid",
-        department: "Design",
-        applicants: 18,
-        matchScore: 89,
-        matchColor: "text-orange-600",
-        matchBg: "bg-orange-50",
-        status: "ACTIVE",
-    },
-    {
-        title: "Marketing Director",
-        details: "London • Contract",
-        department: "Growth",
-        applicants: 5,
-        matchText: "Analyzing...",
-        matchColor: "text-gray-500",
-        matchBg: "bg-gray-100",
-        status: "DRAFT",
-    },
+const PERIOD_OPTIONS: { value: OrgTrendPeriod; label: string }[] = [
+    { value: "7d", label: "Last 7 days" },
+    { value: "1m", label: "Last month" },
+    { value: "3m", label: "Last 3 months" },
+    { value: "6m", label: "Last 6 months" },
+    { value: "1y", label: "Last year" },
 ];
 
+function formatDelta(value: number, suffix = ""): string {
+    if (value === 0) return `0${suffix}`;
+    return `${value > 0 ? "+" : ""}${value}${suffix}`;
+}
+
+function formatPercent(value: number): string {
+    if (!Number.isFinite(value)) return "0%";
+    return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function formatJobMeta(job: {
+    is_remote?: boolean;
+    location?: string | null;
+    employment_type?: string;
+    deadline?: string;
+}): string {
+    const location = job.is_remote ? "Remote" : (job.location?.trim() ?? "Location TBD");
+    const type = (job.employment_type ?? "N/A").replace(/_/g, " ");
+    return `${location} • ${type}`;
+}
+
+function metricDeltaClass(value: number): string {
+    if (value > 0) return "text-green-600";
+    if (value < 0) return "text-red-600";
+    return "text-gray-500";
+}
+
 export default function RecruiterDashboard() {
+    const user = useAuthUser();
+    const displayName = user ? applicantDisplayName(user) : "Recruiter";
+    const firstName = displayName.split(" ").filter(Boolean)[0] ?? "Recruiter";
+    const [period, setPeriod] = useState<OrgTrendPeriod>("6m");
+
+    const statsQuery = useRecruiterOrgStats();
+    const trendQuery = useRecruiterOrgTrend(period);
+    const jobsQuery = useRecruiterJobs();
+
+    const topJobs = useMemo(
+        () =>
+            [...(jobsQuery.data ?? [])]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .slice(0, 6),
+        [jobsQuery.data],
+    );
+
+    const applicantCountsQueries = useQueries({
+        queries: topJobs.map((job) => ({
+            queryKey: ["recruiter", "dashboard", "job-app-count", job.id] as const,
+            queryFn: () => recruiterApplicationsApi.getCount(job.id),
+            staleTime: 30_000,
+        })),
+    });
+
+    const applicantCountByJobId = useMemo(() => {
+        const map: Record<string, number> = {};
+        for (const [index, query] of applicantCountsQueries.entries()) {
+            const job = topJobs[index];
+            if (!job) continue;
+            map[job.id] = query.data ?? 0;
+        }
+        return map;
+    }, [applicantCountsQueries, topJobs]);
+
+    const trendChartData = trendQuery.data?.data ?? [];
+
     return (
         <div className="w-full space-y-6 pb-12">
             {/* Header */}
@@ -78,8 +128,8 @@ export default function RecruiterDashboard() {
                         Recruiter Dashboard
                     </h1>
                     <p className="text-sm text-gray-500 font-medium">
-                        Welcome back, Alex. Here&apos;s what&apos;s happening with your hiring
-                        pipeline.
+                        Welcome back, {firstName}. Here&apos;s what&apos;s happening with your
+                        hiring funnel today.
                     </p>
                 </div>
                 <Link
@@ -104,10 +154,18 @@ export default function RecruiterDashboard() {
                     </div>
                     <div className="flex items-end gap-3">
                         <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            12
+                            {statsQuery.data?.total_active_jobs ?? 0}
                         </span>
-                        <span className="text-xs font-bold text-green-600 mb-1.5">
-                            +2 vs last month
+                        <span
+                            className={`text-xs font-bold mb-1.5 ${
+                                statsQuery.data
+                                    ? metricDeltaClass(statsQuery.data.active_jobs_diff)
+                                    : "text-gray-500"
+                            }`}
+                        >
+                            {statsQuery.data
+                                ? `${formatDelta(statsQuery.data.active_jobs_diff)} vs last month`
+                                : "Loading..."}
                         </span>
                     </div>
                 </div>
@@ -124,10 +182,18 @@ export default function RecruiterDashboard() {
                     </div>
                     <div className="flex items-end gap-3">
                         <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            1,248
+                            {statsQuery.data?.total_applications ?? 0}
                         </span>
-                        <span className="text-xs font-bold text-green-600 mb-1.5">
-                            ↑ 15% increase
+                        <span
+                            className={`text-xs font-bold mb-1.5 ${
+                                statsQuery.data
+                                    ? metricDeltaClass(statsQuery.data.apps_diff)
+                                    : "text-gray-500"
+                            }`}
+                        >
+                            {statsQuery.data
+                                ? `${formatPercent(statsQuery.data.apps_change_pct)} change`
+                                : "Loading..."}
                         </span>
                     </div>
                 </div>
@@ -187,48 +253,75 @@ export default function RecruiterDashboard() {
                                 MONTHLY GROWTH OVERVIEW
                             </p>
                         </div>
-                        <button className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-                            Last 6 Months <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
+                        <label className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                            <select
+                                value={period}
+                                onChange={(e) => setPeriod(e.target.value as OrgTrendPeriod)}
+                                className="bg-transparent outline-none"
+                                aria-label="Select trend period"
+                            >
+                                {PERIOD_OPTIONS.map((item) => (
+                                    <option key={item.value} value={item.value}>
+                                        {item.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                        </label>
                     </div>
                     <div className="w-full h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={TREND_DATA}>
-                                <defs>
-                                    <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <XAxis
-                                    dataKey="name"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: 700 }}
-                                    dy={10}
-                                />
-                                <Tooltip
-                                    contentStyle={{
-                                        borderRadius: "8px",
-                                        border: "none",
-                                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                                    }}
-                                />
-                                <Line
-                                    type="monotone"
-                                    dataKey="applications"
-                                    stroke="#3b82f6"
-                                    strokeWidth={3}
-                                    dot={false}
-                                    activeDot={{
-                                        r: 6,
-                                        fill: "#3b82f6",
-                                        stroke: "#fff",
-                                        strokeWidth: 2,
-                                    }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                        {trendQuery.isLoading ? (
+                            <div className="h-full w-full flex items-center justify-center text-gray-500 text-sm gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Loading trend...
+                            </div>
+                        ) : trendQuery.isError ? (
+                            <div className="h-full w-full flex items-center justify-center text-red-500 text-sm">
+                                Could not load trend data.
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={trendChartData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                                    <XAxis
+                                        dataKey="label"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: "#9ca3af", fontSize: 10, fontWeight: 700 }}
+                                        dy={8}
+                                    />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: "#9ca3af", fontSize: 10 }}
+                                        width={28}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{
+                                            borderRadius: "8px",
+                                            border: "none",
+                                            boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                                        }}
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="applications"
+                                        name="Applications"
+                                        stroke="#2563eb"
+                                        strokeWidth={2.5}
+                                        dot={false}
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="active_jobs"
+                                        name="Active jobs"
+                                        stroke="#22c55e"
+                                        strokeWidth={2.5}
+                                        dot={false}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 
@@ -240,7 +333,7 @@ export default function RecruiterDashboard() {
                                 Candidate Quality Distribution
                             </h3>
                             <p className="text-[9px] font-bold tracking-widest text-gray-400 uppercase">
-                                MATCH % VS TRUST SCORE
+                                PLACEHOLDER UNTIL QUALITY DATA API
                             </p>
                         </div>
                         <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
@@ -297,7 +390,7 @@ export default function RecruiterDashboard() {
                                         APPLICANTS
                                     </th>
                                     <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">
-                                        AI TOP MATCH
+                                        EXPERIENCE
                                     </th>
                                     <th className="px-6 py-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                                         STATUS
@@ -306,45 +399,44 @@ export default function RecruiterDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 bg-white">
-                                {ACTIVE_JOBS.map((job, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                {topJobs.map((job, idx) => (
+                                    <tr
+                                        key={job.id}
+                                        className="hover:bg-gray-50/50 transition-colors"
+                                    >
                                         <td className="px-6 py-4">
                                             <Link
-                                                href={`/recruiter/job-listings/1/applicants`}
+                                                href={`/recruiter/job-listings/${job.id}`}
                                                 className="font-bold text-gray-900 text-sm hover:text-blue-600 transition-colors"
                                             >
                                                 {job.title}
                                             </Link>
                                             <p className="text-xs text-gray-500 mt-0.5">
-                                                {job.details}
+                                                {formatJobMeta(job)}
                                             </p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="inline-flex bg-gray-100 text-gray-600 text-xs font-semibold px-2.5 py-1 rounded-md">
-                                                {job.department}
+                                                {job.is_remote ? "Remote" : "On-site / Hybrid"}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="font-bold text-gray-900">
-                                                {job.applicants}
+                                                {applicantCountsQueries[idx]?.isLoading
+                                                    ? "..."
+                                                    : (applicantCountByJobId[job.id] ?? 0)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span
-                                                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${job.matchBg} ${job.matchColor}`}
-                                            >
-                                                <div
-                                                    className={`w-1.5 h-1.5 rounded-full bg-current`}
-                                                />
-                                                {job.matchScore
-                                                    ? `${job.matchScore}% Match`
-                                                    : job.matchText}
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700">
+                                                <Activity className="h-3 w-3" />
+                                                {getJobExperienceLevel(job) || "N/A"}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span
                                                 className={`text-[10px] font-bold tracking-widest uppercase ${
-                                                    job.status === "ACTIVE"
+                                                    job.status === "active"
                                                         ? "text-green-600"
                                                         : "text-gray-400"
                                                 }`}
@@ -353,12 +445,27 @@ export default function RecruiterDashboard() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-gray-400 hover:text-gray-600 p-1">
+                                            <button
+                                                title="button"
+                                                type="button"
+                                                className="text-gray-400 hover:text-gray-600 p-1"
+                                            >
                                                 <MoreHorizontal className="w-5 h-5" />
                                             </button>
                                         </td>
                                     </tr>
                                 ))}
+                                {!jobsQuery.isLoading && topJobs.length === 0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={6}
+                                            className="px-6 py-8 text-center text-sm text-gray-500"
+                                        >
+                                            No jobs yet. Post your first role to start tracking
+                                            pipeline metrics.
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
@@ -376,10 +483,10 @@ export default function RecruiterDashboard() {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-900 leading-snug">
-                                    Marcus Thorne applied for Senior Architect
+                                    Placeholder activity feed until event-stream API is wired.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    2 MINUTES AGO
+                                    JUST NOW
                                 </p>
                             </div>
                         </div>
@@ -390,10 +497,10 @@ export default function RecruiterDashboard() {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    AI analysis complete for Elena Rodriguez
+                                    AI analysis insights will appear here.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    1 HOUR AGO
+                                    PENDING DATA
                                 </p>
                             </div>
                         </div>
@@ -404,10 +511,10 @@ export default function RecruiterDashboard() {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    New interview scheduled with David Chen
+                                    Interview scheduling summaries will appear here.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    3 HOURS AGO
+                                    PENDING DATA
                                 </p>
                             </div>
                         </div>
@@ -418,10 +525,10 @@ export default function RecruiterDashboard() {
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    Sarah Jenkins reviewed Lead Designer candidates
+                                    Team collaboration updates will appear here.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    5 HOURS AGO
+                                    PENDING DATA
                                 </p>
                             </div>
                         </div>

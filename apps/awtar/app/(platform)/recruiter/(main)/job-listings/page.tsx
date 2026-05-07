@@ -199,7 +199,9 @@ export default function JobListingsPage() {
                 toastService.success(
                     ids.length === 1 ? "Job removed." : `${ids.length} jobs removed.`,
                 );
-                await queryClient.invalidateQueries({ queryKey: [...RECRUITER_JOBS_QUERY_KEY] });
+                await queryClient.invalidateQueries({
+                    queryKey: [...RECRUITER_JOBS_QUERY_KEY],
+                });
                 setSelectedRows([]);
             } catch (e) {
                 toastService.error(normalizeError(e).message);
@@ -300,6 +302,8 @@ export default function JobListingsPage() {
                             <tr>
                                 <th className="px-6 py-4 font-semibold w-12 align-middle">
                                     <input
+                                        title="n"
+                                        placeholder=""
                                         type="checkbox"
                                         checked={
                                             selectedRows.length === currentJobs.length &&
@@ -377,6 +381,7 @@ export default function JobListingsPage() {
                                     >
                                         <td className="px-6 py-4">
                                             <input
+                                                title="check"
                                                 type="checkbox"
                                                 checked={selectedRows.includes(job.id)}
                                                 onChange={() => toggleRow(job.id)}
@@ -396,7 +401,7 @@ export default function JobListingsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-center text-gray-600 text-xs font-medium">
                                             {applicantCountsQueries.find(
-                                                (q, idx) => jobs[idx]?.id === job.id,
+                                                (_q, idx) => jobs[idx]?.id === job.id,
                                             )?.isLoading
                                                 ? "..."
                                                 : (applicantCountMap[job.id] ?? 0)}
@@ -460,6 +465,7 @@ export default function JobListingsPage() {
                 <div className="flex flex-col items-center justify-center p-6 border-t border-gray-100">
                     <div className="flex items-center gap-1">
                         <button
+                            title="button"
                             type="button"
                             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                             disabled={currentPage === 1}
@@ -485,6 +491,7 @@ export default function JobListingsPage() {
 
                         <button
                             type="button"
+                            title="button"
                             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                             disabled={currentPage === totalPages}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
