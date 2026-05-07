@@ -4,6 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
+import { normalizeError } from "@/lib/errors";
+import { toastService } from "@/lib/services/toast.service";
 import { CoverLetterViewer } from "../../../../../../_components/CoverLetterViewer";
 import { recruiterApplicationsApi } from "../../../api/recruiter-applications.api";
 import { useRecruiterCandidateProfile } from "../../../hooks/use-recruiter-candidate-profile";
@@ -12,8 +14,6 @@ import {
     useRecruiterJobApplicationDetail,
 } from "../../../hooks/use-recruiter-job-application-detail";
 import { RECRUITER_JOB_APPLICATIONS_QUERY_KEY } from "../../../hooks/use-recruiter-job-applications";
-import { normalizeError } from "@/lib/errors";
-import { toastService } from "@/lib/services/toast.service";
 
 function formatDateLabel(value: string): string {
     try {
