@@ -3,6 +3,7 @@
 import { Building2, ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useTheme } from "@/lib/hooks/use-theme";
 import { AdminShell } from "../_components/admin-shell";
 import { useOrganizations } from "./hooks/use-organizations";
 import type { AdminOrganizationsFilters, OrganizationStatus } from "./schemas/organizations.schema";
@@ -32,6 +33,9 @@ function statusClasses(status: OrganizationStatus) {
 }
 
 export default function OrganizationsPage() {
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+
     const [draftFilters, setDraftFilters] = useState({
         name: "",
         status: "",
@@ -72,8 +76,12 @@ export default function OrganizationsPage() {
         <AdminShell title="Admin Panel">
             <div className="space-y-8">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight">Organization Management</h1>
-                    <p className="text-awtar-slate">
+                    <h1
+                        className={`text-3xl font-bold tracking-tight ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                    >
+                        Organization Management
+                    </h1>
+                    <p className={isDark ? "text-awtar-slate" : "text-gray-600"}>
                         Review pending registrations, inspect organization documents, approve or
                         suspend access, and remove organizations when necessary.
                     </p>
@@ -88,25 +96,45 @@ export default function OrganizationsPage() {
                     ].map((card) => (
                         <div
                             key={card.label}
-                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 shadow-xl shadow-black/10"
+                            className={`rounded-2xl border p-5 shadow-xl transition-colors ${
+                                isDark
+                                    ? "border-white/10 bg-white/3 shadow-black/10"
+                                    : "border-gray-200 bg-white shadow-gray-200/50"
+                            }`}
                         >
-                            <p className="text-sm text-awtar-slate">{card.label}</p>
-                            <p className="mt-3 text-3xl font-bold text-white">{card.value}</p>
+                            <p
+                                className={`text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                            >
+                                {card.label}
+                            </p>
+                            <p
+                                className={`mt-3 text-3xl font-bold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                            >
+                                {card.value}
+                            </p>
                         </div>
                     ))}
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/10">
+                <div
+                    className={`rounded-2xl border p-6 shadow-2xl transition-colors ${
+                        isDark
+                            ? "border-white/10 bg-white/3 shadow-black/10"
+                            : "border-gray-200 bg-white shadow-gray-200/50"
+                    }`}
+                >
                     <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr_0.8fr_auto]">
                         <div>
                             <label
                                 htmlFor="org-name-filter"
-                                className="mb-2 block text-sm text-awtar-slate"
+                                className={`mb-2 block text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
                             >
                                 Search by name
                             </label>
                             <div className="relative">
-                                <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-awtar-slate" />
+                                <Search
+                                    className={`pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 ${isDark ? "text-awtar-slate" : "text-gray-500"}`}
+                                />
                                 <input
                                     id="org-name-filter"
                                     value={draftFilters.name}
@@ -117,7 +145,11 @@ export default function OrganizationsPage() {
                                         }))
                                     }
                                     placeholder="Search organizations"
-                                    className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pl-11 pr-4 text-white outline-none transition-colors focus:border-red-500/40"
+                                    className={`h-11 w-full rounded-xl border pl-11 pr-4 outline-none transition-colors focus:border-awtar-blue/40 ${
+                                        isDark
+                                            ? "border-white/10 bg-white/5 text-white"
+                                            : "border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400"
+                                    }`}
                                 />
                             </div>
                         </div>
@@ -125,7 +157,7 @@ export default function OrganizationsPage() {
                         <div>
                             <label
                                 htmlFor="org-status-filter"
-                                className="mb-2 block text-sm text-awtar-slate"
+                                className={`mb-2 block text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
                             >
                                 Status
                             </label>
@@ -138,14 +170,22 @@ export default function OrganizationsPage() {
                                         status: event.target.value,
                                     }))
                                 }
-                                className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-white outline-none transition-colors focus:border-red-500/40"
+                                className={`h-11 w-full rounded-xl border px-4 outline-none transition-colors focus:border-awtar-blue/40 ${
+                                    isDark
+                                        ? "border-white/10 bg-white/5 text-white"
+                                        : "border-gray-200 bg-gray-50 text-gray-900"
+                                }`}
                             >
                                 <option value="">All statuses</option>
                                 {STATUS_OPTIONS.map((option) => (
                                     <option
                                         key={option.value}
                                         value={option.value}
-                                        className="bg-awtar-navy text-white"
+                                        className={
+                                            isDark
+                                                ? "bg-awtar-navy text-white"
+                                                : "bg-white text-gray-900"
+                                        }
                                     >
                                         {option.label}
                                     </option>
@@ -156,7 +196,7 @@ export default function OrganizationsPage() {
                         <div>
                             <label
                                 htmlFor="org-industry-filter"
-                                className="mb-2 block text-sm text-awtar-slate"
+                                className={`mb-2 block text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
                             >
                                 Industry
                             </label>
@@ -170,7 +210,11 @@ export default function OrganizationsPage() {
                                     }))
                                 }
                                 placeholder="e.g. Tech"
-                                className="h-11 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-white outline-none transition-colors focus:border-red-500/40"
+                                className={`h-11 w-full rounded-xl border px-4 outline-none transition-colors focus:border-awtar-blue/40 ${
+                                    isDark
+                                        ? "border-white/10 bg-white/5 text-white"
+                                        : "border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400"
+                                }`}
                             />
                         </div>
 
@@ -178,7 +222,11 @@ export default function OrganizationsPage() {
                             <button
                                 type="button"
                                 onClick={handleApplyFilters}
-                                className="h-11 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-red-500"
+                                className={`h-11 rounded-xl px-5 text-sm font-semibold transition-colors ${
+                                    isDark
+                                        ? "bg-awtar-blue text-white hover:bg-awtar-blue-light"
+                                        : "bg-awtar-blue text-white hover:bg-awtar-blue-light"
+                                }`}
                             >
                                 Apply Filters
                             </button>
@@ -186,16 +234,34 @@ export default function OrganizationsPage() {
                     </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/10">
-                    <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+                <div
+                    className={`rounded-2xl border shadow-2xl transition-colors ${
+                        isDark
+                            ? "border-white/10 bg-white/3 shadow-black/10"
+                            : "border-gray-200 bg-white shadow-gray-200/50"
+                    }`}
+                >
+                    <div
+                        className={`flex items-center justify-between border-b px-6 py-4 ${
+                            isDark ? "border-white/10" : "border-gray-200"
+                        }`}
+                    >
                         <div>
-                            <h2 className="text-lg font-semibold text-white">Organizations</h2>
-                            <p className="text-sm text-awtar-slate">
+                            <h2
+                                className={`text-lg font-semibold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                            >
+                                Organizations
+                            </h2>
+                            <p
+                                className={`text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                            >
                                 Moderation queue and active company accounts.
                             </p>
                         </div>
                         {query.isFetching && (
-                            <div className="inline-flex items-center gap-2 text-sm text-awtar-slate">
+                            <div
+                                className={`inline-flex items-center gap-2 text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                            >
                                 <Loader2 className="h-4 w-4 animate-spin" />
                                 Refreshing
                             </div>

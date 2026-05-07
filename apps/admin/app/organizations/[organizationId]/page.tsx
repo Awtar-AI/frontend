@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowLeft, ExternalLink, Loader2, Trash2 } from "lucide-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
+import { useTheme } from "@/lib/hooks/use-theme";
 import { AdminShell } from "../../_components/admin-shell";
 import {
     getDeleteOrganizationErrorMessage,
@@ -43,6 +44,9 @@ export default function OrganizationDetailPage({
     params: Promise<{ organizationId: string }>;
 }) {
     const router = useRouter();
+    const { theme } = useTheme();
+    const isDark = theme === "dark";
+
     const [isDeleteArmed, setIsDeleteArmed] = useState(false);
     const { organizationId } = use(params);
 
@@ -65,7 +69,11 @@ export default function OrganizationDetailPage({
                 <div>
                     <Link
                         href="/organizations"
-                        className="inline-flex items-center gap-2 text-sm font-semibold text-red-300 hover:text-white"
+                        className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${
+                            isDark
+                                ? "text-red-300 hover:text-white"
+                                : "text-red-600 hover:text-red-700"
+                        }`}
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back to organizations
@@ -73,26 +81,54 @@ export default function OrganizationDetailPage({
                 </div>
 
                 {detailQuery.isLoading ? (
-                    <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-20 text-awtar-slate">
+                    <div
+                        className={`flex items-center gap-2 rounded-2xl border px-6 py-20 ${
+                            isDark
+                                ? "border-white/10 bg-white/3 text-awtar-slate"
+                                : "border-gray-200 bg-gray-50 text-gray-600"
+                        }`}
+                    >
                         <Loader2 className="h-5 w-5 animate-spin" />
                         Loading organization details...
                     </div>
                 ) : detailQuery.isError || !detailQuery.data ? (
-                    <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-6 py-12 text-center text-red-300">
+                    <div
+                        className={`rounded-2xl border px-6 py-12 text-center ${
+                            isDark
+                                ? "border-red-500/20 bg-red-500/6 text-red-300"
+                                : "border-red-200 bg-red-50 text-red-700"
+                        }`}
+                    >
                         Failed to load organization details.
                     </div>
                 ) : (
                     <>
-                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/10">
+                        <div
+                            className={`rounded-2xl border p-6 shadow-2xl transition-colors ${
+                                isDark
+                                    ? "border-white/10 bg-white/3 shadow-black/10"
+                                    : "border-gray-200 bg-white shadow-gray-200/50"
+                            }`}
+                        >
                             <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                                 <div>
-                                    <div className="mb-3 inline-flex rounded-full border border-white/10 px-3 py-1 text-xs font-semibold text-awtar-slate">
+                                    <div
+                                        className={`mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                                            isDark
+                                                ? "border-white/10 text-awtar-slate"
+                                                : "border-gray-200 text-gray-600"
+                                        }`}
+                                    >
                                         Organization moderation
                                     </div>
-                                    <h1 className="text-3xl font-bold tracking-tight text-white">
+                                    <h1
+                                        className={`text-3xl font-bold tracking-tight ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                    >
                                         {detailQuery.data.organization_name}
                                     </h1>
-                                    <p className="mt-2 text-awtar-slate">
+                                    <p
+                                        className={`mt-2 ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                    >
                                         Review registration data, inspect uploaded verification
                                         documents, and manage lifecycle state.
                                     </p>
@@ -109,28 +145,52 @@ export default function OrganizationDetailPage({
 
                         <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
                             <div className="space-y-6">
-                                <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                                    <h2 className="text-lg font-semibold text-white">
+                                <section
+                                    className={`rounded-2xl border p-6 transition-colors ${
+                                        isDark
+                                            ? "border-white/10 bg-white/3"
+                                            : "border-gray-200 bg-white"
+                                    }`}
+                                >
+                                    <h2
+                                        className={`text-lg font-semibold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                    >
                                         Organization details
                                     </h2>
                                     <div className="mt-5 grid gap-4 md:grid-cols-2">
                                         <div>
-                                            <p className="text-sm text-awtar-slate">Industry</p>
-                                            <p className="mt-1 text-white">
+                                            <p
+                                                className={`text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                            >
+                                                Industry
+                                            </p>
+                                            <p
+                                                className={`mt-1 ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                            >
                                                 {detailQuery.data.industry}
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-awtar-slate">
+                                            <p
+                                                className={`text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                            >
                                                 Organization size
                                             </p>
-                                            <p className="mt-1 text-white">
+                                            <p
+                                                className={`mt-1 ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                            >
                                                 {detailQuery.data.organization_size} employees
                                             </p>
                                         </div>
                                         <div>
-                                            <p className="text-sm text-awtar-slate">Phone</p>
-                                            <p className="mt-1 text-white">
+                                            <p
+                                                className={`text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                            >
+                                                Phone
+                                            </p>
+                                            <p
+                                                className={`mt-1 ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                            >
                                                 {detailQuery.data.phone || "Not provided"}
                                             </p>
                                         </div>
@@ -171,41 +231,85 @@ export default function OrganizationDetailPage({
                                     </div>
                                 </section>
 
-                                <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                                    <h2 className="text-lg font-semibold text-white">
+                                <section
+                                    className={`rounded-2xl border p-6 transition-colors ${
+                                        isDark
+                                            ? "border-white/10 bg-white/3"
+                                            : "border-gray-200 bg-white"
+                                    }`}
+                                >
+                                    <h2
+                                        className={`text-lg font-semibold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                    >
                                         Founder information
                                     </h2>
                                     {detailQuery.data.creator ? (
                                         <div className="mt-5 space-y-3 text-sm">
-                                            <p className="text-awtar-slate">
+                                            <p
+                                                className={
+                                                    isDark ? "text-awtar-slate" : "text-gray-600"
+                                                }
+                                            >
                                                 Name:{" "}
-                                                <span className="text-white">
+                                                <span
+                                                    className={
+                                                        isDark
+                                                            ? "text-awtar-white"
+                                                            : "text-gray-900"
+                                                    }
+                                                >
                                                     {detailQuery.data.creator.first_name}{" "}
                                                     {detailQuery.data.creator.last_name}
                                                 </span>
                                             </p>
-                                            <p className="text-awtar-slate">
+                                            <p
+                                                className={
+                                                    isDark ? "text-awtar-slate" : "text-gray-600"
+                                                }
+                                            >
                                                 Email:{" "}
-                                                <span className="text-white">
+                                                <span
+                                                    className={
+                                                        isDark
+                                                            ? "text-awtar-white"
+                                                            : "text-gray-900"
+                                                    }
+                                                >
                                                     {detailQuery.data.creator.email}
                                                 </span>
                                             </p>
-                                            <p className="text-awtar-slate">
+                                            <p
+                                                className={
+                                                    isDark ? "text-awtar-slate" : "text-gray-600"
+                                                }
+                                            >
                                                 User ID:{" "}
-                                                <span className="font-mono text-white">
+                                                <span
+                                                    className={`font-mono ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                                >
                                                     {detailQuery.data.creator.user_id}
                                                 </span>
                                             </p>
                                         </div>
                                     ) : (
-                                        <p className="mt-4 text-awtar-slate">
+                                        <p
+                                            className={`mt-4 ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                        >
                                             Creator information was not included in the response.
                                         </p>
                                     )}
                                 </section>
 
-                                <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                                    <h2 className="text-lg font-semibold text-white">
+                                <section
+                                    className={`rounded-2xl border p-6 transition-colors ${
+                                        isDark
+                                            ? "border-white/10 bg-white/3"
+                                            : "border-gray-200 bg-white"
+                                    }`}
+                                >
+                                    <h2
+                                        className={`text-lg font-semibold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                    >
                                         Verification documents
                                     </h2>
                                     {detailQuery.data.document_url?.length ? (
@@ -216,7 +320,11 @@ export default function OrganizationDetailPage({
                                                     href={documentUrl}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex items-center justify-between rounded-xl border border-white/10 bg-awtar-navy-light/60 px-4 py-3 text-sm text-red-300 transition-colors hover:border-red-500/20 hover:text-white"
+                                                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition-colors ${
+                                                        isDark
+                                                            ? "border-white/10 bg-awtar-navy-light/60 text-blue-300 hover:border-blue-500/20 hover:text-white"
+                                                            : "border-gray-200 bg-gray-50 text-blue-600 hover:border-blue-200 hover:text-blue-700"
+                                                    }`}
                                                 >
                                                     <span>{documentUrl}</span>
                                                     <ExternalLink className="h-4 w-4" />
@@ -224,7 +332,13 @@ export default function OrganizationDetailPage({
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="mt-4 text-awtar-slate">
+                                        <p
+                                            className={
+                                                isDark
+                                                    ? "mt-4 text-awtar-slate"
+                                                    : "mt-4 text-gray-600"
+                                            }
+                                        >
                                             No document URLs were attached to this organization.
                                         </p>
                                     )}
@@ -232,11 +346,21 @@ export default function OrganizationDetailPage({
                             </div>
 
                             <div className="space-y-6">
-                                <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                                    <h2 className="text-lg font-semibold text-white">
+                                <section
+                                    className={`rounded-2xl border p-6 transition-colors ${
+                                        isDark
+                                            ? "border-white/10 bg-white/3"
+                                            : "border-gray-200 bg-white"
+                                    }`}
+                                >
+                                    <h2
+                                        className={`text-lg font-semibold ${isDark ? "text-awtar-white" : "text-gray-900"}`}
+                                    >
                                         Status actions
                                     </h2>
-                                    <p className="mt-2 text-sm text-awtar-slate">
+                                    <p
+                                        className={`mt-2 text-sm ${isDark ? "text-awtar-slate" : "text-gray-600"}`}
+                                    >
                                         Server-side rules only allow specific status transitions
                                         from the current state.
                                     </p>
@@ -278,28 +402,42 @@ export default function OrganizationDetailPage({
                                     </div>
                                 </section>
 
-                                <section className="rounded-2xl border border-red-500/20 bg-red-500/[0.06] p-6">
+                                <section
+                                    className={`rounded-2xl border p-6 transition-colors ${
+                                        isDark
+                                            ? "border-red-500/20 bg-red-500/6"
+                                            : "border-red-200 bg-red-50"
+                                    }`}
+                                >
                                     <div className="flex items-start gap-3">
-                                        <AlertTriangle className="mt-0.5 h-5 w-5 text-red-300" />
+                                        <AlertTriangle
+                                            className={`mt-0.5 h-5 w-5 ${isDark ? "text-red-300" : "text-red-600"}`}
+                                        />
                                         <div>
-                                            <h2 className="text-lg font-semibold text-white">
+                                            <h2
+                                                className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-900"}`}
+                                            >
                                                 Danger zone
                                             </h2>
-                                            <p className="mt-2 text-sm text-red-200/80">
+                                            <p
+                                                className={`mt-2 text-sm ${isDark ? "text-red-200/80" : "text-red-700"}`}
+                                            >
                                                 Deleting an organization soft-deletes it and removes
                                                 associated business documents from object storage.
                                             </p>
                                         </div>
                                     </div>
                                     <div className="mt-5 space-y-3">
-                                        <label className="flex items-center gap-3 text-sm text-red-200">
+                                        <label
+                                            className={`flex items-center gap-3 text-sm ${isDark ? "text-red-200" : "text-red-700"}`}
+                                        >
                                             <input
                                                 type="checkbox"
                                                 checked={isDeleteArmed}
                                                 onChange={(event) =>
                                                     setIsDeleteArmed(event.target.checked)
                                                 }
-                                                className="h-4 w-4 rounded border-white/20 bg-transparent"
+                                                className={`h-4 w-4 rounded border ${isDark ? "border-white/20 bg-transparent" : "border-red-200 bg-white"}`}
                                             />
                                             I understand this action is destructive.
                                         </label>
