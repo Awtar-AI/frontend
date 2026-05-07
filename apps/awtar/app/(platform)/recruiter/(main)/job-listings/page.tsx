@@ -199,7 +199,9 @@ export default function JobListingsPage() {
                 toastService.success(
                     ids.length === 1 ? "Job removed." : `${ids.length} jobs removed.`,
                 );
-                await queryClient.invalidateQueries({ queryKey: [...RECRUITER_JOBS_QUERY_KEY] });
+                await queryClient.invalidateQueries({
+                    queryKey: [...RECRUITER_JOBS_QUERY_KEY],
+                });
                 setSelectedRows([]);
             } catch (e) {
                 toastService.error(normalizeError(e).message);
@@ -399,7 +401,7 @@ export default function JobListingsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-center text-gray-600 text-xs font-medium">
                                             {applicantCountsQueries.find(
-                                                (q, idx) => jobs[idx]?.id === job.id,
+                                                (_q, idx) => jobs[idx]?.id === job.id,
                                             )?.isLoading
                                                 ? "..."
                                                 : (applicantCountMap[job.id] ?? 0)}

@@ -4,10 +4,7 @@ import { Loader2, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMyApplications } from "../../(jobs)/applications/hooks/use-my-applications";
-import type {
-    ApplicationResponse,
-    ApplicationStatus,
-} from "../../(jobs)/applications/schemas/candidate-applications.schema";
+import type { ApplicationStatus } from "../../(jobs)/applications/schemas/candidate-applications.schema";
 
 function formatAppliedAt(iso: string): string {
     try {
