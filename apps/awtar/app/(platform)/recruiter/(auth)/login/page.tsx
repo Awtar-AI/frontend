@@ -25,7 +25,7 @@ export default function RecruiterLoginPage() {
 
     return (
         <RecruiterAuthLayout reversed>
-            <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto">
+            <div className="flex-1 flex flex-col justify-center max-w-md w-full mx-auto mt-20">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
                 <p className="text-gray-500 mb-8">
                     Please enter your details to sign in to your account.

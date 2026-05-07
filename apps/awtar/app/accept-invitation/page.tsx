@@ -4,14 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, ShieldAlert, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { RecruiterAuthLayout } from "@/app/(platform)/recruiter/_components/RecruiterAuthLayout";
+import { decodeJwtPayload } from "@/lib/auth/jwt";
 import { useAcceptInvitation } from "./hooks/use-accept-invitation";
 import {
     type AcceptInvitationFormData,
     acceptInvitationFormSchema,
 } from "./schemas/accept-invitation.schema";
+
+function readStringClaim(payload: Record<string, unknown> | null, keys: string[]): string {
+    for (const key of keys) {
+        const value = payload?.[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+            return value.trim();
+        }
+    }
+    return "";
+}
 
 function MissingTokenView() {
     return (
@@ -65,21 +76,42 @@ export default function AcceptInvitationPage() {
     const mutation = useAcceptInvitation({ token: token ?? "" });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
+    const invitationPrefill = useMemo(() => {
+        const payload = token ? decodeJwtPayload(token) : null;
+        return {
+            firstName: readStringClaim(payload, ["first_name", "FirstName", "firstName"]),
+            lastName: readStringClaim(payload, ["last_name", "LastName", "lastName"]),
+            email: readStringClaim(payload, ["email", "Email"]),
+        };
+    }, [token]);
+    const isNameLocked = Boolean(invitationPrefill.firstName || invitationPrefill.lastName);
+    const isEmailLocked = Boolean(invitationPrefill.email);
 
     const {
         register,
         handleSubmit,
+        reset,
         formState: { errors },
     } = useForm<AcceptInvitationFormData>({
         resolver: zodResolver(acceptInvitationFormSchema),
         defaultValues: {
-            firstName: "",
-            lastName: "",
-            email: "",
+            firstName: invitationPrefill.firstName,
+            lastName: invitationPrefill.lastName,
+            email: invitationPrefill.email,
             password: "",
             confirmPassword: "",
         },
     });
+
+    useEffect(() => {
+        reset({
+            firstName: invitationPrefill.firstName,
+            lastName: invitationPrefill.lastName,
+            email: invitationPrefill.email,
+            password: "",
+            confirmPassword: "",
+        });
+    }, [invitationPrefill.email, invitationPrefill.firstName, invitationPrefill.lastName, reset]);
 
     if (!token) return <MissingTokenView />;
     if (mutation.isSuccess) return <SuccessView />;
@@ -114,7 +146,8 @@ export default function AcceptInvitationPage() {
                                 type="text"
                                 {...register("firstName")}
                                 placeholder="Sarah"
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                readOnly={isNameLocked}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all read-only:bg-gray-50 read-only:text-gray-600 read-only:cursor-not-allowed"
                             />
                             {errors.firstName && (
                                 <p className="text-xs text-red-600">{errors.firstName.message}</p>
@@ -133,7 +166,8 @@ export default function AcceptInvitationPage() {
                                 type="text"
                                 {...register("lastName")}
                                 placeholder="Jenkins"
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                readOnly={isNameLocked}
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all read-only:bg-gray-50 read-only:text-gray-600 read-only:cursor-not-allowed"
                             />
                             {errors.lastName && (
                                 <p className="text-xs text-red-600">{errors.lastName.message}</p>
@@ -150,7 +184,8 @@ export default function AcceptInvitationPage() {
                             type="email"
                             {...register("email")}
                             placeholder="sarah@company.com"
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            readOnly={isEmailLocked}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all read-only:bg-gray-50 read-only:text-gray-600 read-only:cursor-not-allowed"
                         />
                         {errors.email && (
                             <p className="text-xs text-red-600">{errors.email.message}</p>
