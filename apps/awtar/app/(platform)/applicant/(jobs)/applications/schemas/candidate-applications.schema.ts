@@ -20,17 +20,35 @@ export const applyRequestSchema = z.object({
 
 export type ApplyRequestPayload = z.infer<typeof applyRequestSchema>;
 
+/** Aligns with `application_enum` on the backend (plus legacy Pending / Accepted). */
+export const applicationStatusValues = [
+    "Applied",
+    "Shortlisted",
+    "Interviewed",
+    "Passed",
+    "Rejected",
+    "Pending",
+    "Accepted",
+] as const;
+
+export type ApplicationStatus = (typeof applicationStatusValues)[number];
+
 const applicationStatusSchema = z.preprocess(
     (value) => {
         if (typeof value !== "string") return value;
         const normalized = value.trim().toLowerCase();
-        if (normalized === "applied") return "Applied";
-        if (normalized === "pending") return "Pending";
-        if (normalized === "accepted") return "Accepted";
-        if (normalized === "rejected") return "Rejected";
-        return value;
+        const map: Record<string, ApplicationStatus> = {
+            applied: "Applied",
+            shortlisted: "Shortlisted",
+            interviewed: "Interviewed",
+            passed: "Passed",
+            rejected: "Rejected",
+            pending: "Pending",
+            accepted: "Accepted",
+        };
+        return map[normalized] ?? value;
     },
-    z.enum(["Applied", "Pending", "Accepted", "Rejected"]),
+    z.enum(applicationStatusValues),
 );
 
 export const applicationResponseSchema = z
@@ -60,6 +78,18 @@ export const applicationResponseSchema = z
         created_by: z.string().optional(),
         updated_at: z.string().optional(),
         updated_by: z.string().optional(),
+
+        ai_match_score: z.number().nullable().optional(),
+        ai_trust_score: z.number().nullable().optional(),
+        ai_trust_effective: z.number().nullable().optional(),
+        ai_verification_score: z.number().nullable().optional(),
+        ai_final_score: z.number().nullable().optional(),
+        ai_recommendation: z.string().nullable().optional(),
+        ai_requires_verification: z.boolean().optional(),
+        ai_last_scored_at: z.string().nullable().optional(),
+        ai_scoring_status: z.string().nullable().optional(),
+        ai_scoring_error: z.string().nullable().optional(),
+        response_json: z.any().optional(),
     })
     .passthrough();
 
