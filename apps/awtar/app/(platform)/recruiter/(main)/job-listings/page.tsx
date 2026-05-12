@@ -8,6 +8,7 @@ import {
     ChevronRight,
     ExternalLink,
     Loader2,
+    Sparkles,
     Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -434,6 +435,13 @@ export default function JobListingsPage() {
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
+                                                <Link
+                                                    href={`/recruiter/job-listings/${job.id}/shortlist`}
+                                                    className="text-gray-400 hover:text-blue-600 transition-colors"
+                                                    title="View AI shortlist"
+                                                >
+                                                    <Sparkles className="w-4 h-4" />
+                                                </Link>
                                                 <Link
                                                     href={`/recruiter/job-listings/${job.id}`}
                                                     className="text-gray-400 hover:text-gray-600 transition-colors"

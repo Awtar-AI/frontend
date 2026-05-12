@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, ExternalLink, Loader2, MapPin, Pencil, Save, Users, X } from "lucide-react";
+import { Briefcase, ExternalLink, Loader2, MapPin, Pencil, Save, Sparkles, Users, X } from "lucide-react";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -194,14 +194,24 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                 Posted {formatDateLabel(jobQuery.data.created_at)}
                             </span>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => setIsEditOpen(true)}
-                            className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100"
-                        >
-                            <Pencil className="h-3.5 w-3.5" />
-                            Edit Job
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <Link
+                                href={`/recruiter/job-listings/${jobId}/shortlist`}
+                                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
+                                title="Open the AI ranking & shortlist page for this job"
+                            >
+                                <Sparkles className="h-3.5 w-3.5" />
+                                View AI shortlist
+                            </Link>
+                            <button
+                                type="button"
+                                onClick={() => setIsEditOpen(true)}
+                                className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100"
+                            >
+                                <Pencil className="h-3.5 w-3.5" />
+                                Edit Job
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -239,6 +249,8 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                             <th className="px-4 py-3 text-left">Email</th>
                                             <th className="px-4 py-3 text-left">Status</th>
                                             <th className="px-4 py-3 text-left">Submitted</th>
+                                            <th className="px-4 py-3 text-right">AI final</th>
+                                            <th className="px-4 py-3 text-right">Verify</th>
                                             <th className="px-4 py-3 text-right">Action</th>
                                         </tr>
                                     </thead>
@@ -262,6 +274,22 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                                 </td>
                                                 <td className="px-4 py-3 text-[11px] text-gray-500">
                                                     {formatDateLabel(application.created_at)}
+                                                </td>
+                                                <td className="px-4 py-3 text-right text-[11px] font-semibold text-gray-800">
+                                                    {typeof application.ai_final_score === "number"
+                                                        ? application.ai_final_score.toFixed(0)
+                                                        : "—"}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
+                                                            application.ai_requires_verification
+                                                                ? "bg-amber-100 text-amber-900"
+                                                                : "bg-gray-100 text-gray-600"
+                                                        }`}
+                                                    >
+                                                        {application.ai_requires_verification ? "Yes" : "—"}
+                                                    </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <Link

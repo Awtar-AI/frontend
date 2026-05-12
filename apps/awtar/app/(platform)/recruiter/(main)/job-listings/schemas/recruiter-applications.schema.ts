@@ -34,6 +34,18 @@ export const recruiterApplicationSchema = z
         salary_currency: z.string().optional(),
         created_at: z.string(),
         updated_at: z.string(),
+
+        ai_match_score: z.number().nullable().optional(),
+        ai_trust_score: z.number().nullable().optional(),
+        ai_trust_effective: z.number().nullable().optional(),
+        ai_verification_score: z.number().nullable().optional(),
+        ai_final_score: z.number().nullable().optional(),
+        ai_recommendation: z.string().nullable().optional(),
+        ai_requires_verification: z.boolean().optional(),
+        ai_last_scored_at: z.string().nullable().optional(),
+        ai_scoring_status: z.string().nullable().optional(),
+        ai_scoring_error: z.string().nullable().optional(),
+        response_json: z.any().optional(),
     })
     .passthrough();
 

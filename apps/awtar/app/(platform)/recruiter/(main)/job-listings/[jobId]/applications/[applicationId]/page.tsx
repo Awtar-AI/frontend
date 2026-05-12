@@ -1,14 +1,16 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { normalizeError } from "@/lib/errors";
 import { toastService } from "@/lib/services/toast.service";
 import { CoverLetterViewer } from "../../../../../../_components/CoverLetterViewer";
 import { recruiterApplicationsApi } from "../../../api/recruiter-applications.api";
+import { useRecruiterApplicationVerifications } from "../../../hooks/use-recruiter-application-verifications";
 import { useRecruiterCandidateProfile } from "../../../hooks/use-recruiter-candidate-profile";
+import { parseEvaluateBundle } from "../../../lib/parse-ai-evaluate-bundle";
 import {
     RECRUITER_JOB_APPLICATION_DETAIL_QUERY_KEY,
     useRecruiterJobApplicationDetail,
@@ -51,6 +53,86 @@ function statusBadgeClass(
     return "bg-red-100 text-red-700";
 }
 
+function fmt(v: unknown, d = 0): string {
+    if (v === null || v === undefined || Number.isNaN(Number(v))) return "—";
+    return Number(v).toFixed(d);
+}
+
+function fmtI(v: unknown): string {
+    if (v === null || v === undefined || Number.isNaN(Number(v))) return "—";
+    return String(Math.round(Number(v)));
+}
+
+function Sc({ label, v }: { label: string; v: string }) {
+    return (
+        <div className="rounded-md bg-white/70 border border-indigo-100 px-2 py-1">
+            <p className="text-[9px] font-bold uppercase text-gray-400">{label}</p>
+            <p className="font-black text-gray-900">{v}</p>
+        </div>
+    );
+}
+
+// Map raw scorer flag types to plain-language labels recruiters can act on.
+const TRUST_FLAG_LABELS: Record<string, string> = {
+    inflated_skills: "Skill claims look inflated",
+    identity_name_mismatch: "Resume name doesn’t match the account name",
+    date_overlap: "Overlapping employment dates",
+    missing_dates: "Missing employment dates",
+    domain_mismatch: "Experience is in a different domain",
+    short_experience: "Limited work history",
+    education_inconsistency: "Education info isn’t consistent",
+};
+
+function friendlyTrustFlag(type: string | null | undefined): string {
+    if (!type) return "Trust signal";
+    const norm = type.toLowerCase().replace(/[^a-z0-9_]/g, "_");
+    return TRUST_FLAG_LABELS[norm] ?? type.replace(/_/g, " ");
+}
+
+function severityTone(sev: string | null | undefined): {
+    pill: string;
+    label: string;
+} {
+    const s = (sev ?? "").toLowerCase();
+    if (s === "high") return { pill: "bg-rose-100 text-rose-800", label: "High" };
+    if (s === "medium")
+        return { pill: "bg-amber-100 text-amber-800", label: "Medium" };
+    if (s === "low") return { pill: "bg-yellow-100 text-yellow-800", label: "Low" };
+    return { pill: "bg-gray-100 text-gray-700", label: sev ?? "Info" };
+}
+
+function splitRationale(raw: string | null | undefined): string[] {
+    if (!raw) return [];
+    return raw
+        .split(/[;]\s+/)
+        .map((s) => s.trim().replace(/\.$/, ""))
+        .filter((s) => s.length > 0)
+        .slice(0, 8);
+}
+
+function formatSkill(s: string | null | undefined): string {
+    if (!s) return "this skill";
+    return s
+        .replace(/[._-]+/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function friendlySessionStatus(status: string): {
+    label: string;
+    tone: string;
+} {
+    const s = status.toLowerCase();
+    if (s === "completed")
+        return { label: "Completed", tone: "bg-emerald-100 text-emerald-800" };
+    if (s === "in_progress" || s === "started")
+        return { label: "In progress", tone: "bg-blue-100 text-blue-800" };
+    if (s === "recommended")
+        return { label: "Recommended, not yet taken", tone: "bg-amber-100 text-amber-800" };
+    if (s === "expired" || s === "abandoned")
+        return { label: "Expired", tone: "bg-gray-100 text-gray-700" };
+    return { label: status, tone: "bg-gray-100 text-gray-700" };
+}
+
 function stepperStateClass(
     step: "Applied" | "Shortlisted" | "Interviewed" | "Passed",
     current: "Applied" | "Shortlisted" | "Interviewed" | "Passed" | "Rejected",
@@ -71,6 +153,7 @@ export default function RecruiterJobApplicationDetailPage({
 }) {
     const { jobId, applicationId } = use(params);
     const applicationQuery = useRecruiterJobApplicationDetail(jobId, applicationId, true);
+    const verificationsQuery = useRecruiterApplicationVerifications(jobId, applicationId, true);
     const queryClient = useQueryClient();
     const candidateQuery = useRecruiterCandidateProfile(
         applicationQuery.data?.user_id ?? null,
@@ -85,6 +168,24 @@ export default function RecruiterJobApplicationDetailPage({
         },
         onSuccess: async () => {
             toastService.success("Application status updated.");
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: [...RECRUITER_JOB_APPLICATION_DETAIL_QUERY_KEY, jobId, applicationId],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: [...RECRUITER_JOB_APPLICATIONS_QUERY_KEY, jobId],
+                }),
+            ]);
+        },
+        onError: (error) => {
+            toastService.error(normalizeError(error).message);
+        },
+    });
+
+    const rescoreMutation = useMutation({
+        mutationFn: () => recruiterApplicationsApi.rescore(jobId, applicationId),
+        onSuccess: async () => {
+            toastService.success("AI scoring recomputed.");
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: [...RECRUITER_JOB_APPLICATION_DETAIL_QUERY_KEY, jobId, applicationId],
@@ -120,6 +221,13 @@ export default function RecruiterJobApplicationDetailPage({
     const candidate = candidateQuery.data;
     const profile = candidate?.candidate_profile;
     const lifecycleStatus = normalizeLifecycleStatus(application.status);
+
+    const evaluateHints = parseEvaluateBundle(application.response_json);
+
+    const showDynamicBlock =
+        Boolean(application.ai_requires_verification) ||
+        (verificationsQuery.data?.length ?? 0) > 0 ||
+        (evaluateHints?.trustFlags?.length ?? 0) > 0;
 
     const workflowActions =
         lifecycleStatus === "Applied"
@@ -236,6 +344,257 @@ export default function RecruiterJobApplicationDetailPage({
                         </span>
                     )}
                 </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-5 shadow-sm space-y-3">
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div>
+                            <h2 className="text-sm font-bold text-indigo-950">AI screening summary</h2>
+                            <p className="text-[11px] text-indigo-900/70 mt-0.5">
+                                Match measures resume↔JD fit. Trust flags inconsistencies.
+                                Final blends both with optional verification.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            disabled={rescoreMutation.isPending}
+                            onClick={() => rescoreMutation.mutate()}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 text-[11px] font-bold disabled:opacity-60"
+                        >
+                            {rescoreMutation.isPending ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                                <RefreshCw className="h-3.5 w-3.5" />
+                            )}
+                            {rescoreMutation.isPending ? "Computing…" : "Compute AI score"}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                        <Sc label="Match" v={fmt(application.ai_match_score, 1)} />
+                        <Sc label="Trust" v={fmtI(application.ai_trust_score)} />
+                        <Sc label="Trust (eff.)" v={fmtI(application.ai_trust_effective)} />
+                        <Sc label="Final" v={fmt(application.ai_final_score, 1)} />
+                        <Sc label="Verification" v={fmt(application.ai_verification_score, 1)} />
+                        <Sc label="Recommendation" v={application.ai_recommendation ?? "—"} />
+                    </div>
+                    {application.ai_last_scored_at && (
+                        <p className="text-[10px] text-indigo-800/80">
+                            Last scored {formatDateLabel(application.ai_last_scored_at)}
+                        </p>
+                    )}
+                    {application.ai_scoring_status && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                                    application.ai_scoring_status === "completed" ||
+                                    application.ai_scoring_status === "complete"
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : application.ai_scoring_status === "pending"
+                                          ? "bg-amber-100 text-amber-800"
+                                          : application.ai_scoring_status === "failed"
+                                            ? "bg-rose-100 text-rose-800"
+                                            : "bg-gray-100 text-gray-700"
+                                }`}
+                            >
+                                {application.ai_scoring_status}
+                            </span>
+                            <span className="text-[10px] text-indigo-800/70">
+                                {application.ai_scoring_status === "pending"
+                                    ? "Scoring has not finished yet — try Compute AI score above."
+                                    : application.ai_scoring_status === "failed"
+                                      ? "Last attempt failed — re-running is safe."
+                                      : ""}
+                            </span>
+                        </div>
+                    )}
+                    {application.ai_scoring_error && (
+                        <p className="text-[11px] text-amber-900 font-semibold whitespace-pre-wrap">
+                            {application.ai_scoring_error}
+                        </p>
+                    )}
+                </div>
+
+                {showDynamicBlock && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm space-y-4">
+                        <div>
+                            <h2 className="text-sm font-bold text-amber-950">
+                                Verification &amp; trust signals
+                            </h2>
+                            <p className="text-[11px] text-amber-900/80 mt-0.5">
+                                What the AI noticed about this application. None of these
+                                affect the candidate’s status automatically — they are guidance
+                                for your decision.
+                            </p>
+                        </div>
+
+                        {application.ai_requires_verification && (
+                            <div className="rounded-lg border border-amber-200 bg-white px-3 py-2">
+                                <p className="text-xs font-bold text-amber-900">
+                                    Skill verification recommended
+                                </p>
+                                <p className="text-[11px] text-amber-900/80 mt-0.5">
+                                    The candidate hasn’t taken a verification quiz. Invite
+                                    them only if you want to confirm the skills below.
+                                </p>
+                            </div>
+                        )}
+
+                        {(() => {
+                            const reasons = splitRationale(
+                                evaluateHints?.verificationReason ?? null,
+                            );
+                            if (reasons.length === 0) return null;
+                            return (
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-wide text-amber-900/80">
+                                        Why the AI flagged this candidate
+                                    </p>
+                                    <ul className="list-disc pl-5 text-xs text-amber-950 mt-1 space-y-1">
+                                        {reasons.map((r, i) => (
+                                            <li key={i}>{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            );
+                        })()}
+
+                        {evaluateHints?.verificationSkills &&
+                            evaluateHints.verificationSkills.length > 0 && (
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-wide text-amber-900/80">
+                                        Skills suggested for verification
+                                    </p>
+                                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                        {evaluateHints.verificationSkills.map((s) => (
+                                            <span
+                                                key={s}
+                                                className="inline-flex items-center rounded-full bg-white border border-amber-200 px-2.5 py-0.5 text-[11px] font-semibold text-amber-900"
+                                            >
+                                                {formatSkill(s)}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                        {evaluateHints?.trustFlags &&
+                            evaluateHints.trustFlags.length > 0 && (
+                                <div>
+                                    <p className="text-[11px] font-bold uppercase tracking-wide text-amber-900/80">
+                                        Trust concerns
+                                    </p>
+                                    <div className="mt-1.5 space-y-1.5">
+                                        {evaluateHints.trustFlags.map((f, i) => {
+                                            if (!f.message && !f.type) return null;
+                                            const sev = severityTone(f.severity);
+                                            return (
+                                                <div
+                                                    key={`${f.type}-${i}`}
+                                                    className="rounded-lg border border-amber-200 bg-white p-3"
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <p className="text-xs font-bold text-gray-900">
+                                                            {friendlyTrustFlag(f.type)}
+                                                        </p>
+                                                        <span
+                                                            className={`text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${sev.pill}`}
+                                                        >
+                                                            {sev.label}
+                                                        </span>
+                                                    </div>
+                                                    {f.message && (
+                                                        <p className="text-[12px] text-gray-700 mt-1">
+                                                            {f.message}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                        {verificationsQuery.isLoading && (
+                            <p className="text-xs text-amber-900">
+                                Loading verification activity…
+                            </p>
+                        )}
+                        {verificationsQuery.data &&
+                            verificationsQuery.data.length > 0 && (
+                                <details className="rounded-lg border border-amber-200 bg-white">
+                                    <summary className="cursor-pointer px-3 py-2 text-xs font-bold text-amber-900 select-none">
+                                        Verification activity ({verificationsQuery.data.length})
+                                    </summary>
+                                    <div className="space-y-2 p-3 pt-0">
+                                        {verificationsQuery.data.map((vs) => {
+                                            const status = friendlySessionStatus(vs.status);
+                                            const skill = formatSkill(vs.target_skill ?? "skill");
+                                            const isCompleted =
+                                                vs.status.toLowerCase() === "completed";
+                                            return (
+                                                <div
+                                                    key={vs.id}
+                                                    className="rounded-md border border-amber-100 bg-amber-50/40 p-3 text-xs text-gray-800"
+                                                >
+                                                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                        <p className="font-bold text-gray-900">
+                                                            {skill} skill check
+                                                        </p>
+                                                        <span
+                                                            className={`text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${status.tone}`}
+                                                        >
+                                                            {status.label}
+                                                        </span>
+                                                    </div>
+                                                    {isCompleted ? (
+                                                        <p className="text-[12px] text-gray-700 mt-1">
+                                                            Answered{" "}
+                                                            <strong>
+                                                                {vs.correct_count}
+                                                            </strong>{" "}
+                                                            of{" "}
+                                                            <strong>
+                                                                {vs.questions_answered}
+                                                            </strong>{" "}
+                                                            questions correctly. Trust impact:{" "}
+                                                            <strong>
+                                                                {typeof vs.trust_score_delta === "number"
+                                                                    ? (vs.trust_score_delta >= 0
+                                                                          ? "+"
+                                                                          : "") +
+                                                                      vs.trust_score_delta.toFixed(0)
+                                                                    : "—"}
+                                                            </strong>
+                                                            .
+                                                        </p>
+                                                    ) : (
+                                                        <p className="text-[12px] text-gray-700 mt-1">
+                                                            No quiz taken yet for this skill.
+                                                        </p>
+                                                    )}
+                                                    {(vs.tab_violation_count ?? 0) > 0 && (
+                                                        <p className="text-[11px] text-rose-700 font-semibold mt-1">
+                                                            Switched away from the quiz{" "}
+                                                            {vs.tab_violation_count} time
+                                                            {vs.tab_violation_count === 1 ? "" : "s"}
+                                                            .
+                                                        </p>
+                                                    )}
+                                                    {vs.technical_problem_flag && (
+                                                        <p className="text-[11px] text-rose-700 font-semibold mt-1">
+                                                            Possible integrity issue detected during
+                                                            the quiz.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </details>
+                            )}
+                    </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
