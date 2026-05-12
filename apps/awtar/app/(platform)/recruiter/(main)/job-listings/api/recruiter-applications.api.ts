@@ -4,6 +4,10 @@ import {
     parseRecruiterApplications,
     type RecruiterApplication,
 } from "../schemas/recruiter-applications.schema";
+import {
+    parseRecruiterVerificationSessions,
+    type RecruiterVerificationSession,
+} from "../schemas/recruiter-verification.schema";
 
 export const recruiterApplicationsApi = {
     async listByJob(jobId: string): Promise<RecruiterApplication[]> {
@@ -31,5 +35,20 @@ export const recruiterApplicationsApi = {
     },
     async reject(applicationId: string): Promise<void> {
         await http.post(`/api/v1/applications/${applicationId}/reject`);
+    },
+    async rescore(
+        jobId: string,
+        applicationId: string,
+    ): Promise<RecruiterApplication> {
+        const { data } = await http.post(
+            `/api/v1/applications/job/${jobId}/application/${applicationId}/rescore`,
+        );
+        return parseRecruiterApplication(data);
+    },
+    async listVerifications(jobId: string, applicationId: string): Promise<RecruiterVerificationSession[]> {
+        const { data } = await http.get(
+            `/api/v1/applications/job/${jobId}/application/${applicationId}/verifications`,
+        );
+        return parseRecruiterVerificationSessions(data);
     },
 };

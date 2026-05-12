@@ -21,7 +21,10 @@ import Link from "next/link";
 import { use, useMemo } from "react";
 import { CoverLetterViewer } from "../../../../_components/CoverLetterViewer";
 import { useMyApplications } from "../../../(jobs)/applications/hooks/use-my-applications";
-import type { ApplicationResponse } from "../../../(jobs)/applications/schemas/candidate-applications.schema";
+import type {
+    ApplicationResponse,
+    ApplicationStatus,
+} from "../../../(jobs)/applications/schemas/candidate-applications.schema";
 import { useOrganizationPublic } from "../../../(jobs)/public-jobs/hooks/use-organization-public";
 import { usePublicJob } from "../../../(jobs)/public-jobs/hooks/use-public-job";
 import {
@@ -30,6 +33,57 @@ import {
     formatPublicJobLocation,
     formatPublicJobSalary,
 } from "../../../(jobs)/public-jobs/lib/format-job";
+
+function applicationStatusDisplayLabel(s: ApplicationStatus): string {
+    if (s === "Pending") return "Applied";
+    if (s === "Accepted") return "Passed";
+    return s;
+}
+
+function statusStyles(status: ApplicationStatus) {
+    const base = {
+        label: applicationStatusDisplayLabel(status),
+    };
+
+    if (status === "Rejected") {
+        return {
+            ...base,
+            badge: "bg-red-50 text-red-700 border-red-100",
+            dot: "bg-red-500",
+        };
+    }
+
+    if (status === "Passed" || status === "Accepted") {
+        return {
+            ...base,
+            badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
+            dot: "bg-emerald-500",
+        };
+    }
+
+    if (status === "Interviewed") {
+        return {
+            ...base,
+            badge: "bg-purple-50 text-purple-800 border-purple-100",
+            dot: "bg-purple-600",
+        };
+    }
+
+    if (status === "Shortlisted") {
+        return {
+            ...base,
+            badge: "bg-amber-50 text-amber-900 border-amber-100",
+            dot: "bg-amber-500",
+        };
+    }
+
+    // Applied, Pending, anything else
+    return {
+        ...base,
+        badge: "bg-blue-50 text-blue-700 border-blue-100",
+        dot: "bg-blue-600",
+    };
+}
 
 function formatDate(value?: string): string {
     if (!value) return "Not available";
@@ -53,27 +107,6 @@ function resumeFileName(url?: string): string {
     } catch {
         return url.split("/").filter(Boolean).at(-1) ?? "Resume file";
     }
-}
-
-function statusStyles(status: ApplicationResponse["status"]) {
-    if (status === "Accepted") {
-        return {
-            badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
-            dot: "bg-emerald-500",
-        };
-    }
-
-    if (status === "Rejected") {
-        return {
-            badge: "bg-red-50 text-red-700 border-red-100",
-            dot: "bg-red-500",
-        };
-    }
-
-    return {
-        badge: "bg-blue-50 text-blue-700 border-blue-100",
-        dot: "bg-blue-600",
-    };
 }
 
 function expectationRange(application: ApplicationResponse): string {
@@ -226,7 +259,7 @@ export default function ApplicantApplicationDetailPage({
                             className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ${status.badge}`}
                         >
                             <span className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-                            {application.status}
+                            {status.label}
                         </span>
                         <Link
                             href={`/applicant/jobs/${jobId}`}

@@ -1,14 +1,29 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, FileText, Loader2, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { normalizeError } from "@/lib/errors";
+import { publicJobsApi } from "../../(jobs)/public-jobs/api/public-jobs.api";
+import { APPLICANT_PUBLIC_JOB_QUERY_KEY } from "../../(jobs)/public-jobs/hooks/use-public-job";
 import { useMyApplications } from "../../(jobs)/applications/hooks/use-my-applications";
-import type { ApplicationResponse } from "../../(jobs)/applications/schemas/candidate-applications.schema";
+import type {
+    ApplicationResponse,
+    ApplicationStatus,
+} from "../../(jobs)/applications/schemas/candidate-applications.schema";
 
-const TABS = ["All", "Applied", "Pending", "Accepted", "Rejected"] as const;
+/** Filter tabs match backend statuses (`application_enum`): Applied, Shortlisted, Interviewed, Passed, Rejected. */
+const TABS = ["All", "Applied", "Shortlisted", "Interviewed", "Passed", "Rejected"] as const;
 type Tab = (typeof TABS)[number];
+
+function applicationMatchesTab(status: ApplicationStatus, tab: Tab): boolean {
+    if (tab === "All") return true;
+    if (tab === "Applied") return status === "Applied" || status === "Pending";
+    if (tab === "Passed") return status === "Passed" || status === "Accepted";
+    return status === tab;
+}
 
 function stripHtml(html: string): string {
     return html
@@ -25,29 +40,54 @@ function formatAppliedAt(iso: string): string {
     }
 }
 
-function statusLabel(status: ApplicationResponse["status"]): string {
-    if (status === "Applied") return "Applied";
-    if (status === "Pending") return "Pending";
-    if (status === "Accepted") return "Accepted";
-    return "Rejected";
+function statusLabel(status: ApplicationStatus): string {
+    if (status === "Pending") return "Applied";
+    if (status === "Accepted") return "Passed";
+    switch (status) {
+        case "Applied":
+            return "Applied";
+        case "Shortlisted":
+            return "Shortlisted";
+        case "Interviewed":
+            return "Interviewed";
+        case "Passed":
+            return "Passed";
+        case "Rejected":
+            return "Rejected";
+        default:
+            return status;
+    }
 }
 
-function statusDotClass(status: ApplicationResponse["status"]): string {
-    if (status === "Applied") return "bg-blue-600";
+function statusDotClass(status: ApplicationStatus): string {
     if (status === "Pending") return "bg-blue-600";
-    if (status === "Accepted") return "bg-green-500";
-    return "bg-red-500";
+    if (status === "Rejected") return "bg-red-500";
+    if (status === "Accepted" || status === "Passed") return "bg-green-500";
+    if (status === "Interviewed") return "bg-purple-600";
+    if (status === "Shortlisted") return "bg-amber-500";
+    return "bg-blue-600";
 }
 
-function statusBadgeClass(status: ApplicationResponse["status"]): string {
-    if (status === "Applied") return "bg-blue-50 text-blue-700";
+function statusBadgeClass(status: ApplicationStatus): string {
     if (status === "Pending") return "bg-blue-50 text-blue-700";
-    if (status === "Accepted") return "bg-green-50 text-green-700";
-    return "bg-red-50 text-red-700";
+    if (status === "Rejected") return "bg-red-50 text-red-700";
+    if (status === "Accepted" || status === "Passed") return "bg-green-50 text-green-700";
+    if (status === "Interviewed") return "bg-purple-50 text-purple-800";
+    if (status === "Shortlisted") return "bg-amber-50 text-amber-900";
+    return "bg-blue-50 text-blue-700";
 }
 
 function applicationTitle(app: ApplicationResponse): string {
     return app.current_job_title?.trim() || `Application ${app.job_id.slice(0, 8)}`;
+}
+
+function jobPostingTitle(
+    app: ApplicationResponse,
+    titlesByJobId: Map<string, string>,
+): string {
+    const fromJob = titlesByJobId.get(app.job_id);
+    if (fromJob?.trim()) return fromJob.trim();
+    return applicationTitle(app);
 }
 
 export default function ApplicationsPage() {
@@ -56,25 +96,46 @@ export default function ApplicationsPage() {
     const appsQuery = useMyApplications();
 
     const applications = useMemo(() => appsQuery.data ?? [], [appsQuery.data]);
+
+    const jobMetaQueries = useQueries({
+        queries: applications.map((app) => ({
+            queryKey: [...APPLICANT_PUBLIC_JOB_QUERY_KEY, app.job_id] as const,
+            queryFn: () => publicJobsApi.getOne(app.job_id),
+            enabled: Boolean(app.job_id) && appsQuery.isSuccess,
+            staleTime: 60_000,
+        })),
+    });
+
+    const jobTitleById = useMemo(() => {
+        const m = new Map<string, string>();
+        applications.forEach((app, i) => {
+            const title = jobMetaQueries[i]?.data?.title?.trim();
+            if (title) m.set(app.job_id, title);
+        });
+        return m;
+    }, [applications, jobMetaQueries]);
+
     const filteredApplications = useMemo(() => {
         let list = applications;
         if (activeTab !== "All") {
-            list = list.filter((app) => app.status === activeTab);
+            list = list.filter((app) => applicationMatchesTab(app.status, activeTab));
         }
 
         const q = search.trim().toLowerCase();
         if (q.length >= 2) {
             list = list.filter((app) => {
+                const jobTitle = (jobTitleById.get(app.job_id) ?? "").toLowerCase();
                 return (
                     app.job_id.toLowerCase().includes(q) ||
                     applicationTitle(app).toLowerCase().includes(q) ||
+                    jobTitle.includes(q) ||
                     (app.applicant_email ?? "").toLowerCase().includes(q)
                 );
             });
         }
 
         return list;
-    }, [applications, activeTab, search]);
+    }, [applications, activeTab, search, jobTitleById]);
 
     return (
         <div className="p-8 lg:p-10 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
@@ -164,8 +225,11 @@ export default function ApplicationsPage() {
                     <span className="text-sm font-semibold">Loading applications...</span>
                 </div>
             ) : appsQuery.isError ? (
-                <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    Could not load applications. Sign in as a candidate and try again.
+                <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm text-red-700">
+                    <p className="font-bold">Could not load applications.</p>
+                    <p className="mt-1 text-xs font-semibold opacity-90">
+                        {normalizeError(appsQuery.error).message}
+                    </p>
                 </div>
             ) : filteredApplications.length === 0 ? (
                 <div className="bg-white rounded-[24px] p-16 flex flex-col items-center justify-center text-center border border-gray-100 border-dashed">
@@ -212,8 +276,14 @@ export default function ApplicationsPage() {
                                     </div>
 
                                     <h3 className="text-lg font-black text-gray-900 leading-tight mb-1.5">
-                                        {applicationTitle(app)}
+                                        {jobPostingTitle(app, jobTitleById)}
                                     </h3>
+
+                                    {app.current_job_title?.trim() && (
+                                        <p className="text-xs font-semibold text-gray-500 mb-1">
+                                            Your profile title: {app.current_job_title}
+                                        </p>
+                                    )}
 
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-gray-500 mb-3">
                                         <span>Job {app.job_id.slice(0, 8)}...</span>

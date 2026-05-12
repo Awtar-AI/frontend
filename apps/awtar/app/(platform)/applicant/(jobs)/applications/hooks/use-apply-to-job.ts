@@ -16,13 +16,13 @@ export function useApplyToJob(jobId: string) {
     return useMutation({
         mutationFn: (payload: ApplyRequestPayload) =>
             candidateApplicationsApi.apply(jobId, payload),
-        onSuccess: () => {
+        onSuccess: (data) => {
             toastService.success("Application submitted.");
             void queryClient.invalidateQueries({
                 queryKey: [...APPLICANT_MY_APPLICATIONS_QUERY_KEY],
             });
             void queryClient.invalidateQueries({ queryKey: [...APPLICANT_PUBLIC_JOBS_QUERY_KEY] });
-            router.push("/applicant/applications");
+            router.push(`/applicant/jobs/${jobId}/post-apply?applicationId=${encodeURIComponent(data.id)}`);
         },
         onError: (error) => {
             toastService.error(normalizeError(error).message);
