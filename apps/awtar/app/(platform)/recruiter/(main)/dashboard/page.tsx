@@ -6,11 +6,9 @@ import {
     Briefcase,
     Calendar,
     ChevronDown,
-    Clock,
     FileText,
     Loader2,
     MoreHorizontal,
-    Plus,
     Sparkles,
     TrendingDown,
     TrendingUp,
@@ -81,8 +79,7 @@ function DiffBadge({ diff, label }: { diff: number; label: string }) {
     );
 }
 
-function greetingByTime(firstName: string): string {
-    const hour = new Date().getHours();
+function greetingByTime(hour: number, firstName: string): string {
     if (hour < 12) return `Good morning, ${firstName}.`;
     if (hour < 18) return `Good afternoon, ${firstName}.`;
     return `Good evening, ${firstName}.`;
@@ -94,6 +91,7 @@ export default function RecruiterDashboard() {
     const displayName = user ? applicantDisplayName(user) : "Recruiter";
     const firstName = displayName.split(" ").filter(Boolean)[0] ?? "Recruiter";
     const [period, setPeriod] = useState<OrgTrendPeriod>("6m");
+    const [currentHour] = useState(() => new Date().getHours());
 
     const statsQuery = useRecruiterOrgStats();
     const trendQuery = useRecruiterOrgTrend(period);
@@ -164,7 +162,7 @@ export default function RecruiterDashboard() {
             {/* Welcome Banner */}
             <RecruiterPageBanner
                 title={`Welcome back, ${firstName}`}
-                description={`${greetingByTime(firstName)} Here is what is happening with your hiring funnel today.`}
+                description={`${greetingByTime(currentHour, firstName)} Here is what is happening with your hiring funnel today.`}
                 metricLabel="Active roles"
                 metricValue={`${statsQuery.data?.total_active_jobs ?? 0}`}
                 Icon={Briefcase}
@@ -209,7 +207,7 @@ export default function RecruiterDashboard() {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* Trends Chart */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-75">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
@@ -292,7 +290,7 @@ export default function RecruiterDashboard() {
                 </div>
 
                 {/* AI Insights Summary */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-75">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
