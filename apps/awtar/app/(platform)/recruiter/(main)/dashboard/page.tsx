@@ -6,10 +6,9 @@ import {
     Briefcase,
     Calendar,
     ChevronDown,
+    Clock,
     FileText,
-    Info,
     Loader2,
-    MessageSquare,
     MoreHorizontal,
     Plus,
     Sparkles,
@@ -21,8 +20,6 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
-    Bar,
-    BarChart,
     CartesianGrid,
     Line,
     LineChart,
@@ -43,12 +40,8 @@ import { useRecruiterOrgStats } from "./hooks/use-recruiter-org-stats";
 import { useRecruiterOrgTrend } from "./hooks/use-recruiter-org-trend";
 
 // Data for BarChart (Quality Distribution)
-const QUALITY_DATA = [
-    { range: "80%+", count: 45 },
-    { range: "70-80%", count: 32 },
-    { range: "60-70%", count: 18 },
-    { range: "<60%", count: 5 },
-];
+// Quality chart uses live data when the quality-distribution API ships.
+// Until then, show an informative placeholder.
 
 const PERIOD_OPTIONS: { value: OrgTrendPeriod; label: string }[] = [
     { value: "7d", label: "Last 7 days" },
@@ -168,13 +161,26 @@ export default function RecruiterDashboard() {
 
     return (
         <div className="w-full space-y-6 pb-12">
-            <div className="flex justify-end">
-                <Link
-                    href="/recruiter/post-job"
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
-                >
-                    <Plus className="w-4 h-4" strokeWidth={3} /> Post New Job
-                </Link>
+            {/* Welcome Banner */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-8 text-white shadow-lg">
+                <div className="absolute right-0 top-0 -mr-8 -mt-8 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+                <div className="absolute left-1/2 bottom-0 -mb-12 w-64 h-32 bg-white/5 rounded-full blur-3xl" />
+                <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-black tracking-tight mb-1">
+                            Welcome back, {firstName} 👋
+                        </h1>
+                        <p className="text-sm text-blue-100 font-medium">
+                            Here&apos;s what&apos;s happening with your hiring funnel today.
+                        </p>
+                    </div>
+                    <Link
+                        href="/recruiter/post-job"
+                        className="flex items-center gap-2 bg-white hover:bg-blue-50 text-blue-700 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
+                    >
+                        <Plus className="w-4 h-4" strokeWidth={3} /> Post New Job
+                    </Link>
+                </div>
             </div>
 
             <RecruiterPageBanner
@@ -217,14 +223,43 @@ export default function RecruiterDashboard() {
                                 </div>
                             </div>
                         </div>
-                    );
-                })}
+                    </div>
+            <div className="flex items-end gap-3">
+                <span className="text-4xl font-black text-gray-900 tracking-tighter">
+                    {statsQuery.data?.total_interviews_scheduled ?? 0}
+                </span>
+                <span className="text-xs font-medium text-gray-500 mb-1.5 leading-tight max-w-[80px]">
+                    scheduled this week
+                </span>
             </div>
+        </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Trends Chart */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
+                {/* Card 4 */ }
+    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
+        <div className="flex justify-between items-start">
+            <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                AVG. TIME TO HIRE
+            </h3>
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                <Clock className="w-4 h-4" />
+            </div>
+        </div>
+        <div className="flex items-end gap-2">
+            <span className="text-4xl font-black text-gray-900 tracking-tighter">
+                {statsQuery.data?.avg_time_to_hire_days ?? "—"}
+            </span>
+            <span className="text-sm font-bold text-gray-900 mb-1.5">days</span>
+            <span className="text-xs font-medium text-gray-500 mb-1.5 ml-2 leading-tight max-w-[80px]">
+                average
+            </span>
+        </div>
+    </div>
+            </div >
+
+        {/* Charts Row */ }
+        < div className = "grid grid-cols-1 lg:grid-cols-2 gap-4" >
+            {/* Trends Chart */ }
+            < div className = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]" >
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
@@ -304,50 +339,37 @@ export default function RecruiterDashboard() {
                             </ResponsiveContainer>
                         )}
                     </div>
-                </div>
+                </div >
 
-                {/* Quality Chart */}
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
+        {/* AI Insights Summary */ }
+        < div className = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]" >
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
-                                Candidate Quality Distribution
+                                AI Scoring Overview
                             </h3>
                             <p className="text-[9px] font-bold tracking-widest text-gray-400 uppercase">
-                                PLACEHOLDER UNTIL QUALITY DATA API
+                                POWERED BY AWTAR AI
                             </p>
                         </div>
-                        <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
+                        <Sparkles className="w-4 h-4 text-blue-500" />
                     </div>
-                    <div className="w-full h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={QUALITY_DATA} barSize={40}>
-                                <XAxis
-                                    dataKey="range"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: "#6b7280", fontSize: 11, fontWeight: 600 }}
-                                    dy={10}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: "#f3f4f6" }}
-                                    contentStyle={{
-                                        borderRadius: "8px",
-                                        border: "none",
-                                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                                    }}
-                                />
-                                <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <div className="flex flex-col items-center justify-center h-48 text-center">
+                        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+                            <Sparkles className="w-7 h-7 text-blue-500" />
+                        </div>
+                        <p className="text-sm font-bold text-gray-700 mb-1">AI-Powered Insights</p>
+                        <p className="text-xs text-gray-400 max-w-[220px]">
+                            Candidate quality distribution and scoring insights will appear here as applications are processed.
+                        </p>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
-            {/* Bottom Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Active Job Postings Table */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col">
+        {/* Bottom Row */ }
+        < div className = "grid grid-cols-1 lg:grid-cols-3 gap-4" >
+            {/* Active Job Postings Table */ }
+            < div className = "bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col" >
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 className="text-base font-bold text-gray-900">Active Job Postings</h3>
                         <Link
@@ -450,76 +472,55 @@ export default function RecruiterDashboard() {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div >
 
-                {/* Recent Activity */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-1 p-6 flex flex-col h-full">
+        {/* Recent Activity */ }
+        < div className = "bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-1 p-6 flex flex-col h-full" >
                     <h3 className="text-base font-bold text-gray-900 mb-6">Recent Activity</h3>
 
                     <div className="flex-1 overflow-y-auto pr-2 space-y-6">
-                        {/* Item 1 */}
                         <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                                 <UserPlus className="w-4 h-4" />
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-gray-900 leading-snug">
-                                    Placeholder activity feed until event-stream API is wired.
+                                    New applications will appear here as candidates apply to your job postings.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    JUST NOW
+                                    AWAITING ACTIVITY
                                 </p>
                             </div>
                         </div>
-                        {/* Item 2 */}
                         <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-green-50 text-green-600 flex items-center justify-center shrink-0">
                                 <Sparkles className="w-4 h-4" />
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    AI analysis insights will appear here.
+                                    AI scoring results and shortlist recommendations will be logged here.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    PENDING DATA
+                                    AWAITING DATA
                                 </p>
                             </div>
                         </div>
-                        {/* Item 3 */}
                         <div className="flex gap-4">
                             <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
                                 <Calendar className="w-4 h-4" />
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    Interview scheduling summaries will appear here.
+                                    Status changes and interview updates will be tracked here.
                                 </p>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    PENDING DATA
-                                </p>
-                            </div>
-                        </div>
-                        {/* Item 4 */}
-                        <div className="flex gap-4">
-                            <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center shrink-0">
-                                <MessageSquare className="w-4 h-4" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-800 leading-snug">
-                                    Team collaboration updates will appear here.
-                                </p>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                    PENDING DATA
+                                    AWAITING DATA
                                 </p>
                             </div>
                         </div>
                     </div>
-
-                    <button className="w-full mt-6 py-3 border border-gray-200 rounded-lg text-xs font-bold text-gray-500 uppercase tracking-widest hover:bg-gray-50 transition-colors">
-                        LOAD MORE ACTIVITY
-                    </button>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 }

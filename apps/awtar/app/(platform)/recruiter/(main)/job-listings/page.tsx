@@ -251,286 +251,283 @@ export default function JobListingsPage() {
             />
 
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative">
-            {/* Header / Title */}
-            <div className="px-6 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-bold text-blue-600 tracking-tight">
-                        Job Summary Table
-                    </h1>
-                </div>
-
-                {selectedRows.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={deleteBulk}
-                        disabled={deleteMutation.isPending || bulkDeleting}
-                        className="text-xs font-bold bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 flex items-center gap-1 disabled:opacity-60"
-                    >
-                        {bulkDeleting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                        )}{" "}
-                        Delete Selected ({selectedRows.length})
-                    </button>
-                )}
-            </div>
-
-            {/* Filters Row */}
-            <div className="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
-                <div className="flex items-center gap-3 flex-wrap">
-                    {filters.map((filter) => (
-                        <button
-                            key={filter}
-                            type="button"
-                            onClick={() => handleFilterButtonClick(filter)}
-                            className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-white shadow-sm"
-                        >
-                            {filter} <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-                        </button>
-                    ))}
-                </div>
-                <div className="text-sm font-semibold text-gray-500">
-                    {jobsQuery.isLoading ? "…" : jobs.length} Jobs
-                </div>
-            </div>
-
-            {jobsQuery.isError && (
-                <div className="px-6 pb-4 text-sm text-red-600">
-                    Could not load jobs. Please try again.
-                </div>
-            )}
-
-            {/* Table */}
-            <div className="overflow-x-auto min-h-[400px]">
-                {jobsQuery.isLoading ? (
-                    <div className="flex items-center justify-center py-24 text-gray-500 gap-2">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Loading jobs…
+                {/* Header / Title */}
+                <div className="px-6 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-xl font-bold text-blue-600 tracking-tight">
+                            Job Summary Table
+                        </h1>
                     </div>
-                ) : (
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-gray-400 uppercase bg-[#fbfcff] border-y border-gray-200">
-                            <tr>
-                                <th className="px-6 py-4 font-semibold w-12 align-middle">
-                                    <input
-                                        title="n"
-                                        placeholder=""
-                                        type="checkbox"
-                                        checked={
-                                            selectedRows.length === currentJobs.length &&
-                                            currentJobs.length > 0
-                                        }
-                                        onChange={toggleAll}
-                                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                    />
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort("title")}
-                                >
-                                    <div className="flex items-center gap-1 uppercase">
-                                        Job Title{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort("location")}
-                                >
-                                    <div className="flex items-center gap-1 uppercase">
-                                        Location{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
-                                    onClick={() => handleSort("applicants")}
-                                >
-                                    <div className="flex items-center justify-center gap-1 uppercase">
-                                        Applicants{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
-                                    onClick={() => handleSort("status")}
-                                >
-                                    <div className="flex items-center justify-center gap-1 uppercase">
-                                        Status{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort("postedOn")}
-                                >
-                                    <div className="flex items-center gap-1 uppercase">
-                                        Posted On{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
-                                    onClick={() => handleSort("deadline")}
-                                >
-                                    <div className="flex items-center gap-1 uppercase">
-                                        Deadline{" "}
-                                        <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
-                                    </div>
-                                </th>
-                                <th className="px-6 py-4 font-semibold text-right uppercase">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {currentJobs.length > 0 ? (
-                                currentJobs.map((job) => (
-                                    <tr
-                                        key={job.id}
-                                        className="hover:bg-gray-50/50 transition-colors"
-                                    >
-                                        <td className="px-6 py-4">
-                                            <input
-                                                title="check"
-                                                type="checkbox"
-                                                checked={selectedRows.includes(job.id)}
-                                                onChange={() => toggleRow(job.id)}
-                                                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                                            />
-                                        </td>
-                                        <td className="px-6 py-4 font-medium text-gray-900">
-                                            <Link
-                                                href={`/recruiter/job-listings/${job.id}`}
-                                                className="hover:text-blue-600 transition-colors"
-                                            >
-                                                {job.title}
-                                            </Link>
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600 text-xs font-medium">
-                                            {jobLocationLabel(job)}
-                                        </td>
-                                        <td className="px-6 py-4 text-center text-gray-600 text-xs font-medium">
-                                            {applicantCountsQueries.find(
-                                                (_q, idx) => jobs[idx]?.id === job.id,
-                                            )?.isLoading
-                                                ? "..."
-                                                : (applicantCountMap[job.id] ?? 0)}
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            {getStatusBadge(job.status)}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600 text-xs font-medium">
-                                            {formatPostedDate(job.created_at)}
-                                        </td>
-                                        <td className="px-6 py-4 text-xs font-medium">
-                                            <span
-                                                className={
-                                                    isPastDeadline(job.deadline)
-                                                        ? "text-red-600"
-                                                        : "text-gray-600"
-                                                }
-                                            >
-                                                {formatDeadline(job.deadline)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-3 text-blue-500">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteOne(job.id)}
-                                                    disabled={deleteMutation.isPending}
-                                                    className="hover:text-red-600 transition-colors text-red-500 disabled:opacity-50"
-                                                    title="Delete job"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                                {(applicantCountMap[job.id] ?? 0) > 0 ? (
-                                                    <Link
-                                                        href={`/recruiter/job-listings/${job.id}/shortlist`}
-                                                        className="text-gray-400 hover:text-blue-600 transition-colors"
-                                                        title="View AI shortlist"
-                                                    >
-                                                        <Sparkles className="w-4 h-4" />
-                                                    </Link>
-                                                ) : (
-                                                    <button
-                                                        type="button"
-                                                        disabled
-                                                        className="text-gray-300 cursor-not-allowed"
-                                                        title="AI shortlist is available after at least one applicant applies"
-                                                    >
-                                                        <Sparkles className="w-4 h-4" />
-                                                    </button>
-                                                )}
-                                                <Link
-                                                    href={`/recruiter/job-listings/${job.id}`}
-                                                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                                                    title="View applicants"
-                                                >
-                                                    <ExternalLink className="w-4 h-4" />
-                                                </Link>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td
-                                        colSpan={8}
-                                        className="px-6 py-12 text-center text-gray-500"
-                                    >
-                                        No jobs yet. Post a job to see it listed here.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                )}
-            </div>
 
-            {/* Pagination block */}
-            {!jobsQuery.isLoading && totalPages > 0 && sortedJobs.length > 0 && (
-                <div className="flex flex-col items-center justify-center p-6 border-t border-gray-100">
-                    <div className="flex items-center gap-1">
+                    {selectedRows.length > 0 && (
                         <button
-                            title="button"
                             type="button"
-                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                            onClick={deleteBulk}
+                            disabled={deleteMutation.isPending || bulkDeleting}
+                            className="text-xs font-bold bg-red-50 text-red-600 px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 flex items-center gap-1 disabled:opacity-60"
                         >
-                            <ChevronLeft className="w-5 h-5" />
+                            {bulkDeleting ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                            )}{" "}
+                            Delete Selected ({selectedRows.length})
                         </button>
+                    )}
+                </div>
 
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                {/* Filters Row */}
+                <div className="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {filters.map((filter) => (
                             <button
-                                key={pageNumber}
+                                key={filter}
                                 type="button"
-                                onClick={() => setCurrentPage(pageNumber)}
-                                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                                    pageNumber === currentPage
-                                        ? "text-white bg-blue-600 shadow-sm"
-                                        : "text-gray-600 hover:bg-gray-100"
-                                }`}
+                                onClick={() => handleFilterButtonClick(filter)}
+                                className="flex items-center gap-1.5 px-4 py-2 border border-gray-200 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors bg-white shadow-sm"
                             >
-                                {pageNumber}
+                                {filter} <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
                             </button>
                         ))}
-
-                        <button
-                            type="button"
-                            title="button"
-                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
+                    </div>
+                    <div className="text-sm font-semibold text-gray-500">
+                        {jobsQuery.isLoading ? "…" : jobs.length} Jobs
                     </div>
                 </div>
-            )}
+
+                {jobsQuery.isError && (
+                    <div className="px-6 pb-4 text-sm text-red-600">
+                        Could not load jobs. Please try again.
+                    </div>
+                )}
+
+                {/* Table */}
+                <div className="overflow-x-auto min-h-[400px]">
+                    {jobsQuery.isLoading ? (
+                        <div className="flex items-center justify-center py-24 text-gray-500 gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Loading jobs…
+                        </div>
+                    ) : (
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-gray-400 uppercase bg-[#fbfcff] border-y border-gray-200">
+                                <tr>
+                                    <th className="px-6 py-4 font-semibold w-12 align-middle">
+                                        <input
+                                            title="n"
+                                            placeholder=""
+                                            type="checkbox"
+                                            checked={
+                                                selectedRows.length === currentJobs.length &&
+                                                currentJobs.length > 0
+                                            }
+                                            onChange={toggleAll}
+                                            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                                        onClick={() => handleSort("title")}
+                                    >
+                                        <div className="flex items-center gap-1 uppercase">
+                                            Job Title{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                                        onClick={() => handleSort("location")}
+                                    >
+                                        <div className="flex items-center gap-1 uppercase">
+                                            Location{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
+                                        onClick={() => handleSort("applicants")}
+                                    >
+                                        <div className="flex items-center justify-center gap-1 uppercase">
+                                            Applicants{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group text-center"
+                                        onClick={() => handleSort("status")}
+                                    >
+                                        <div className="flex items-center justify-center gap-1 uppercase">
+                                            Status{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                                        onClick={() => handleSort("postedOn")}
+                                    >
+                                        <div className="flex items-center gap-1 uppercase">
+                                            Posted On{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th
+                                        className="px-6 py-4 font-semibold cursor-pointer hover:bg-gray-100 transition-colors select-none group"
+                                        onClick={() => handleSort("deadline")}
+                                    >
+                                        <div className="flex items-center gap-1 uppercase">
+                                            Deadline{" "}
+                                            <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-500" />
+                                        </div>
+                                    </th>
+                                    <th className="px-6 py-4 font-semibold text-right uppercase">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {currentJobs.length > 0 ? (
+                                    currentJobs.map((job) => (
+                                        <tr
+                                            key={job.id}
+                                            className="hover:bg-gray-50/50 transition-colors"
+                                        >
+                                            <td className="px-6 py-4">
+                                                <input
+                                                    title="check"
+                                                    type="checkbox"
+                                                    checked={selectedRows.includes(job.id)}
+                                                    onChange={() => toggleRow(job.id)}
+                                                    className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                                />
+                                            </td>
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                <Link
+                                                    href={`/recruiter/job-listings/${job.id}`}
+                                                    className="hover:text-blue-600 transition-colors"
+                                                >
+                                                    {job.title}
+                                                </Link>
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600 text-xs font-medium">
+                                                {jobLocationLabel(job)}
+                                            </td>
+                                            <td className="px-6 py-4 text-center text-gray-600 text-xs font-medium">
+                                                {applicantCountsQueries.find(
+                                                    (_q, idx) => jobs[idx]?.id === job.id,
+                                                )?.isLoading
+                                                    ? "..."
+                                                    : (applicantCountMap[job.id] ?? 0)}
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                {getStatusBadge(job.status)}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600 text-xs font-medium">
+                                                {formatPostedDate(job.created_at)}
+                                            </td>
+                                            <td className="px-6 py-4 text-xs font-medium">
+                                                <span
+                                                    className={
+                                                        isPastDeadline(job.deadline)
+                                                            ? "text-red-600"
+                                                            : "text-gray-600"
+                                                    }
+                                                >
+                                                    {formatDeadline(job.deadline)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-3 text-blue-500">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteOne(job.id)}
+                                                        disabled={deleteMutation.isPending}
+                                                        className="hover:text-red-600 transition-colors text-red-500 disabled:opacity-50"
+                                                        title="Delete job"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                    {(applicantCountMap[job.id] ?? 0) > 0 ? (
+                                                        <Link
+                                                            href={`/recruiter/job-listings/${job.id}/shortlist`}
+                                                            className="text-gray-400 hover:text-blue-600 transition-colors"
+                                                            title="View AI shortlist"
+                                                        >
+                                                            <Sparkles className="w-4 h-4" />
+                                                        </Link>
+                                                    ) : (
+                                                        <span
+                                                            className="text-gray-200 cursor-not-allowed"
+                                                            title="No applicants to shortlist"
+                                                        >
+                                                            <Sparkles className="w-4 h-4" />
+                                                        </span>
+                                                    )}
+                                                    <Link
+                                                        href={`/recruiter/job-listings/${job.id}`}
+                                                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                                                        title="View applicants"
+                                                    >
+                                                        <ExternalLink className="w-4 h-4" />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td
+                                            colSpan={8}
+                                            className="px-6 py-12 text-center text-gray-500"
+                                        >
+                                            No jobs yet. Post a job to see it listed here.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+
+                {/* Pagination block */}
+                {!jobsQuery.isLoading && totalPages > 0 && sortedJobs.length > 0 && (
+                    <div className="flex flex-col items-center justify-center p-6 border-t border-gray-100">
+                        <div className="flex items-center gap-1">
+                            <button
+                                title="button"
+                                type="button"
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                <button
+                                    key={pageNumber}
+                                    type="button"
+                                    onClick={() => setCurrentPage(pageNumber)}
+                                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${pageNumber === currentPage
+                                            ? "text-white bg-blue-600 shadow-sm"
+                                            : "text-gray-600 hover:bg-gray-100"
+                                        }`}
+                                >
+                                    {pageNumber}
+                                </button>
+                            ))}
+
+                            <button
+                                type="button"
+                                title="button"
+                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                                className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

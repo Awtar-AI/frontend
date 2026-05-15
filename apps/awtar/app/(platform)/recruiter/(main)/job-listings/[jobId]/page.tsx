@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink, Loader2, MapPin, Pencil, Save, Sparkles, Users, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -183,11 +184,10 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                     : jobQuery.data.location || "On-site"}
                             </span>
                             <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                    jobQuery.data.status === "active"
+                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${jobQuery.data.status === "active"
                                         ? "bg-green-100 text-green-700"
                                         : "bg-red-100 text-red-700"
-                                }`}
+                                    }`}
                             >
                                 {jobQuery.data.status}
                             </span>
@@ -196,23 +196,24 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Link
-                                href={`/recruiter/job-listings/${jobId}/shortlist`}
-                                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-white ${
-                                    applicantCount > 0
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "bg-gray-300 pointer-events-none"
-                                }`}
-                                title={
-                                    applicantCount > 0
-                                        ? "Open the AI ranking & shortlist page for this job"
-                                        : "AI shortlist is available after at least one applicant applies"
-                                }
-                                aria-disabled={applicantCount === 0}
-                            >
-                                <Sparkles className="h-3.5 w-3.5" />
-                                View AI shortlist
-                            </Link>
+                            {(applicationsQuery.data?.length ?? 0) > 0 ? (
+                                <Link
+                                    href={`/recruiter/job-listings/${jobId}/shortlist`}
+                                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
+                                    title="Open the AI ranking & shortlist page for this job"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    View AI shortlist
+                                </Link>
+                            ) : (
+                                <span
+                                    className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-3 py-2 text-xs font-bold text-gray-400 cursor-not-allowed"
+                                    title="No applicants to shortlist yet"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    View AI shortlist
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => setIsEditOpen(true)}
@@ -251,20 +252,23 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                         )}
                         {!applicationsQuery.isLoading &&
                             !applicationsQuery.isError &&
-                            applicantCount === 0 && (
-                                <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 p-8 text-center">
-                                    <Users className="mx-auto h-6 w-6 text-blue-600" />
-                                    <h3 className="mt-3 text-sm font-bold text-gray-900">
-                                        No applicants yet
-                                    </h3>
-                                    <p className="mt-1 text-sm text-gray-600">
-                                        Applicants will appear here once candidates apply to this
-                                        role.
+                            (applicationsQuery.data?.length ?? 0) === 0 && (
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <Image
+                                        src="/no-applicants.png"
+                                        alt="No applicants"
+                                        width={220}
+                                        height={220}
+                                        className="opacity-80 mb-4"
+                                    />
+                                    <h3 className="text-base font-bold text-gray-700 mb-1">No applicants yet</h3>
+                                    <p className="text-sm text-gray-400 text-center max-w-xs">
+                                        Share this job listing to start receiving applications. Candidates will appear here once they apply.
                                     </p>
                                 </div>
                             )}
 
-                        {applicantCount > 0 && (
+                        {(applicationsQuery.data?.length ?? 0) > 0 && (
                             <div className="overflow-x-auto rounded-lg border border-gray-100">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 text-xs uppercase text-gray-500">
@@ -306,11 +310,10 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <span
-                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
-                                                            application.ai_requires_verification
+                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${application.ai_requires_verification
                                                                 ? "bg-amber-100 text-amber-900"
                                                                 : "bg-gray-100 text-gray-600"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {application.ai_requires_verification ? "Yes" : "—"}
                                                     </span>
