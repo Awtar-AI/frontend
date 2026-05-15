@@ -1,6 +1,43 @@
 import { z } from "zod";
 import type { AppUser } from "../models/app-user";
 
+const resumeSkillSchema = z.object({
+    name: z.string(),
+    source: z.string(),
+    category: z.string(),
+    confidence: z.number(),
+});
+
+const resumeExperienceSchema = z.object({
+    raw: z.string(),
+    title: z.string().nullable().optional(),
+    company: z.string().nullable().optional(),
+    start_date: z.string().nullable().optional(),
+    end_date: z.string().nullable().optional(),
+});
+
+const resumeEducationSchema = z.object({
+    raw: z.string(),
+    degree: z.string().nullable().optional(),
+    start_date: z.string().nullable().optional(),
+    end_date: z.string().nullable().optional(),
+    institution: z.string().nullable().optional(),
+});
+
+const resumeProjectSchema = z.object({
+    raw: z.string(),
+    name: z.string().nullable().optional(),
+    description: z.string().nullable().optional(),
+});
+
+const resumeCandidateDataSchema = z.object({
+    skills: z.array(resumeSkillSchema).nullable().optional(),
+    projects: z.array(resumeProjectSchema).nullable().optional(),
+    education: z.array(resumeEducationSchema).nullable().optional(),
+    experience: z.array(resumeExperienceSchema).nullable().optional(),
+    raw_text: z.string().nullable().optional(),
+});
+
 /** `GET /api/v1/users/:userId/single` — see APPLICANT-FRONTEND-API.md */
 export const candidateProfileResponseSchema = z.object({
     current_job_title: z.string().optional(),
@@ -13,6 +50,9 @@ export const candidateProfileResponseSchema = z.object({
     primary_skills: z.array(z.string()).optional(),
     resume_url: z.string().optional(),
     years_of_experience: z.number().optional(),
+    extracted_skills: z.array(z.string()).optional(),
+    resume_last_parsed_at: z.string().optional(),
+    resume_candidate_data: resumeCandidateDataSchema.nullable().optional(),
 });
 
 export const userMeResponseSchema = z.object({
