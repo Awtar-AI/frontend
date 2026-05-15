@@ -162,27 +162,6 @@ export default function RecruiterDashboard() {
     return (
         <div className="w-full space-y-6 pb-12">
             {/* Welcome Banner */}
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 p-8 text-white shadow-lg">
-                <div className="absolute right-0 top-0 -mr-8 -mt-8 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
-                <div className="absolute left-1/2 bottom-0 -mb-12 w-64 h-32 bg-white/5 rounded-full blur-3xl" />
-                <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-black tracking-tight mb-1">
-                            Welcome back, {firstName} 👋
-                        </h1>
-                        <p className="text-sm text-blue-100 font-medium">
-                            Here&apos;s what&apos;s happening with your hiring funnel today.
-                        </p>
-                    </div>
-                    <Link
-                        href="/recruiter/post-job"
-                        className="flex items-center gap-2 bg-white hover:bg-blue-50 text-blue-700 px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
-                    >
-                        <Plus className="w-4 h-4" strokeWidth={3} /> Post New Job
-                    </Link>
-                </div>
-            </div>
-
             <RecruiterPageBanner
                 title={`Welcome back, ${firstName}`}
                 description={`${greetingByTime(firstName)} Here is what is happening with your hiring funnel today.`}
@@ -223,43 +202,14 @@ export default function RecruiterDashboard() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-            <div className="flex items-end gap-3">
-                <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                    {statsQuery.data?.total_interviews_scheduled ?? 0}
-                </span>
-                <span className="text-xs font-medium text-gray-500 mb-1.5 leading-tight max-w-[80px]">
-                    scheduled this week
-                </span>
+                    );
+                })}
             </div>
-        </div>
 
-                {/* Card 4 */ }
-    <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
-        <div className="flex justify-between items-start">
-            <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                AVG. TIME TO HIRE
-            </h3>
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Clock className="w-4 h-4" />
-            </div>
-        </div>
-        <div className="flex items-end gap-2">
-            <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                {statsQuery.data?.avg_time_to_hire_days ?? "—"}
-            </span>
-            <span className="text-sm font-bold text-gray-900 mb-1.5">days</span>
-            <span className="text-xs font-medium text-gray-500 mb-1.5 ml-2 leading-tight max-w-[80px]">
-                average
-            </span>
-        </div>
-    </div>
-            </div >
-
-        {/* Charts Row */ }
-        < div className = "grid grid-cols-1 lg:grid-cols-2 gap-4" >
-            {/* Trends Chart */ }
-            < div className = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]" >
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Trends Chart */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
@@ -339,10 +289,10 @@ export default function RecruiterDashboard() {
                             </ResponsiveContainer>
                         )}
                     </div>
-                </div >
+                </div>
 
-        {/* AI Insights Summary */ }
-        < div className = "bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]" >
+                {/* AI Insights Summary */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm relative col-span-1 min-h-[300px]">
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h3 className="text-base font-bold text-gray-900">
@@ -363,13 +313,13 @@ export default function RecruiterDashboard() {
                             Candidate quality distribution and scoring insights will appear here as applications are processed.
                         </p>
                     </div>
-                </div >
-            </div >
+                </div>
+            </div>
 
-        {/* Bottom Row */ }
-        < div className = "grid grid-cols-1 lg:grid-cols-3 gap-4" >
-            {/* Active Job Postings Table */ }
-            < div className = "bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col" >
+            {/* Bottom Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Active Job Postings Table */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-2 overflow-hidden flex flex-col">
                     <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                         <h3 className="text-base font-bold text-gray-900">Active Job Postings</h3>
                         <Link
@@ -472,10 +422,10 @@ export default function RecruiterDashboard() {
                             </tbody>
                         </table>
                     </div>
-                </div >
+                </div>
 
-        {/* Recent Activity */ }
-        < div className = "bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-1 p-6 flex flex-col h-full" >
+                {/* Recent Activity */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm lg:col-span-1 p-6 flex flex-col h-full">
                     <h3 className="text-base font-bold text-gray-900 mb-6">Recent Activity</h3>
 
                     <div className="flex-1 overflow-y-auto pr-2 space-y-6">
@@ -519,8 +469,9 @@ export default function RecruiterDashboard() {
                             </div>
                         </div>
                     </div>
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     );
 }
+
