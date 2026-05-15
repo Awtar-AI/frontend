@@ -308,7 +308,10 @@ export function ProjectsSection({ user }: { user: AppUser }) {
             </h3>
             <div className="space-y-3">
                 {projects.map((project) => (
-                    <div key={project.raw} className="rounded-xl bg-slate-50/70 p-4 border border-slate-100">
+                    <div
+                        key={project.raw}
+                        className="rounded-xl bg-slate-50/70 p-4 border border-slate-100"
+                    >
                         <p className="text-sm font-black text-slate-900">{project.name}</p>
                         {project.description && (
                             <p className="mt-1 text-xs font-medium leading-5 text-slate-500 line-clamp-3">
