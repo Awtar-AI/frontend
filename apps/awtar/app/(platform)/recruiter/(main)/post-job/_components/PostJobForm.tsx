@@ -1,12 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BriefcaseBusiness, Loader2, Sparkles } from "lucide-react";
+import { BriefcaseBusiness, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useAuthOrganizationId } from "@/lib/hooks/use-auth";
-import { AIGenerateModal } from "../../../_components/modals/AIGenerateModal";
 import { DeadlineWarningModal } from "../../../_components/modals/DeadlineWarningModal";
 import { JobLiveModal } from "../../../_components/modals/JobLiveModal";
 import { useCreateJob } from "../hooks/use-create-job";
@@ -22,7 +21,6 @@ export function PostJobForm() {
     const router = useRouter();
     const organizationId = useAuthOrganizationId();
     const createJobMutation = useCreateJob();
-    const [showAIGenerate, setShowAIGenerate] = useState(false);
     const [showJobLive, setShowJobLive] = useState(false);
     const [showDeadlineWarning, setShowDeadlineWarning] = useState(false);
     const [liveJobTitle, setLiveJobTitle] = useState("");
@@ -111,14 +109,15 @@ export function PostJobForm() {
                                 className="w-full min-h-[180px] resize-y rounded-lg border border-gray-200 p-4 pr-36 text-sm outline-none transition-all placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                 placeholder="Describe the role, daily responsibilities, and qualifications."
                             />
-                            <button
+                            {/* AI description generator temporarily disabled per recruiter flow updates. */}
+                            {/* <button
                                 type="button"
                                 onClick={() => setShowAIGenerate(true)}
                                 className="absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-600 transition-colors hover:bg-blue-100"
                             >
                                 <Sparkles className="h-4 w-4" />
                                 AI Generate
-                            </button>
+                            </button> */}
                         </div>
                         {errors.description && (
                             <p className="text-xs text-red-600">{errors.description.message}</p>
@@ -392,7 +391,7 @@ export function PostJobForm() {
                 </div>
             </form>
 
-            <AIGenerateModal isOpen={showAIGenerate} onClose={() => setShowAIGenerate(false)} />
+            {/* AI description generator modal intentionally disabled for now. */}
             <JobLiveModal
                 isOpen={showJobLive}
                 onClose={() => setShowJobLive(false)}

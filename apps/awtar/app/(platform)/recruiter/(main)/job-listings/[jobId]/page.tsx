@@ -119,6 +119,7 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
 
     const isRemote = watch("isRemote");
     const salaryType = watch("salaryType");
+    const applicantCount = applicationsQuery.data?.length ?? 0;
 
     if (!organizationId) {
         return (
@@ -197,8 +198,17 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                         <div className="flex items-center gap-2">
                             <Link
                                 href={`/recruiter/job-listings/${jobId}/shortlist`}
-                                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
-                                title="Open the AI ranking & shortlist page for this job"
+                                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-white ${
+                                    applicantCount > 0
+                                        ? "bg-blue-600 hover:bg-blue-700"
+                                        : "bg-gray-300 pointer-events-none"
+                                }`}
+                                title={
+                                    applicantCount > 0
+                                        ? "Open the AI ranking & shortlist page for this job"
+                                        : "AI shortlist is available after at least one applicant applies"
+                                }
+                                aria-disabled={applicantCount === 0}
                             >
                                 <Sparkles className="h-3.5 w-3.5" />
                                 View AI shortlist
@@ -219,7 +229,12 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                     <div className="xl:col-span-12 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                         <h2 className="text-base font-bold text-gray-900 mb-4 inline-flex items-center gap-2">
                             <Users className="h-4 w-4 text-gray-600" />
-                            Applicants ({applicationsQuery.data?.length ?? 0})
+                            Applicants
+                            {applicantCount > 0 && (
+                                <span className="text-sm font-semibold text-gray-500">
+                                    ({applicantCount})
+                                </span>
+                            )}
                         </h2>
                         {applicationsQuery.isLoading && (
                             <div className="text-sm text-gray-500 inline-flex items-center gap-2">
@@ -236,11 +251,20 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                         )}
                         {!applicationsQuery.isLoading &&
                             !applicationsQuery.isError &&
-                            (applicationsQuery.data?.length ?? 0) === 0 && (
-                                <p className="text-sm text-gray-500">No applicants yet.</p>
+                            applicantCount === 0 && (
+                                <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50/40 p-8 text-center">
+                                    <Users className="mx-auto h-6 w-6 text-blue-600" />
+                                    <h3 className="mt-3 text-sm font-bold text-gray-900">
+                                        No applicants yet
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-600">
+                                        Applicants will appear here once candidates apply to this
+                                        role.
+                                    </p>
+                                </div>
                             )}
 
-                        {(applicationsQuery.data?.length ?? 0) > 0 && (
+                        {applicantCount > 0 && (
                             <div className="overflow-x-auto rounded-lg border border-gray-100">
                                 <table className="w-full text-sm">
                                     <thead className="bg-gray-50 text-xs uppercase text-gray-500">

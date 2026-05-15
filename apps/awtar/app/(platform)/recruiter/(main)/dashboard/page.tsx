@@ -6,7 +6,6 @@ import {
     Briefcase,
     Calendar,
     ChevronDown,
-    Clock,
     FileText,
     Info,
     Loader2,
@@ -14,7 +13,10 @@ import {
     MoreHorizontal,
     Plus,
     Sparkles,
+    TrendingDown,
+    TrendingUp,
     UserPlus,
+    Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -30,10 +32,12 @@ import {
     YAxis,
 } from "recharts";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
-import { useAuthUser } from "@/lib/hooks/use-auth";
+import { useAuthOrganizationId, useAuthUser } from "@/lib/hooks/use-auth";
 import { recruiterApplicationsApi } from "../job-listings/api/recruiter-applications.api";
 import { useRecruiterJobs } from "../post-job/hooks/use-recruiter-jobs";
 import { getJobExperienceLevel } from "../post-job/schemas/post-job.schema";
+import { useOrganizationEmployees } from "../team/hooks/use-organization-employees";
+import { RecruiterPageBanner } from "../_components/RecruiterPageBanner";
 import type { OrgTrendPeriod } from "./api/recruiter-dashboard.api";
 import { useRecruiterOrgStats } from "./hooks/use-recruiter-org-stats";
 import { useRecruiterOrgTrend } from "./hooks/use-recruiter-org-trend";
@@ -54,16 +58,6 @@ const PERIOD_OPTIONS: { value: OrgTrendPeriod; label: string }[] = [
     { value: "1y", label: "Last year" },
 ];
 
-function formatDelta(value: number, suffix = ""): string {
-    if (value === 0) return `0${suffix}`;
-    return `${value > 0 ? "+" : ""}${value}${suffix}`;
-}
-
-function formatPercent(value: number): string {
-    if (!Number.isFinite(value)) return "0%";
-    return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
-}
-
 function formatJobMeta(job: {
     is_remote?: boolean;
     location?: string | null;
@@ -75,14 +69,35 @@ function formatJobMeta(job: {
     return `${location} • ${type}`;
 }
 
-function metricDeltaClass(value: number): string {
-    if (value > 0) return "text-green-600";
-    if (value < 0) return "text-red-600";
-    return "text-gray-500";
+function DiffBadge({ diff, label }: { diff: number; label: string }) {
+    if (diff === 0) {
+        return <span className="text-[10px] font-bold text-gray-400">No change</span>;
+    }
+    const up = diff > 0;
+    const absoluteDiff = Math.abs(diff);
+    const changeLabel = absoluteDiff === 1 ? label : `${label}s`;
+
+    return (
+        <span
+            className={`inline-flex items-center gap-1 text-[10px] font-bold ${up ? "text-green-600" : "text-red-500"}`}
+        >
+            {up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {up ? "+" : ""}
+            {diff} {changeLabel}
+        </span>
+    );
+}
+
+function greetingByTime(firstName: string): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return `Good morning, ${firstName}.`;
+    if (hour < 18) return `Good afternoon, ${firstName}.`;
+    return `Good evening, ${firstName}.`;
 }
 
 export default function RecruiterDashboard() {
     const user = useAuthUser();
+    const organizationId = useAuthOrganizationId();
     const displayName = user ? applicantDisplayName(user) : "Recruiter";
     const firstName = displayName.split(" ").filter(Boolean)[0] ?? "Recruiter";
     const [period, setPeriod] = useState<OrgTrendPeriod>("6m");
@@ -90,6 +105,7 @@ export default function RecruiterDashboard() {
     const statsQuery = useRecruiterOrgStats();
     const trendQuery = useRecruiterOrgTrend(period);
     const jobsQuery = useRecruiterJobs();
+    const employeesQuery = useOrganizationEmployees(organizationId);
 
     const topJobs = useMemo(
         () =>
@@ -118,20 +134,41 @@ export default function RecruiterDashboard() {
     }, [applicantCountsQueries, topJobs]);
 
     const trendChartData = trendQuery.data?.data ?? [];
+    const hrMembersCount = employeesQuery.data?.length ?? 0;
+    const kpiCards = [
+        {
+            label: "TOTAL ACTIVE JOBS",
+            value: statsQuery.data?.total_active_jobs ?? 0,
+            delta: statsQuery.data?.active_jobs_diff ?? 0,
+            icon: Briefcase,
+            changeLabel: "active job",
+        },
+        {
+            label: "TOTAL APPLICATIONS",
+            value: statsQuery.data?.total_applications ?? 0,
+            delta: statsQuery.data?.apps_diff ?? 0,
+            icon: FileText,
+            changeLabel: "application",
+        },
+        {
+            label: "APPLICATIONS THIS MONTH",
+            value: statsQuery.data?.apps_this_month ?? 0,
+            delta: statsQuery.data?.apps_diff ?? 0,
+            icon: Calendar,
+            changeLabel: "application this month",
+        },
+        {
+            label: "ACTIVE HR MEMBERS",
+            value: hrMembersCount,
+            delta: hrMembersCount > 0 ? 1 : 0,
+            icon: Users,
+            changeLabel: "team member",
+        },
+    ];
 
     return (
         <div className="w-full space-y-6 pb-12">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-1">
-                        Recruiter Dashboard
-                    </h1>
-                    <p className="text-sm text-gray-500 font-medium">
-                        Welcome back, {firstName}. Here&apos;s what&apos;s happening with your
-                        hiring funnel today.
-                    </p>
-                </div>
+            <div className="flex justify-end">
                 <Link
                     href="/recruiter/post-job"
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm transition-colors shadow-sm"
@@ -140,104 +177,48 @@ export default function RecruiterDashboard() {
                 </Link>
             </div>
 
+            <RecruiterPageBanner
+                title={`Welcome back, ${firstName}`}
+                description={`${greetingByTime(firstName)} Here is what is happening with your hiring funnel today.`}
+                metricLabel="Active roles"
+                metricValue={`${statsQuery.data?.total_active_jobs ?? 0}`}
+                Icon={Briefcase}
+            />
+
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Card 1 */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                            TOTAL ACTIVE JOBS
-                        </h3>
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <Briefcase className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                        <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            {statsQuery.data?.total_active_jobs ?? 0}
-                        </span>
-                        <span
-                            className={`text-xs font-bold mb-1.5 ${
-                                statsQuery.data
-                                    ? metricDeltaClass(statsQuery.data.active_jobs_diff)
-                                    : "text-gray-500"
-                            }`}
+                {kpiCards.map((card) => {
+                    const Icon = card.icon;
+                    return (
+                        <div
+                            key={card.label}
+                            className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between min-h-[140px]"
                         >
-                            {statsQuery.data
-                                ? `${formatDelta(statsQuery.data.active_jobs_diff)} vs last month`
-                                : "Loading..."}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Card 2 */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                            TOTAL APPLICATIONS
-                        </h3>
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <FileText className="w-4 h-4" />
+                            <div className="flex justify-between items-start">
+                                <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                                    {card.label}
+                                </h3>
+                                <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                    <Icon className="w-4 h-4" />
+                                </div>
+                            </div>
+                            <div className="flex items-end justify-between gap-3">
+                                <div className="flex flex-col">
+                                    <span className="text-4xl font-black text-gray-900 tracking-tighter">
+                                        {card.value}
+                                    </span>
+                                    {statsQuery.isLoading || employeesQuery.isLoading ? (
+                                        <span className="text-[10px] font-bold text-gray-400">
+                                            Loading...
+                                        </span>
+                                    ) : (
+                                        <DiffBadge diff={card.delta} label={card.changeLabel} />
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                        <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            {statsQuery.data?.total_applications ?? 0}
-                        </span>
-                        <span
-                            className={`text-xs font-bold mb-1.5 ${
-                                statsQuery.data
-                                    ? metricDeltaClass(statsQuery.data.apps_diff)
-                                    : "text-gray-500"
-                            }`}
-                        >
-                            {statsQuery.data
-                                ? `${formatPercent(statsQuery.data.apps_change_pct)} change`
-                                : "Loading..."}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Card 3 */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                            INTERVIEWS SCHEDULED
-                        </h3>
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <Calendar className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="flex items-end gap-3">
-                        <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            24
-                        </span>
-                        <span className="text-xs font-medium text-gray-500 mb-1.5 leading-tight max-w-[80px]">
-                            scheduled this week
-                        </span>
-                    </div>
-                </div>
-
-                {/* Card 4 */}
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between h-[120px]">
-                    <div className="flex justify-between items-start">
-                        <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                            AVG. TIME TO HIRE
-                        </h3>
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <Clock className="w-4 h-4" />
-                        </div>
-                    </div>
-                    <div className="flex items-end gap-2">
-                        <span className="text-4xl font-black text-gray-900 tracking-tighter">
-                            18
-                        </span>
-                        <span className="text-sm font-bold text-gray-900 mb-1.5">days</span>
-                        <span className="text-xs font-bold text-green-600 mb-1.5 ml-2 leading-tight max-w-[80px]">
-                            ↓ 2 days improvement
-                        </span>
-                    </div>
-                </div>
+                    );
+                })}
             </div>
 
             {/* Charts Row */}

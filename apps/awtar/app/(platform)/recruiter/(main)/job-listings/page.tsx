@@ -3,6 +3,7 @@
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import {
     ArrowUpDown,
+    Briefcase,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
@@ -16,6 +17,7 @@ import { useMemo, useState } from "react";
 import { normalizeError } from "@/lib/errors";
 import { useAuthOrganizationId } from "@/lib/hooks/use-auth";
 import { toastService } from "@/lib/services/toast.service";
+import { RecruiterPageBanner } from "../_components/RecruiterPageBanner";
 import { postJobApi } from "../post-job/api/post-job.api";
 import { useDeleteJob } from "../post-job/hooks/use-delete-job";
 import { RECRUITER_JOBS_QUERY_KEY, useRecruiterJobs } from "../post-job/hooks/use-recruiter-jobs";
@@ -239,7 +241,16 @@ export default function JobListingsPage() {
     }
 
     return (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative">
+        <div className="space-y-6">
+            <RecruiterPageBanner
+                title="Job Listings"
+                description="Manage active openings, monitor applicants, and move roles through your hiring pipeline."
+                metricLabel="Published jobs"
+                metricValue={jobsQuery.isLoading ? "Loading..." : `${jobs.length}`}
+                Icon={Briefcase}
+            />
+
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm relative">
             {/* Header / Title */}
             <div className="px-6 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <div className="flex items-center gap-4">
@@ -435,13 +446,24 @@ export default function JobListingsPage() {
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <Link
-                                                    href={`/recruiter/job-listings/${job.id}/shortlist`}
-                                                    className="text-gray-400 hover:text-blue-600 transition-colors"
-                                                    title="View AI shortlist"
-                                                >
-                                                    <Sparkles className="w-4 h-4" />
-                                                </Link>
+                                                {(applicantCountMap[job.id] ?? 0) > 0 ? (
+                                                    <Link
+                                                        href={`/recruiter/job-listings/${job.id}/shortlist`}
+                                                        className="text-gray-400 hover:text-blue-600 transition-colors"
+                                                        title="View AI shortlist"
+                                                    >
+                                                        <Sparkles className="w-4 h-4" />
+                                                    </Link>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        disabled
+                                                        className="text-gray-300 cursor-not-allowed"
+                                                        title="AI shortlist is available after at least one applicant applies"
+                                                    >
+                                                        <Sparkles className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                                 <Link
                                                     href={`/recruiter/job-listings/${job.id}`}
                                                     className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -509,6 +531,7 @@ export default function JobListingsPage() {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 }

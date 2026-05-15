@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, RefreshCw } from "lucide-react";
+import { FileText, Loader2, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { normalizeError } from "@/lib/errors";
@@ -61,6 +61,18 @@ function fmt(v: unknown, d = 0): string {
 function fmtI(v: unknown): string {
     if (v === null || v === undefined || Number.isNaN(Number(v))) return "—";
     return String(Math.round(Number(v)));
+}
+
+function extractResumeFilename(resumeUrl: string): string {
+    try {
+        const raw = resumeUrl.split("?")[0]?.split("#")[0] ?? "";
+        const lastSegment = raw.split("/").pop() ?? "";
+        const decoded = decodeURIComponent(lastSegment);
+        if (!decoded.trim()) return "resume.pdf";
+        return decoded.toLowerCase().endsWith(".pdf") ? decoded : `${decoded}.pdf`;
+    } catch {
+        return "resume.pdf";
+    }
 }
 
 function Sc({ label, v }: { label: string; v: string }) {
@@ -640,9 +652,10 @@ export default function RecruiterJobApplicationDetailPage({
                                     href={application.resume_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
+                                    className="inline-flex items-center gap-2 text-blue-600 font-semibold hover:underline"
                                 >
-                                    Open submitted resume
+                                    <FileText className="h-5 w-5" />
+                                    {extractResumeFilename(application.resume_url)}
                                 </a>
                             ) : (
                                 "Not provided"
@@ -651,7 +664,7 @@ export default function RecruiterJobApplicationDetailPage({
                     </div>
                 </div>
 
-                <div className="xl:col-span-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+                <div className="xl:col-span-5 self-start rounded-xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
                     <h2 className="text-base font-bold text-gray-900">Candidate profile context</h2>
                     {candidateQuery.isLoading && (
                         <div className="inline-flex items-center gap-2 text-sm text-gray-500">
@@ -701,7 +714,7 @@ export default function RecruiterJobApplicationDetailPage({
                                 </p>
                             </div>
                             <Link
-                                href={`/recruiter/talent/${application.user_id}`}
+                                href={`/recruiter/candidates/${application.user_id}`}
                                 className="inline-flex text-xs font-semibold text-blue-600 hover:underline"
                             >
                                 Open candidate profile page

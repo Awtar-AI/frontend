@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Globe, LogOut, Mail, Shield, User2, Users } from "lucide-react";
+import Link from "next/link";
 import { applicantDisplayName } from "@/applicant/user-me/schemas/user-me.schema";
 import { useAuthOrganizationId, useAuthUser } from "@/lib/hooks/use-auth";
 import { useSignOut } from "@/lib/hooks/use-signout";
@@ -165,13 +166,13 @@ export default function RecruiterProfilePage() {
                     Account Actions
                 </h2>
                 <div className="mt-4 flex flex-wrap gap-3">
-                    <button
-                        type="button"
+                    <Link
+                        href="/recruiter/profile/edit"
                         className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
                     >
                         <User2 className="w-4 h-4" />
-                        Edit Profile (coming soon)
-                    </button>
+                        Edit Profile
+                    </Link>
                     <button
                         type="button"
                         onClick={() => void signOut({ redirectTo: "/recruiter/login" })}
