@@ -6,6 +6,7 @@ import {
     EducationSection,
     JobPreferences,
     ProfessionalSummary,
+    ProjectsSection,
     TechnicalSkills,
     WorkExperience,
 } from "./_components/ProfileSections";
@@ -40,9 +41,10 @@ export default function PublicProfilePage() {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-8 flex flex-col gap-6">
                     <ProfessionalSummary user={user} />
-                    <WorkExperience />
+                    <WorkExperience user={user} />
                     <TechnicalSkills user={user} />
                     <EducationSection user={user} />
+                    <ProjectsSection user={user} />
                     <JobPreferences user={user} />
                 </div>
 

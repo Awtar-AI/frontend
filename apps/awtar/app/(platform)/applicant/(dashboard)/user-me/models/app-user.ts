@@ -1,3 +1,40 @@
+export type ResumeSkill = {
+    name: string;
+    source: string;
+    category: string;
+    confidence: number;
+};
+
+export type ResumeExperience = {
+    raw: string;
+    title?: string | null;
+    company?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+};
+
+export type ResumeEducation = {
+    raw: string;
+    degree?: string | null;
+    start_date?: string | null;
+    end_date?: string | null;
+    institution?: string | null;
+};
+
+export type ResumeProject = {
+    raw: string;
+    name?: string | null;
+    description?: string | null;
+};
+
+export type ResumeCandidateData = {
+    skills?: ResumeSkill[] | null;
+    projects?: ResumeProject[] | null;
+    education?: ResumeEducation[] | null;
+    experience?: ResumeExperience[] | null;
+    raw_text?: string | null;
+};
+
 /** Candidate slice from `GET /users/:id/single` (see APPLICANT-FRONTEND-API.md). */
 export type CandidateProfile = {
     current_job_title?: string;
@@ -10,6 +47,9 @@ export type CandidateProfile = {
     primary_skills?: string[];
     resume_url?: string;
     years_of_experience?: number;
+    extracted_skills?: string[];
+    resume_last_parsed_at?: string;
+    resume_candidate_data?: ResumeCandidateData | null;
 };
 
 export type AppUser = {
