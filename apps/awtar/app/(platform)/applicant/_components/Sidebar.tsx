@@ -56,23 +56,6 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Pro Plan Card */}
-            <div className="p-4 shrink-0">
-                <div className="bg-[#1a5eb8] rounded-xl p-4 text-white shadow-sm">
-                    <p className="text-[10px] font-bold text-blue-200 mb-1 uppercase tracking-wider">
-                        PRO PLAN
-                    </p>
-                    <p className="text-sm font-semibold mb-3 leading-tight">
-                        Unlock AI-powered application tailoring
-                    </p>
-                    <button
-                        type="button"
-                        className="w-full py-2 bg-white text-[#1a5eb8] text-sm font-bold rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                        Upgrade Now
-                    </button>
-                </div>
-            </div>
         </aside>
     );
 }
