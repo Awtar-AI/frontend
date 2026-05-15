@@ -1,41 +1,42 @@
 {
-    "name": "awtar",
-    "version": "0.1.0",
-    "private": true,
-    "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "lint": "eslint .",
-        "check-types": "node -e \"try{require('fs').rmSync('.next/types',{recursive:true,force:true})}catch(e){}\" && tsc --noEmit"
-    },
-    "dependencies": {
-        "@hookform/resolvers": "^5.2.2",
-        "@tanstack/react-query": "^5.91.0",
-        "@tiptap/extension-link": "^3.22.5",
-        "@tiptap/extension-placeholder": "^3.22.5",
-        "@tiptap/extension-underline": "^3.22.5",
-        "@tiptap/pm": "^3.22.5",
-        "@tiptap/react": "^3.22.5",
-        "@tiptap/starter-kit": "^3.22.5",
-        "axios": "^1.14.0",
-        "lucide-react": "^0.577.0",
-        "next": "16.1.6",
-        "react": "19.2.3",
-        "react-dom": "19.2.3",
-        "react-hook-form": "^7.72.1",
-        "recharts": "^3.8.1",
-        "zod": "^4.3.6",
-        "zustand": "^5.0.12"
-    },
-    "devDependencies": {
-        "@tailwindcss/postcss": "^4",
-        "@types/node": "^20",
-        "@types/react": "^19",
-        "@types/react-dom": "^19",
-        "eslint": "^9",
-        "eslint-config-next": "16.1.6",
-        "tailwindcss": "^4",
-        "typescript": "^5"
-    }
+  "name": "awtar",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "check-types": "node -e \"try{require('fs').rmSync('.next/types',{recursive:true,force:true})}catch(e){}\" && tsc --noEmit"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@tanstack/react-query": "^5.91.0",
+    "@tiptap/extension-link": "^3.22.5",
+    "@tiptap/extension-placeholder": "^3.22.5",
+    "@tiptap/extension-underline": "^3.22.5",
+    "@tiptap/pm": "^3.22.5",
+    "@tiptap/react": "^3.22.5",
+    "@tiptap/starter-kit": "^3.22.5",
+    "axios": "^1.14.0",
+    "lucide-react": "^0.577.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hook-form": "^7.72.1",
+    "recharts": "^3.8.1",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@9.14.2"
 }
