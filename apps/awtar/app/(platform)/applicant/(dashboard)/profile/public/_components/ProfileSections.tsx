@@ -1,7 +1,20 @@
 "use client";
 
-import { Briefcase, Building2, Code, DollarSign, GraduationCap, User } from "lucide-react";
-import type { AppUser } from "@/applicant/user-me/models/app-user";
+import {
+    Briefcase,
+    Building2,
+    Code,
+    DollarSign,
+    FolderOpen,
+    GraduationCap,
+    User,
+} from "lucide-react";
+import type {
+    AppUser,
+    ResumeEducation,
+    ResumeExperience,
+    ResumeProject,
+} from "@/applicant/user-me/models/app-user";
 import { labelForEducation, labelForIndustry, labelForJobType } from "../../schemas/profile.schema";
 
 const cardClass =
@@ -10,6 +23,29 @@ const sectionTitleClass =
     "flex items-center gap-2 text-sm font-black text-slate-950 tracking-tight mb-5";
 const iconTileClass =
     "w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600";
+
+function formatMonthYear(date?: string | null): string {
+    if (!date) return "";
+    if (date.toLowerCase() === "present") return "Present";
+    const [year, month] = date.split("-");
+    if (!year) return date;
+    if (!month) return year;
+    try {
+        return new Intl.DateTimeFormat("en", { month: "short", year: "numeric" }).format(
+            new Date(Number(year), Number(month) - 1),
+        );
+    } catch {
+        return date;
+    }
+}
+
+function dateRange(start?: string | null, end?: string | null): string {
+    const s = formatMonthYear(start);
+    const e = formatMonthYear(end);
+    if (s && e) return `${s} – ${e}`;
+    if (s) return `${s} – Present`;
+    return "";
+}
 
 export function ProfessionalSummary({ user }: { user: AppUser }) {
     const cp = user.candidate_profile;
@@ -61,7 +97,11 @@ export function ProfessionalSummary({ user }: { user: AppUser }) {
     );
 }
 
-export function WorkExperience() {
+export function WorkExperience({ user }: { user: AppUser }) {
+    const rawEntries: ResumeExperience[] =
+        user.candidate_profile?.resume_candidate_data?.experience ?? [];
+    const entries = rawEntries.filter((e) => e.title);
+
     return (
         <div className={cardClass}>
             <h3 className={sectionTitleClass}>
@@ -70,25 +110,57 @@ export function WorkExperience() {
                 </span>
                 Work Experience
             </h3>
-            <div className="flex gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
-                <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
-                    <Briefcase className="w-4 h-4 text-slate-400" />
+            {entries.length > 0 ? (
+                <div className="space-y-4">
+                    {entries.map((entry) => (
+                        <div
+                            key={entry.raw}
+                            className="flex gap-4 rounded-xl bg-slate-50/70 p-4 border border-slate-100"
+                        >
+                            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                                <Briefcase className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-sm font-black text-slate-900">{entry.title}</p>
+                                {entry.company && (
+                                    <p className="text-xs font-semibold text-blue-600 mt-0.5">
+                                        {entry.company}
+                                    </p>
+                                )}
+                                {(entry.start_date || entry.end_date) && (
+                                    <p className="text-xs font-medium text-slate-400 mt-1">
+                                        {dateRange(entry.start_date, entry.end_date)}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                <div>
-                    <p className="text-sm font-black text-slate-800">
-                        Work experience will be available soon.
-                    </p>
-                    <p className="mt-1 text-xs font-medium leading-5 text-slate-500">
-                        Add roles, companies, and achievements from the edit profile page.
-                    </p>
+            ) : (
+                <div className="flex gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/70 p-5">
+                    <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                        <Briefcase className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-black text-slate-800">
+                            No work experience found.
+                        </p>
+                        <p className="mt-1 text-xs font-medium leading-5 text-slate-500">
+                            Upload a resume to extract your experience automatically.
+                        </p>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }
 
 export function TechnicalSkills({ user }: { user: AppUser }) {
-    const skills = user.candidate_profile?.primary_skills ?? [];
+    const cp = user.candidate_profile;
+    const primarySkills = cp?.primary_skills ?? [];
+    const extractedSkills = cp?.extracted_skills ?? [];
+
+    const hasAny = primarySkills.length > 0 || extractedSkills.length > 0;
 
     return (
         <div className={cardClass}>
@@ -98,16 +170,42 @@ export function TechnicalSkills({ user }: { user: AppUser }) {
                 </span>
                 Technical Skills
             </h3>
-            {skills.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                    {skills.map((skill) => (
-                        <span
-                            key={skill}
-                            className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-md"
-                        >
-                            {skill}
-                        </span>
-                    ))}
+            {hasAny ? (
+                <div className="space-y-5">
+                    {primarySkills.length > 0 && (
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                                Primary Skills
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {primarySkills.map((skill) => (
+                                    <span
+                                        key={skill}
+                                        className="px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-md"
+                                    >
+                                        {skill}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {extractedSkills.length > 0 && (
+                        <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                                From Resume
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {extractedSkills.map((skill) => (
+                                    <span
+                                        key={skill}
+                                        className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold rounded-md"
+                                    >
+                                        {skill}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <p className="text-gray-400 text-sm italic">No skills added yet.</p>
@@ -118,6 +216,11 @@ export function TechnicalSkills({ user }: { user: AppUser }) {
 
 export function EducationSection({ user }: { user: AppUser }) {
     const level = user.candidate_profile?.education_level;
+    const rawEntries: ResumeEducation[] =
+        user.candidate_profile?.resume_candidate_data?.education ?? [];
+    const entries = rawEntries.filter(
+        (e) => (e.degree && e.degree.length < 120) || (e.institution && e.institution.length < 80),
+    );
 
     return (
         <div className={cardClass}>
@@ -127,7 +230,37 @@ export function EducationSection({ user }: { user: AppUser }) {
                 </span>
                 Education
             </h3>
-            {level ? (
+            {entries.length > 0 ? (
+                <div className="space-y-3">
+                    {entries.map((entry) => (
+                        <div
+                            key={entry.raw}
+                            className="flex gap-4 rounded-xl bg-slate-50/70 p-4 border border-slate-100"
+                        >
+                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
+                                <GraduationCap className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                {entry.degree && (
+                                    <h4 className="text-sm font-black text-slate-950 tracking-tight">
+                                        {entry.degree}
+                                    </h4>
+                                )}
+                                {entry.institution && (
+                                    <p className="text-xs font-semibold text-blue-600 mt-0.5">
+                                        {entry.institution}
+                                    </p>
+                                )}
+                                {(entry.start_date || entry.end_date) && (
+                                    <p className="text-xs font-medium text-slate-400 mt-1">
+                                        {dateRange(entry.start_date, entry.end_date)}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : level ? (
                 <div className="flex gap-4 rounded-xl bg-slate-50/70 p-4 border border-slate-100">
                     <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0">
                         <GraduationCap className="w-5 h-5 text-blue-600" />
@@ -144,6 +277,50 @@ export function EducationSection({ user }: { user: AppUser }) {
             ) : (
                 <p className="text-gray-400 text-sm italic">No education info added yet.</p>
             )}
+        </div>
+    );
+}
+
+export function ProjectsSection({ user }: { user: AppUser }) {
+    const rawProjects: ResumeProject[] =
+        user.candidate_profile?.resume_candidate_data?.projects ?? [];
+
+    const datePattern = /^\w{3}\s+\d{4}/;
+    const projects = rawProjects.filter(
+        (p) =>
+            p.name &&
+            p.name.length > 5 &&
+            p.name.length < 120 &&
+            !datePattern.test(p.name) &&
+            !p.name.startsWith("•") &&
+            p.name.toUpperCase() !== p.name,
+    );
+
+    if (projects.length === 0) return null;
+
+    return (
+        <div className={cardClass}>
+            <h3 className={sectionTitleClass}>
+                <span className={iconTileClass}>
+                    <FolderOpen className="w-4 h-4" />
+                </span>
+                Projects
+            </h3>
+            <div className="space-y-3">
+                {projects.map((project) => (
+                    <div
+                        key={project.raw}
+                        className="rounded-xl bg-slate-50/70 p-4 border border-slate-100"
+                    >
+                        <p className="text-sm font-black text-slate-900">{project.name}</p>
+                        {project.description && (
+                            <p className="mt-1 text-xs font-medium leading-5 text-slate-500 line-clamp-3">
+                                {project.description}
+                            </p>
+                        )}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
