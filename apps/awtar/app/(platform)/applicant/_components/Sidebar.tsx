@@ -41,11 +41,10 @@ export function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                                isActive
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${isActive
                                     ? "bg-blue-50 text-blue-700"
                                     : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                            }`}
+                                }`}
                         >
                             <Icon
                                 className={`w-5 h-5 ${isActive ? "text-blue-700" : "text-gray-400"}`}
@@ -56,23 +55,6 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Pro Plan Card */}
-            <div className="p-4 shrink-0">
-                <div className="bg-[#1a5eb8] rounded-xl p-4 text-white shadow-sm">
-                    <p className="text-[10px] font-bold text-blue-200 mb-1 uppercase tracking-wider">
-                        PRO PLAN
-                    </p>
-                    <p className="text-sm font-semibold mb-3 leading-tight">
-                        Unlock AI-powered application tailoring
-                    </p>
-                    <button
-                        type="button"
-                        className="w-full py-2 bg-white text-[#1a5eb8] text-sm font-bold rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                        Upgrade Now
-                    </button>
-                </div>
-            </div>
         </aside>
     );
 }

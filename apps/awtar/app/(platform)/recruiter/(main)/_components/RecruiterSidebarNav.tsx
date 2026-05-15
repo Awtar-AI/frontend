@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, FilePlus, FileText, Home, MessageSquare, User, Users } from "lucide-react";
+import { Compass, FilePlus, FileText, Home, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,8 +12,6 @@ export function RecruiterSidebarNav() {
         { name: "Post a Job", href: "/recruiter/post-job", icon: FilePlus },
         { name: "Job Listings", href: "/recruiter/job-listings", icon: FileText },
         { name: "Explore Talent", href: "/recruiter/talent", icon: Compass },
-        { name: "Messages", href: "/recruiter/messages", icon: MessageSquare },
-        { name: "Profile", href: "/recruiter/profile", icon: User },
         { name: "Team Members", href: "/recruiter/team", icon: Users },
     ];
 

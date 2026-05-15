@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink, Loader2, MapPin, Pencil, Save, Sparkles, Users, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -119,6 +120,7 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
 
     const isRemote = watch("isRemote");
     const salaryType = watch("salaryType");
+    const applicantCount = applicationsQuery.data?.length ?? 0;
 
     if (!organizationId) {
         return (
@@ -182,11 +184,10 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                     : jobQuery.data.location || "On-site"}
                             </span>
                             <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                    jobQuery.data.status === "active"
+                                className={`rounded-full px-2.5 py-1 text-xs font-semibold ${jobQuery.data.status === "active"
                                         ? "bg-green-100 text-green-700"
                                         : "bg-red-100 text-red-700"
-                                }`}
+                                    }`}
                             >
                                 {jobQuery.data.status}
                             </span>
@@ -195,14 +196,24 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                             </span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Link
-                                href={`/recruiter/job-listings/${jobId}/shortlist`}
-                                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
-                                title="Open the AI ranking & shortlist page for this job"
-                            >
-                                <Sparkles className="h-3.5 w-3.5" />
-                                View AI shortlist
-                            </Link>
+                            {(applicationsQuery.data?.length ?? 0) > 0 ? (
+                                <Link
+                                    href={`/recruiter/job-listings/${jobId}/shortlist`}
+                                    className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700"
+                                    title="Open the AI ranking & shortlist page for this job"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    View AI shortlist
+                                </Link>
+                            ) : (
+                                <span
+                                    className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-3 py-2 text-xs font-bold text-gray-400 cursor-not-allowed"
+                                    title="No applicants to shortlist yet"
+                                >
+                                    <Sparkles className="h-3.5 w-3.5" />
+                                    View AI shortlist
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => setIsEditOpen(true)}
@@ -219,7 +230,12 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                     <div className="xl:col-span-12 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                         <h2 className="text-base font-bold text-gray-900 mb-4 inline-flex items-center gap-2">
                             <Users className="h-4 w-4 text-gray-600" />
-                            Applicants ({applicationsQuery.data?.length ?? 0})
+                            Applicants
+                            {applicantCount > 0 && (
+                                <span className="text-sm font-semibold text-gray-500">
+                                    ({applicantCount})
+                                </span>
+                            )}
                         </h2>
                         {applicationsQuery.isLoading && (
                             <div className="text-sm text-gray-500 inline-flex items-center gap-2">
@@ -237,7 +253,19 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                         {!applicationsQuery.isLoading &&
                             !applicationsQuery.isError &&
                             (applicationsQuery.data?.length ?? 0) === 0 && (
-                                <p className="text-sm text-gray-500">No applicants yet.</p>
+                                <div className="flex flex-col items-center justify-center py-12">
+                                    <Image
+                                        src="/no-applicants.png"
+                                        alt="No applicants"
+                                        width={220}
+                                        height={220}
+                                        className="opacity-80 mb-4"
+                                    />
+                                    <h3 className="text-base font-bold text-gray-700 mb-1">No applicants yet</h3>
+                                    <p className="text-sm text-gray-400 text-center max-w-xs">
+                                        Share this job listing to start receiving applications. Candidates will appear here once they apply.
+                                    </p>
+                                </div>
                             )}
 
                         {(applicationsQuery.data?.length ?? 0) > 0 && (
@@ -282,11 +310,10 @@ export default function RecruiterJobDetailPage({ params }: { params: Promise<{ j
                                                 </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <span
-                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${
-                                                            application.ai_requires_verification
+                                                        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-black ${application.ai_requires_verification
                                                                 ? "bg-amber-100 text-amber-900"
                                                                 : "bg-gray-100 text-gray-600"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         {application.ai_requires_verification ? "Yes" : "—"}
                                                     </span>

@@ -5,6 +5,7 @@ import { Loader2, Mail, ShieldCheck, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAuthOrganizationId } from "@/lib/hooks/use-auth";
+import { RecruiterPageBanner } from "../_components/RecruiterPageBanner";
 import { useInviteHr } from "./hooks/use-invite-hr";
 import { useOrganizationEmployees } from "./hooks/use-organization-employees";
 import { type InviteHrFormData, inviteHrFormSchema } from "./schemas/team.schema";
@@ -39,6 +40,16 @@ export default function TeamMembersPage() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-6">
+            <RecruiterPageBanner
+                title="Team Members"
+                description="Invite and manage HR teammates who collaborate on your hiring workflow."
+                metricLabel="Active HR members"
+                metricValue={
+                    employeesQuery.isLoading ? "Loading..." : `${employeesQuery.data?.length ?? 0}`
+                }
+                Icon={Users}
+            />
+
             <div className="flex items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Team Members</h1>
@@ -187,31 +198,25 @@ export default function TeamMembersPage() {
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 1
                             </span>
-                            <span>The invited person opens the secure email link.</span>
+                            <span>The invited person opens the invitation email.</span>
                         </li>
                         <li className="flex gap-3">
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 2
                             </span>
-                            <span>
-                                They complete the public HR acceptance form with their password.
-                            </span>
+                            <span>They fill in their details and create a password.</span>
                         </li>
                         <li className="flex gap-3">
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 3
                             </span>
-                            <span>
-                                We create the HR user through `POST /users/create?token=...`.
-                            </span>
+                            <span>Their team account is automatically created.</span>
                         </li>
                         <li className="flex gap-3">
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
                                 4
                             </span>
-                            <span>
-                                They sign in from the recruiter login page and join the team.
-                            </span>
+                            <span>They sign in and can immediately start working with your team.</span>
                         </li>
                     </ol>
                 </div>
