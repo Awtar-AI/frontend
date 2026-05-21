@@ -12,7 +12,7 @@ export default function DashboardPage() {
 
   return (
     <AdminShell title="Awtar AI">
-      <div className="p-8 lg:p-10 mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
+      <div className="space-y-8">
         <DashboardHero />
         <StatCards />
 

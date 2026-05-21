@@ -5,21 +5,21 @@ import { useState } from "react";
 import { ThemeProvider } from "@/lib/hooks/use-theme";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    const [queryClient] = useState(
-        () =>
-            new QueryClient({
-                defaultOptions: {
-                    queries: {
-                        retry: 1,
-                        refetchOnWindowFocus: false,
-                    },
-                },
-            }),
-    );
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      }),
+  );
 
-    return (
-        <ThemeProvider>
-            <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-        </ThemeProvider>
-    );
+  return (
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ThemeProvider>
+  );
 }

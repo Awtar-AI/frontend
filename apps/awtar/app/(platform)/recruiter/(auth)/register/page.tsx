@@ -33,6 +33,8 @@ export default function RecruiterRegisterPage() {
             organizationSize: 1,
             linkedinUrl: "",
             businessDocuments: [],
+            latitude: 0,
+            longitude: 0,
         },
     });
 

@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { useTheme } from "@/lib/hooks/use-theme";
 import { AdminShell } from "../../_components/admin-shell";
+import { OrganizationMap } from "../_components/OrganizationMap";
 import {
   getDeleteOrganizationErrorMessage,
   useDeleteOrganization,
@@ -63,6 +64,12 @@ export default function OrganizationDetailPage({
   const isDark = theme === "dark";
 
   const [isDeleteArmed, setIsDeleteArmed] = useState(false);
+  const [isVerificationDocsExpanded, setIsVerificationDocsExpanded] =
+    useState(true);
+  const [statusConfirmation, setStatusConfirmation] = useState<{
+    isOpen: boolean;
+    status: OrganizationStatus | null;
+  }>({ isOpen: false, status: null });
   const { organizationId } = use(params);
 
   const detailQuery = useOrganizationDetail(organizationId);
@@ -76,6 +83,17 @@ export default function OrganizationDetailPage({
   const handleDelete = async () => {
     await deleteMutation.mutateAsync();
     router.push("/organizations");
+  };
+
+  const handleStatusChange = (status: OrganizationStatus) => {
+    setStatusConfirmation({ isOpen: true, status });
+  };
+
+  const confirmStatusChange = () => {
+    if (statusConfirmation.status) {
+      updateStatusMutation.mutate({ status: statusConfirmation.status });
+      setStatusConfirmation({ isOpen: false, status: null });
+    }
   };
 
   return (
@@ -370,52 +388,12 @@ export default function OrganizationDetailPage({
                   )}
                 </section>
 
-                <section
-                  className={`rounded-2xl border p-6 transition-colors ${
-                    isDark
-                      ? "border-white/10 bg-white/3"
-                      : "border-gray-200 bg-white"
-                  }`}
-                >
-                  <h2
-                    className={`text-lg font-semibold ${
-                      isDark ? "text-awtar-white" : "text-gray-900"
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-blue-500" />
-                      Verification documents
-                    </span>
-                  </h2>
-                  {detailQuery.data.document_url?.length ? (
-                    <div className="mt-5 space-y-3">
-                      {detailQuery.data.document_url.map((documentUrl) => (
-                        <a
-                          key={documentUrl}
-                          href={documentUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`flex items-center justify-between rounded-xl border px-4 py-3 text-sm transition-colors ${
-                            isDark
-                              ? "border-white/10 bg-awtar-navy-light/60 text-blue-300 hover:border-blue-500/20 hover:text-white"
-                              : "border-gray-200 bg-gray-50 text-blue-600 hover:border-blue-200 hover:text-blue-700"
-                          }`}
-                        >
-                          <span>{documentUrl}</span>
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      ))}
-                    </div>
-                  ) : (
-                    <p
-                      className={
-                        isDark ? "mt-4 text-awtar-slate" : "mt-4 text-gray-600"
-                      }
-                    >
-                      No document URLs were attached to this organization.
-                    </p>
-                  )}
-                </section>
+                <OrganizationMap
+                  latitude={detailQuery.data.latitude}
+                  longitude={detailQuery.data.longitude}
+                  organizationName={detailQuery.data.organization_name}
+                  isDark={isDark}
+                />
               </div>
 
               <div className="space-y-6">
@@ -451,9 +429,7 @@ export default function OrganizationDetailPage({
                           key={status}
                           type="button"
                           disabled={updateStatusMutation.isPending}
-                          onClick={() =>
-                            updateStatusMutation.mutate({ status })
-                          }
+                          onClick={() => handleStatusChange(status)}
                           className="rounded-xl bg-awtar-blue px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-awtar-blue-light disabled:opacity-60"
                         >
                           {updateStatusMutation.isPending
@@ -555,6 +531,143 @@ export default function OrganizationDetailPage({
                 </section>
               </div>
             </div>
+
+            <section
+              className={`rounded-2xl border transition-colors ${
+                isDark
+                  ? "border-white/10 bg-white/3"
+                  : "border-gray-200 bg-white"
+              }`}
+            >
+              <button
+                onClick={() =>
+                  setIsVerificationDocsExpanded(!isVerificationDocsExpanded)
+                }
+                className={`w-full px-6 py-4 text-lg font-semibold transition-colors ${
+                  isDark ? "text-awtar-white" : "text-gray-900"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-blue-500" />
+                  Verification documents
+                  <span
+                    className={`ml-auto transition-transform duration-200 ${
+                      isVerificationDocsExpanded ? "rotate-180" : ""
+                    }`}
+                  >
+                    ▼
+                  </span>
+                </span>
+              </button>
+              {isVerificationDocsExpanded && (
+                <div className="border-t border-white/10 p-6">
+                  {detailQuery.data.document_url?.length ? (
+                    <div className="space-y-6">
+                      {detailQuery.data.document_url.map((documentUrl) => (
+                        <div
+                          key={documentUrl}
+                          className={`overflow-hidden rounded-xl border transition-colors ${
+                            isDark
+                              ? "border-white/10 bg-awtar-navy-light/60"
+                              : "border-gray-200 bg-gray-50"
+                          }`}
+                        >
+                          <div
+                            className={`flex items-center justify-between border-b px-4 py-3 text-sm ${
+                              isDark
+                                ? "border-white/10 text-blue-300"
+                                : "border-gray-200 text-blue-600"
+                            }`}
+                          >
+                            <span className="truncate">{documentUrl}</span>
+                            <a
+                              href={documentUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`ml-3 inline-flex items-center gap-2 transition-colors ${
+                                isDark
+                                  ? "hover:text-white"
+                                  : "hover:text-blue-700"
+                              }`}
+                            >
+                              Open
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </div>
+                          <iframe
+                            src={documentUrl}
+                            title={`Verification document preview ${documentUrl}`}
+                            className="h-128 w-full max-w-full"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p
+                      className={isDark ? "text-awtar-slate" : "text-gray-600"}
+                    >
+                      No document URLs were attached to this organization.
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+
+            {statusConfirmation.isOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                <div
+                  className={`rounded-2xl border p-6 shadow-2xl max-w-sm w-full transition-colors ${
+                    isDark
+                      ? "border-white/10 bg-white/3 shadow-black/10"
+                      : "border-gray-200 bg-white shadow-gray-200/50"
+                  }`}
+                >
+                  <h3
+                    className={`text-lg font-semibold ${
+                      isDark ? "text-awtar-white" : "text-gray-900"
+                    }`}
+                  >
+                    Confirm status change
+                  </h3>
+                  <p
+                    className={`mt-2 text-sm ${
+                      isDark ? "text-awtar-slate" : "text-gray-600"
+                    }`}
+                  >
+                    Are you sure you want to change the organization status to{" "}
+                    <span className="font-semibold capitalize">
+                      {statusConfirmation.status}
+                    </span>
+                    ?
+                  </p>
+                  <div className="mt-6 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStatusConfirmation({ isOpen: false, status: null })
+                      }
+                      className={`flex-1 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors ${
+                        isDark
+                          ? "border-white/10 text-awtar-slate hover:text-awtar-white hover:border-white/20"
+                          : "border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmStatusChange}
+                      disabled={updateStatusMutation.isPending}
+                      className="flex-1 rounded-xl bg-awtar-blue px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-awtar-blue-light disabled:opacity-60"
+                    >
+                      {updateStatusMutation.isPending
+                        ? "Updating..."
+                        : "Confirm"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
