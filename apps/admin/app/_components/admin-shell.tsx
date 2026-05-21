@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/lib/hooks/use-theme";
 import { useLogout } from "../logout/hooks/use-logout";
 import { useAuthStore } from "@/lib/store/auth";
+import { useNotifications } from "../dashboard/hooks/use-notifications";
 
 const ADMIN_NAV = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -51,6 +52,12 @@ export function AdminShell({
     null,
   );
   const logout = useLogout();
+  const {
+    data: notifications = [],
+    isPending: isLoading,
+    error,
+    refetch,
+  } = useNotifications();
 
   const userId = useAuthStore((state) => state.userId);
 
@@ -318,7 +325,7 @@ export function AdminShell({
           }`}
         >
           <div className="flex-1 max-w-xl">
-            <div className="relative">
+            {/* <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
@@ -329,7 +336,7 @@ export function AdminShell({
                     : "bg-gray-50 border-transparent text-gray-900 focus:bg-white focus:border-transparent"
                 }`}
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="flex items-center gap-4">
@@ -344,7 +351,9 @@ export function AdminShell({
                 }`}
               >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                {notifications.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                )}
               </button>
 
               {activeMenu === "notifications" && (
@@ -363,34 +372,61 @@ export function AdminShell({
                     </h4>
                     <button
                       type="button"
+                      onClick={refetch}
                       className="text-[10px] font-black text-blue-600 cursor-pointer hover:underline"
                     >
-                      Mark all as read
+                      {isLoading ? "Refreshing..." : "Refresh"}
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {["notif-1", "notif-2"].map((notifId) => (
+                    {isLoading && (
+                      <div
+                        className={`text-center py-4 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                      >
+                        Loading notifications...
+                      </div>
+                    )}
+                    {error && (
+                      <div
+                        className={`text-center py-4 text-xs ${isDark ? "text-red-400" : "text-red-600"}`}
+                      >
+                        Failed to load notifications
+                      </div>
+                    )}
+                    {!isLoading && notifications.length === 0 && (
+                      <div
+                        className={`text-center py-4 text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                      >
+                        No notifications
+                      </div>
+                    )}
+                    {notifications.map((notification) => (
                       <button
                         type="button"
-                        key={notifId}
+                        key={notification.id}
                         className={`w-full flex gap-3 p-2 rounded-xl transition-colors cursor-pointer group border-none text-left ${
                           isDark ? "hover:bg-white/10" : "hover:bg-gray-50"
                         }`}
                       >
-                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                        <div className="relative w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                           <Bell className="w-5 h-5" />
+                          {!notification.is_read && (
+                            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+                          )}
                         </div>
-                        <div>
+                        <div className="flex-1 min-w-0">
                           <p
-                            className={`text-xs font-bold ${isDark ? "text-gray-200 group-hover:text-blue-400" : "text-gray-900 group-hover:text-blue-600"} transition-colors`}
+                            className={`text-xs font-bold ${isDark ? "text-gray-200 group-hover:text-blue-400" : "text-gray-900 group-hover:text-blue-600"} transition-colors line-clamp-2`}
                           >
-                            New user registered in system.
+                            {notification.title}
                           </p>
-                          <p
-                            className={`text-[10px] font-medium mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}
-                          >
-                            2 hours ago
-                          </p>
+                          {notification.message && (
+                            <p
+                              className={`text-[10px] mt-1 line-clamp-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+                            >
+                              {notification.message}
+                            </p>
+                          )}
                         </div>
                       </button>
                     ))}
